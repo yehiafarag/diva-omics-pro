@@ -226,9 +226,9 @@ h3 {
 
 #templatemo_mid{
     float: left;
-    width: 450px;
+    width: 500px;
     margin: 0 3px;
-    padding: 0 15px;
+    padding: 0 5px;
 }
 
 .category_list {
@@ -261,17 +261,17 @@ h3 {
 }
 
 #templatemo_right {
-    float: left;
+    float: right;
     width: 350px;
     margin: 0 0 0 0;
-    padding: 0 15px;
+    padding: 0 5px;
 }
 
 .templatmo_v_line {
     height: 425px;
     float: left;
     width: 2px;
-    background:url(images/templatemo_v_line.jpg);
+    background:#e3e3e3;
 }
 
 .templatemo_h_line {
@@ -358,19 +358,10 @@ h3 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     outline: none;
+    cursor: pointer;
 }
 .magnifying  {
-    float: left;
-    text-align: center;
-    font-size: 12px;
-    text-align: center;
-    text-decoration: none;
-    background: url(http://png-1.findicons.com/files/icons/2540/glyph_icons/32/magnifier.png) center no-repeat;
-    background-color:  #e3e3e3;
-    color: #fff;	
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
-    outline: none;
+    cursor:zoom-in;
 }
 
 
@@ -401,13 +392,13 @@ h3 {
 }
 
 .indicator {  
-    width: 30px;  
-    height: 30px;  
+    width: 100%;  
+    height: 100%;  
     margin: 0;  
 
     /*   background-position: 1%;  */
 
-    background-color: lightgrey;  
+    background: lightgrey url(images/progress.gif) no-repeat;
     background-repeat: no-repeat;  
     background-attachment: fixed;   
     opacity: .8;  
@@ -432,4 +423,104 @@ h3 {
     margin: 0;
 
 
+}
+
+.gwt-PopupPanel {
+  border: 3px solid #e7e7e7;
+  padding: 3px;
+  background: white;
+  z-index: 2000000000;
+}
+.gwt-PopupPanelGlass {
+  background-color: #000;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
+html>body .gwt-PopupPanel {
+}
+* html .gwt-PopupPanel {
+}
+.gwt-DecoratedPopupPanel .popupContent {
+}
+.gwt-DecoratedPopupPanel .popupMiddleCenter {
+  padding: 3px;
+  background: #f1f1f1;
+}
+.gwt-DecoratedPopupPanel .popupTopCenter {
+  background: url(images/hborder.png) 0px -2937px repeat-x;
+}
+.gwt-DecoratedPopupPanel .popupBottomCenter {
+  background:  url(images/hborder.png) repeat-x 0px -2938px;
+  -background: url(images/hborder_ie6.png) repeat-x 0px -2138px;
+}
+.gwt-DecoratedPopupPanel .popupMiddleLeft {
+  background: url(images/vborder.png) -21px 0px repeat-y;
+}
+.gwt-DecoratedPopupPanel .popupMiddleRight {
+  background: url(images/vborder.png) repeat-y -24px 0px;
+  -background: url(images/vborder_ie6.png) repeat-y -24px 0px;
+}
+.gwt-DecoratedPopupPanel .popupTopLeftInner {
+  width: 6px;
+  height: 5px;
+  zoom: 1;
+}
+.gwt-DecoratedPopupPanel .popupTopRightInner {
+  width: 6px;
+  height: 5px;
+  zoom: 1;
+}
+.gwt-DecoratedPopupPanel .popupBottomLeftInner {
+  width: 6px;
+  height: 6px;
+  zoom: 1;
+}
+.gwt-DecoratedPopupPanel .popupBottomRightInner {
+  width: 6px;
+  height: 6px;
+  zoom: 1;
+}
+.gwt-DecoratedPopupPanel .popupTopLeft {
+  background: url(images/circles.png) no-repeat 0px -16px;
+  -background: url(images/circles_ie6.png) no-repeat 0px -16px;
+}
+.gwt-DecoratedPopupPanel .popupTopRight {
+  background: url(images/circles.png) no-repeat -6px -16px;
+  -background: url(images/circles_ie6.png) no-repeat -6px -16px;
+}
+.gwt-DecoratedPopupPanel .popupBottomLeft {
+  background: url(images/circles.png) no-repeat 0px -21px;
+  -background: url(images/circles_ie6.png) no-repeat 0px -21px;
+}
+.gwt-DecoratedPopupPanel .popupBottomRight {
+  background: url(images/circles.png) no-repeat -6px -21px;
+  -background: url(images/circles_ie6.png) no-repeat -6px -21px;
+}
+html>body .gwt-DecoratedPopupPanel {
+}
+* html .gwt-DecoratedPopupPanel .popupTopLeftInner {
+  width: 6px;
+  height: 5px;
+  overflow: hidden;
+}
+* html .gwt-DecoratedPopupPanel .popupTopRightInner {
+  width: 6px;
+  height: 5px;
+  overflow: hidden;
+}
+* html .gwt-DecoratedPopupPanel .popupBottomLeftInner {
+  width: 6px;
+  height: 6px;
+  overflow: hidden;
+}
+* html .gwt-DecoratedPopupPanel .popupBottomRightInner {
+  width: 6px;
+  height: 6px;
+  overflow: hidden;
+}
+.clusterTreeOverNode{
+     cursor:pointer;   
+}
+.clusterTreeOver{
+    cursor: default;
 }

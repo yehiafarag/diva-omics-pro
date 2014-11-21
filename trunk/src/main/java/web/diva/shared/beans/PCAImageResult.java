@@ -21,6 +21,7 @@ public class PCAImageResult implements IsSerializable {
     private double dataAreaMaxY;
     private double dataAreaMinX;
     private double dataAreaMinY, MinX, MinY, MaxX, MaxY;
+    private UpdatedTooltip tooltipInformatinData;
 
     private PCAPoint[] indexeMap;
 
@@ -120,6 +121,14 @@ public class PCAImageResult implements IsSerializable {
 
     public void setIndexeMap(PCAPoint[] indexeMap) {
         this.indexeMap = indexeMap;
+    }
+
+    public UpdatedTooltip getTooltipInformatinData() {
+        return tooltipInformatinData;
+    }
+
+    public void setTooltipInformatinData(UpdatedTooltip tooltipInformatinData) {
+        this.tooltipInformatinData = tooltipInformatinData;
     }
 
 }

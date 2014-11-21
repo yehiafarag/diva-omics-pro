@@ -9,6 +9,7 @@ import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.HTML;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.MultipleAppearance;
+import com.smartgwt.client.types.ReadOnlyDisplayAppearance;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Window;
@@ -107,6 +108,7 @@ public final class RankPanel extends Window {
         seed.setTitle("Seed");
         seed.setRequired(true);
         seed.setBrowserInputType("digits");
+        seed.disable();
         seed.setValue(Random.nextInt(1000000001));
 
         form.setFields(selectColGroups, radioGroupItem);

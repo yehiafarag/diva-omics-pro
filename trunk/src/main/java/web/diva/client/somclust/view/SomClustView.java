@@ -21,10 +21,6 @@ import web.diva.shared.beans.SomClusteringResult;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.smartgwt.client.types.Overflow;
-import com.smartgwt.client.widgets.Window;
-import com.smartgwt.client.widgets.events.CloseClickEvent;
-import com.smartgwt.client.widgets.events.CloseClickHandler;
 
 /**
  *
@@ -65,7 +61,7 @@ public class SomClustView extends ModularizedListener {
         scaleImg = new Image(somClusteringResults.getScaleImgUrl());
 
         Label btn = new Label("");
-        btn.addStyleName("magnifying");
+//        btn.addStyleName("magnifying");
 
         Label info1 = new Label("Distance metrics : " + somClusteringResults.getDistanceMeasure());
         info1.setWidth(leftSideLayout.getWidth() + "px");
@@ -98,32 +94,32 @@ public class SomClustView extends ModularizedListener {
             }
         });
 
-        btn.addClickHandler(new ClickHandler() {
-
-            @Override
-            public void onClick(ClickEvent event) {
-                final Window winModal = new Window();
-                winModal.setStyleName("testo");
-                winModal.setWidth("50%");
-                winModal.setHeight("70%");
-                winModal.setTitle("Hierarchical Clustering Panel");
-                winModal.setShowMinimizeButton(false);
-                winModal.setShowCloseButton(true);
-                winModal.setOverflow(Overflow.SCROLL);
-                winModal.setIsModal(true);
-                winModal.setShowModalMask(true);
-                winModal.centerInPage();
-                winModal.addCloseClickHandler(new CloseClickHandler() {
-                    @Override
-                    public void onCloseClick(CloseClickEvent event) {
-                        winModal.close();
-                        clusteringPanel.add(clusterLayout);
-
-                    }
-                });
-                winModal.show();
-            }
-        });
+//        btn.addClickHandler(new ClickHandler() {
+//
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                final Window winModal = new Window();
+//                winModal.setStyleName("testo");
+//                winModal.setWidth("50%");
+//                winModal.setHeight("70%");
+//                winModal.setTitle("Hierarchical Clustering Panel");
+//                winModal.setShowMinimizeButton(false);
+//                winModal.setShowCloseButton(true);
+//                winModal.setOverflow(Overflow.SCROLL);
+//                winModal.setIsModal(true);
+//                winModal.setShowModalMask(true);
+//                winModal.centerInPage();
+//                winModal.addCloseClickHandler(new CloseClickHandler() {
+//                    @Override
+//                    public void onCloseClick(CloseClickEvent event) {
+//                        winModal.close();
+//                        clusteringPanel.add(clusterLayout);
+//
+//                    }
+//                });
+//                winModal.show();
+//            }
+//        });
 
         //init middle layout   
         rightSideLayout.setWidth(upperTreeImg.getWidth());

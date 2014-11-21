@@ -13,18 +13,24 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.widgets.layout.HLayout;
+import com.smartgwt.client.widgets.layout.VLayout;
+import java.util.LinkedHashMap;
 import java.util.TreeMap;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.omicstables.view.LeftPanelView;
-import web.diva.client.linechart.view.ProfilePlotComponent;
+import web.diva.client.profileplot.view.ProfilePlotComponent;
 import web.diva.client.pca.view.PCAPlot;
 import web.diva.client.somclust.view.SomClustView;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 import web.diva.client.pca.view.PCABtn;
+import web.diva.client.rank.view.RankBtn;
+import web.diva.client.rank.view.RankTablesComponent;
 import web.diva.client.view.core.ButtonsBarMenuComponent;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.somclust.view.SomClusterBtn;
+import web.diva.client.view.core.BusyTaskIndicator;
 import web.diva.shared.beans.PCAImageResult;
+import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClusteringResult;
 
 /**
@@ -49,12 +55,15 @@ public class DivaMain implements EntryPoint,ChangeHandler {
     private final Label colLab = new Label();
     private final Label rowGroup = new Label();
     private final Label colGroup = new Label();
-    private final int leftPanelWidth = RootPanel.get("omicsTable").getOffsetWidth()-10;
+    private final int leftPanelWidth = RootPanel.get("templatemo_left").getOffsetWidth()-20;
     private final int rightPanelWidth = RootPanel.get("SomClusteringResults").getOffsetWidth()-10;
     private SomClusterBtn somClustBtn;
     private PCABtn pcaBtn;
+    private RankBtn rankBtn;
     private Label profilePlotBtn;
-    private VerticalPanel profilePlotLayout,PCAPlotLayout;
+    private VerticalPanel profilePlotLayout,PCAPlotLayout,RankLayout;
+    private  RankTablesComponent rankTables;
+    private final BusyTaskIndicator busyIndicator = new BusyTaskIndicator();
    
    //init analysis and functions buttons
     private final ButtonsBarMenuComponent btnsMenueComponent = new ButtonsBarMenuComponent();;
@@ -74,7 +83,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
     
 
 //    private SomClustView hierarchicalClustering;
-//    private RankTablesView rankTables;
+//    private RankTablesComponent rankTables;
 //    private InitImgs initImgs;
 //    private HeaderLayout header;
 //    private SomClustPanel somClustPanel;
@@ -131,6 +140,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
         if (selectDatasetList.getSelectedIndex() > 0) {
             try {
               int  datasetId = (Integer) datasetsNames.get(selectDatasetList.getItemText(selectDatasetList.getSelectedIndex()));
+              selectionManager.resetSelection();
                 loadDataset(datasetId);
             } catch (Exception e) {
                 Window.alert("exp " + e.getMessage());
@@ -304,6 +314,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
         });
 
     }
+    private boolean init= true;
 
     /**
      * This method is responsible for loading dataset upon user selection
@@ -326,13 +337,16 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                         colLab.setText("Columns : " + datasetInfos.getColNumb());
                         rowGroup.setText("Row Groups : " + (datasetInfos.getRowGroupsNumb()));
                         colGroup.setText("Column Groups : " + (datasetInfos.getColGroupsNumb()));
-                        activateAnalysisFunctions(datasetInfos.getPcaColNames());
-                        updateLeftPanel(datasetInfos);
+                        activateAnalysisFunctions(datasetInfos.getPcaColNames(),datasetInfos.getColGroupsNamesMap());
+                        updateLeftPanel(datasetInfos);                        
+//                        Window.alert(""+(selectionManager == null)+"  "+(datasetInfos==null));                        
+                        resetLayout();
+                        init=true;
+                        processProfilePlot(); 
                         
-//                        Window.alert(""+(selectionManager == null)+"  "+(datasetInfos==null));
-//                        resetLayout();
                         datasetInfos = null;
-                        busyTask(false);
+                        if(!init)
+                            busyTask(false);
                     }
                 });
     }
@@ -350,35 +364,52 @@ public class DivaMain implements EntryPoint,ChangeHandler {
         RootPanel.get("col").add(colLab);
         RootPanel.get("rowGroups").add(rowGroup);
         RootPanel.get("colGroups").add(colGroup);
-        RootPanel.get("Hierarchical_Clustering").add(btnsMenueComponent.getSomClustBtn());
+        RootPanel.get("Hierarchical_Clustering_btn").add(btnsMenueComponent.getSomClustBtn());
         profilePlotBtn = btnsMenueComponent.getProfilePlotBtn();
-        RootPanel.get("Profile_Plot").add(profilePlotBtn);
-        RootPanel.get("PCA").add(btnsMenueComponent.getPcaBtn());
+        RootPanel.get("Profile_Plot_btn").add(profilePlotBtn);
+        RootPanel.get("PCA_btn").add(btnsMenueComponent.getPcaBtn());
+        RootPanel.get("Rank_Product_btn").add(btnsMenueComponent.getRankBtn());
 
+        VLayout midPanelLayout = new VLayout();
+        
         //pca and profile plot layout
         HLayout topMedLayout = new HLayout();
-        topMedLayout.setWidth("480px");
+        topMedLayout.setWidth("502px");
         topMedLayout.setHeight("212px");
         profilePlotLayout = new VerticalPanel();
-        profilePlotLayout.setWidth("240px");
+        profilePlotLayout.setWidth("250px");
         profilePlotLayout.setHeight("212px");
+//        profilePlotLayout.setBorderWidth(1);
         topMedLayout.addMember(profilePlotLayout);
         PCAPlotLayout = new VerticalPanel();
-        PCAPlotLayout.setWidth("240px");
+        PCAPlotLayout.setWidth("250px");
         PCAPlotLayout.setHeight("212px");
+//        PCAPlotLayout.setBorderWidth(1);
         topMedLayout.addMember(PCAPlotLayout);
-        RootPanel.get("templatemo_mid").add(topMedLayout);
+        topMedLayout.setMembersMargin(1);
+        midPanelLayout.addMember(topMedLayout);
+        
+        RankLayout = new VerticalPanel();
+//        RankLayout.setBorderWidth(1);
+        RankLayout.setWidth("500px");
+        RankLayout.setHeight("213px");
+        midPanelLayout.addMember(RankLayout);
+        RootPanel.get("templatemo_mid").add(midPanelLayout);
     }
 
-    private void activateAnalysisFunctions(String[] colsNames) {
+    private void activateAnalysisFunctions(String[] colsNames,LinkedHashMap<String,String> colGroupsNamesMap) {
         
         initializeSomClusteringBtn();
         initializeProfilePlotBtn();
         initializePCABtn(colsNames);
-        RootPanel.get("Hierarchical_Clustering").clear();
-        RootPanel.get("Hierarchical_Clustering").add(somClustBtn);
-        RootPanel.get("PCA").clear();
-        RootPanel.get("PCA").add(pcaBtn);
+        initializeRankBtn(colGroupsNamesMap);
+        RootPanel.get("Hierarchical_Clustering_btn").clear();
+        RootPanel.get("Hierarchical_Clustering_btn").add(somClustBtn);
+        RootPanel.get("PCA_btn").clear();
+        RootPanel.get("PCA_btn").add(pcaBtn);
+        RootPanel.get("Rank_Product_btn").clear();
+        RootPanel.get("Rank_Product_btn").add(rankBtn);
+        
     }
     
     private void initializeSomClusteringBtn() {
@@ -425,6 +456,29 @@ public class DivaMain implements EntryPoint,ChangeHandler {
         };
         pcaBtn.setClickListener(pcaHandler);
     }
+    
+     private void initializeRankBtn(LinkedHashMap<String, String> colGroupsNamesMap){
+    rankBtn = new RankBtn(colGroupsNamesMap);
+    ClickHandler rankHandler = new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                rankBtn.setErrorlablVisible(false);
+                                String[] groups = rankBtn.getSelectColGroups();
+                                String seed = rankBtn.getSeed();
+                                String perm = rankBtn.getPerm();
+                                String log2 = rankBtn.getLog2();
+                                if (groups == null || groups.length == 0 || groups.length > 2 || seed == null || seed.equals("") || perm == null || perm.equals("")) {
+                                    rankBtn.setErrorlablVisible(true);
+                                    rankBtn.rankPanelvalidate();
+                                } else {
+                                    viewRankTables(perm, seed, groups, log2);
+                                    rankBtn.hidePanel();
+                                }
+                    rankBtn.hidePanel();
+            }
+        };
+        rankBtn.setClickListener(rankHandler);
+    }
     /**
      * This method is responsible for invoking clustering method
      *
@@ -442,6 +496,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                     public void onFailure(Throwable caught) {
                         errorLabel.setText(SERVER_ERROR);
                         RootPanel.get("datasetInformation").setVisible(false);
+//                        init=false;
                         busyTask(false);
                     }
 
@@ -454,6 +509,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                         RootPanel.get("SomClusteringResults").add(hierarchicalClustering.componentView());
 //                        generateHeatMap(hierarchicalClustering.getIndexer(), hierarchicalClustering.getColIndexer());
                         busyTask(false);
+                        init=false;
                     }
                 });
 
@@ -497,11 +553,12 @@ public class DivaMain implements EntryPoint,ChangeHandler {
      */
     private void processProfilePlot() {
         busyTask(true);
-        GWTClientService.computeProfilePlot(212,240,
+        GWTClientService.computeProfilePlot(212,250,
                 new AsyncCallback<String>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         errorLabel.setText(SERVER_ERROR);
+//                        init=false;
                         busyTask(false);
                     }
 
@@ -515,7 +572,12 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                         compponents[0] = profilePlotComponent;
                         profilePlotLayout.clear();
                         profilePlotLayout.add(profilePlotComponent.getLayout());
-                        busyTask(false);
+                        profilePlotLayout.setBorderWidth(1);
+                        if(!init)
+                            busyTask(false);
+                        if (init) {
+                            viewPCAChart(0, 1);
+                        }
                     }
                 });
     }
@@ -537,6 +599,7 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                     public void onFailure(Throwable caught) {
 //                        errorLabel.setText(SERVER_ERROR);
 //                        RootPanel.get("datasetInformation").setVisible(false);
+//                        init=false;
                         busyTask(false);
                     }
 
@@ -551,11 +614,13 @@ public class DivaMain implements EntryPoint,ChangeHandler {
                         
                         compponents[1] = (pcaPlotComponent);
                         PCAPlotLayout.clear();
-                        PCAPlotLayout.add(pcaPlotComponent.PCAPlot());
-                        
-//                        RootPanel.get("PCAChartResults").clear();
-//                        RootPanel.get("PCAChartResults").add(pcaPlotComponent.PCAPlot());
-                        busyTask(false);
+                        PCAPlotLayout.add(pcaPlotComponent.getPCAPlot());
+                        PCAPlotLayout.setBorderWidth(1);
+                        if(!init)
+                            busyTask(false);
+                        if (init) {
+                            viewRankTables("400", "288848379", new String[]{"true,ALL",}, "Log 2");
+                        }
                     }
                 });
     }
@@ -569,29 +634,35 @@ public class DivaMain implements EntryPoint,ChangeHandler {
      * @param colGropNames selected ranking columns indexes
      * @param log2
      */
-//    private void viewRankTables(int datasetId, String perm, String seed, String[] colGropNames, String log2) {
-//        RootPanel.get("loaderImage").setVisible(true);
-//        GWTClientService.computeRank(datasetId, perm, seed, colGropNames, log2,
-//                new AsyncCallback<RankResult>() {
-//                    @Override
-//                    public void onFailure(Throwable caught) {
-//                        errorLabel.setText(SERVER_ERROR);
-//                        RootPanel.get("datasetInformation").setVisible(false);
-//                        RootPanel.get("loaderImage").setVisible(false);
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(RankResult result) {
-//                        RootPanel.get("datasetInformation").setVisible(true);
-//                        errorLabel.setText("");
-//                        rankTables = new RankTablesView(GWTClientService, selectionManager, result);
-//                        RootPanel.get("RankTablesResults").clear();
-//                        RootPanel.get("RankTablesResults").add(rankTables);
-//                        RootPanel.get("loaderImage").setVisible(false);
-//                    }
-//                });
-//
-//    }
+    private void viewRankTables( String perm, String seed, String[] colGropNames, String log2) {
+        busyTask(true);
+        GWTClientService.computeRank(perm, seed, colGropNames, log2,
+                new AsyncCallback<RankResult>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        errorLabel.setText(SERVER_ERROR);
+//                        init=false;
+                        busyTask(false);
+                    }
+
+                    @Override
+                    public void onSuccess(RankResult result) {
+                       
+                        RootPanel.get("datasetInformation").setVisible(true);
+                        errorLabel.setText("");
+                        RankLayout.clear();
+                        rankTables = new RankTablesComponent(GWTClientService, selectionManager, result);
+                        RankLayout.add(rankTables.getMainRankLayout());
+                        RankLayout.setBorderWidth(1);
+                        if(!init)
+                            busyTask(false);
+                        if (init) {
+                            processSomClustering(2, 1);
+                        }
+                    }
+                });
+
+    }
 
     /**
      * This method is responsible for invoking activate rows/columns groups
@@ -1110,19 +1181,23 @@ public class DivaMain implements EntryPoint,ChangeHandler {
      * This method is responsible for reset layout in case of changing datasets
      * only
      */
-//    private void resetLayout() {
+    private void resetLayout() {
+        profilePlotLayout.clear();
+        PCAPlotLayout.clear();
+        RootPanel.get("SomClusteringResults").clear();
+        RankLayout.clear();
 //        RootPanel.get("LineChartResults").clear();
 //        RootPanel.get("LineChartResults").add(initImgs.getlCImg());
 //        RootPanel.get("PCAChartResults").clear();
 //        RootPanel.get("PCAChartResults").add(initImgs.getPcaImg());
-//        RootPanel.get("SomClusteringResults").clear();
+//        
 //        RootPanel.get("SomClusteringResults").add(initImgs.getHcImg());
 //        hierarchicalClustering = null;
-//        compponents[0] = null;
-//        compponents[1] = null;
+        compponents[0] = null;
+        compponents[1] = null;
 //        RootPanel.get("RankTablesResults").clear();
 //        RootPanel.get("RankTablesResults").add(initImgs.getRtImg());
-//    }
+    }
 
     /**
      * This method is responsible for update line chart, and PCA chart when
@@ -1150,6 +1225,8 @@ public class DivaMain implements EntryPoint,ChangeHandler {
     private void busyTask(boolean busy) {
         
         busyProcess = busy;
+        busyIndicator.busyTask(busy);
+        
 //        if (busy) {
 //            if (btnsMenueComponent != null) {
 ////                btnsMenueComponent.deactivatMenue();

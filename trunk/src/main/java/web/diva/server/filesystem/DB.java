@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
+import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAResults;
@@ -154,7 +155,7 @@ public class DB implements Serializable{
      * @param id  - clustering id
      * @param results - clustering result to store
      */
-    public void saveSomClustResult(String id, SomClusteringResult results) {
+    public void saveSomClustResult(String id, ClusterResults results) {
 
         try {
             File dbFile = new File(path + "/computing", id);
@@ -181,8 +182,8 @@ public class DB implements Serializable{
      * @param id  - clustering id
      * @return results - clustering result
      */
-    public SomClusteringResult getSomClustResult(String id) {
-        SomClusteringResult results = databaseUtil.deSerializeSomClustResult(id, path + "/computing");
+    public ClusterResults getSomClustResult(String id) {
+        ClusterResults results = databaseUtil.deSerializeSomClustResult(id, path + "/computing");
         return results;
     }
 

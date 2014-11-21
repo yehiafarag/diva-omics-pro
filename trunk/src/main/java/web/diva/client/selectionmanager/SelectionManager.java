@@ -207,4 +207,9 @@ public class SelectionManager {
 //        selectionChangeListeners.get(datasetId).remove(listener);
         selectionChangeListeners.remove(listener);
     }
+    public void resetSelection(){
+        selectedColumns= null;
+        selectedRows = null;
+    
+    }
 }

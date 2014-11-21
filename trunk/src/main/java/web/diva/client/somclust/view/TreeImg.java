@@ -46,10 +46,12 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
             selectedNode = true;
             toolTip.setHTML("<p style='font-weight: bold; color:white;font-size: 15px;background: #819FF7; border-style:double;'>"+ "Merged at " +node.getValue()+"<br/>" + "Nodes: " + node.getMembers()+"</p>");
             toolTip.setVisible(true);
+            this.setStyleName("clusterTreeOverNode");
         }
         else{
             selectedNode = false;
-            toolTip.setVisible(false);
+            toolTip.setVisible(false);            
+            this.setStyleName("clusterTreeOver");
         }
     }
 
@@ -75,14 +77,13 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
         return ret;
     }
 
-    @SuppressWarnings("LeakingThisInConstructor")
     public TreeImg(String url, ClientClusterNode node, int type) {
         super(url);
         toolTip = new HTML();
         toolTip.setVisible(false);
         RootPanel.get("tooltip").add(toolTip);
-        this.addMouseMoveHandler(this);
-        this.addMouseOutHandler(this);
+        this.addMouseMoveHandler(TreeImg.this);
+        this.addMouseOutHandler(TreeImg.this);
         this.mainNode = node;
         this.type = type;
          

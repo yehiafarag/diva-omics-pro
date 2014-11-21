@@ -6,8 +6,6 @@ package web.diva.client.pca.view;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DragEndEvent;
-import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -17,6 +15,7 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -24,15 +23,16 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.widgets.IButton;
-import java.util.HashMap;
 import web.diva.client.GreetingServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.shared.beans.PCAImageResult;
+import web.diva.shared.beans.UpdatedTooltip;
 
 /**
  *
@@ -46,10 +46,10 @@ public class PCAPlot extends ModularizedListener {
     private GreetingServiceAsync greetingService;
     private IButton resetPlotBtn;
     private boolean enable = true;
-    private int[] currentDataSet;
+//    private int[] currentDataSet;
     private int[] selectedRows;
     private final int height = 212;
-    private final int width = 220;
+    private final int width = 250;
     private MouseMoveHandler mouseMoveHandler;
     private MouseOutHandler mouseOutHandler;
     private MouseUpHandler mouseUpHandler;
@@ -64,7 +64,14 @@ public class PCAPlot extends ModularizedListener {
     private int endY;
     private boolean clicked = false;
     private int absStartX, absStartY;
-    private HashMap<String, String> tooltips;
+    private UpdatedTooltip tooltipInformationData;
+    private VerticalPanel mainThumbPCALayout;
+    private VerticalPanel thumbImgLayout;
+    private HorizontalPanel buttonsLayout;
+    private final Image chart, thumbChart;
+    private HTML toolTip = new HTML();
+    private final HTML rect;
+    private final PopupPanel imagePopup;
 
     @Override
     public String toString() {
@@ -83,13 +90,6 @@ public class PCAPlot extends ModularizedListener {
             }
         }
     }
-    private VerticalPanel MainPCALayout;
-    private VerticalPanel imgLayout;
-    private HorizontalPanel buttonsLayout;
-//    private PCAPoint[] selectionIndexMap;
-    private Image chart;
-    private HTML toolTip = new HTML();
-    private final HTML rect;
 
     public PCAPlot(final PCAImageResult results, SelectionManager selectionManager, GreetingServiceAsync greetingService) {
 
@@ -98,85 +98,116 @@ public class PCAPlot extends ModularizedListener {
         this.components.add(PCAPlot.this);
         this.selectionManager = selectionManager;
         this.selectionManager.addSelectionChangeListener(PCAPlot.this);
-        MainPCALayout = new VerticalPanel();
-        MainPCALayout.setHeight(height + "px");
-        MainPCALayout.setWidth(width + "px");
-        MainPCALayout.setBorderWidth(1);
+        mainThumbPCALayout = new VerticalPanel();
+        mainThumbPCALayout.setHeight(height + "px");
+        mainThumbPCALayout.setWidth(width + "px");
        
+        //tooltip  init
         RootPanel.get("tooltip").add(toolTip);
-        imgLayout = new VerticalPanel();
+        
+        
+        thumbImgLayout = new VerticalPanel();
+        thumbImgLayout.setWidth(width + "px");
+        mainThumbPCALayout.add(thumbImgLayout);
 
-        imgLayout.setHeight((height - 25) + "px");
-//        imgLayout.setHeight(height+ "px");
-        imgLayout.setWidth(width + "px");
+        thumbChart = new Image();
+        thumbChart.setHeight("" + height + "px");
+        thumbChart.setWidth(width + "px");
+        thumbChart.setStyleName("magnifying");
+        thumbChart.ensureDebugId("cwBasicPopup-thumb");
+        thumbChart.addStyleName("cw-BasicPopup-thumb");
+        thumbChart.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
+            @Override
+            public void onClick(com.google.gwt.event.dom.client.ClickEvent event) {
+                imagePopup.center();
+                imagePopup.show();
+            }
+        });
+        thumbImgLayout.add(thumbChart);
+        /*          the end of thumb layout*/
+
+        VerticalPanel chartLayout = new VerticalPanel();
+        VerticalPanel chartImgLayout = new VerticalPanel();
+        this.chart = new Image();
+
+        initChartImageListiners();
+
+        imagePopup = new PopupPanel(false, true);
+        imagePopup.setAnimationEnabled(true);
+        imagePopup.ensureDebugId("cwBasicPopup-imagePopup");
+        imagePopup.setWidget(chartLayout);
+
+        chartImgLayout.add(chart);
+        chartImgLayout.setBorderWidth(1);
+        chartLayout.add(chartImgLayout);
 
         buttonsLayout = new HorizontalPanel();
-        buttonsLayout.setWidth(width + "px");
-        buttonsLayout.setHeight("25px");
+        buttonsLayout.setWidth("350px");
+        buttonsLayout.setHeight("30px");
 
-        MainPCALayout.add(imgLayout);
-        CheckBox cb = new CheckBox("Zoom");
+        final CheckBox cb = new CheckBox("Zoom");
         resetPlotBtn = new IButton("Zoom Out");
         resetPlotBtn.setTooltip("Reset the Plot");
-        resetPlotBtn.setSize("50px", "20px");
-        cb.setChecked(false);    // Hook up a handler to find out when it's clicked.
+        cb.setValue(false);
         cb.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                zoom = ((CheckBox) event.getSource()).isChecked();
-//                if (!zoom) {
-//                    updateWithSelection();
-////                }
+                zoom = ((CheckBox) event.getSource()).getValue();
+                   
             }
         });
-
         buttonsLayout.add(cb);
-
         CheckBox cb2 = new CheckBox("Show All");
-        cb2.setChecked(selectAll);    // Hook up a handler to find out when it's clicked.
+        cb2.setValue(selectAll);    // Hook up a handler to find out when it's clicked.
         cb2.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                selectAll = ((CheckBox) event.getSource()).isChecked();
+                selectAll = ((CheckBox) event.getSource()).getValue();
                 showAll(selectAll);
-//                if (!selectAll) {
-//                    showAll()
-//                    
-//                    updateWithSelection();
-//                } else {
-//                    updateSelection(null);
-//                }
             }
         });
-     
-        buttonsLayout.setBorderWidth(1);
-        buttonsLayout.add(cb2);
 
+        buttonsLayout.add(cb2);
         resetPlotBtn.disable();
         resetPlotBtn.addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
-
             @Override
             public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
-                if (!zoom) {
-                    resetPlotBtn.disable();
-                    currentDataSet = null;
-                    updateWithSelection();
-                }
+                 cb.setValue(false);
+                 resetPlotBtn.disable();
+                 zoomOut();
+//                if (!zoom) {
+//                    resetPlotBtn.disable();
+//                    updateWithSelection();
+//                }
             }
         }
         );
+        buttonsLayout.add(resetPlotBtn);
+        IButton closeBtn = new IButton("Minimize");
+        closeBtn.addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
 
-        this.chart = new Image();
-        chart.setHeight((height - 25.0) + "px");
-//        chart.setHeight(height + "px");
-        chart.setWidth(width + "px");
-        imgLayout.add(chart);
-        initChartImageListiners();
+            @Override
+            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
+                 cb.setValue(false);
+                 zoom= false;
+                imagePopup.hide();
+            }
+        });
+        buttonsLayout.add(closeBtn);
+        buttonsLayout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        buttonsLayout.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+//        
+        chartLayout.add(buttonsLayout);
+        chartLayout.setSpacing(5);
+
+        chartLayout.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+        chartLayout.setVerticalAlignment(VerticalPanel.ALIGN_MIDDLE);
+
         //rectangle draw
         /**
          * ***
          */
-
         rect = new HTML();
         rect.setVisible(false);
         RootPanel.get().add(rect);
@@ -184,14 +215,13 @@ public class PCAPlot extends ModularizedListener {
         /**
          * *****************
          */
-        buttonsLayout.add(resetPlotBtn);
+        tooltipInformationData = results.getTooltipInformatinData();
 
-        buttonsLayout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        buttonsLayout.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-
-        MainPCALayout.add(buttonsLayout);
-        MainPCALayout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-        MainPCALayout.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
+        /**
+         * *********************
+         */
+        mainThumbPCALayout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        mainThumbPCALayout.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
         updateWithSelection();
 
     }
@@ -207,8 +237,8 @@ public class PCAPlot extends ModularizedListener {
 
     }
 
-    private void zoomIn() {
-        greetingService.pcaZoom(zoom, startX, startY, endX, endY, new AsyncCallback<String>() {
+    private void zoomIn(int startX, int startY, int endX, int endY) {
+        greetingService.pcaZoomIn(startX, startY, endX, endY, new AsyncCallback<PCAImageResult>() {
 
             @Override
             public void onFailure(Throwable caught) {
@@ -216,11 +246,33 @@ public class PCAPlot extends ModularizedListener {
             }
 
             @Override
-            public void onSuccess(String result) {
-                chart.setUrl(result);
+            public void onSuccess(PCAImageResult result) {
+                chart.setUrl(result.getImgString());
+                thumbChart.setUrl(result.getImgString());
+                tooltipInformationData = result.getTooltipInformatinData();
+             
                 if (zoom) {
                     resetPlotBtn.enable();
                 }
+            }
+        });
+
+    }
+
+    private void zoomOut() {
+        greetingService.pcaZoomReset(new AsyncCallback<PCAImageResult>() {
+
+            @Override
+            public void onFailure(Throwable caught) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void onSuccess(PCAImageResult result) {
+                chart.setUrl(result.getImgString());
+                thumbChart.setUrl(result.getImgString());             
+                tooltipInformationData = result.getTooltipInformatinData();
+                zoom = false;
             }
         });
 
@@ -241,6 +293,8 @@ public class PCAPlot extends ModularizedListener {
             @Override
             public void onSuccess(String result) {
                 chart.setUrl(result);
+                thumbChart.setUrl(result);
+
             }
         });
 
@@ -274,36 +328,38 @@ public class PCAPlot extends ModularizedListener {
         selectionManager.setSelectedRows(selection);
     }
 
-    public VerticalPanel PCAPlot() {
-        return MainPCALayout;
+    public VerticalPanel getPCAPlot() {
+        return mainThumbPCALayout;
     }
 
     private void updateSelection(int[] selection) {
         if (enable) {
-            if (zoom) {
-                currentDataSet = selection;
-            }
-            greetingService.updatePCASelection(currentDataSet, selectedRows, zoom, selectAll, width, (height - 25.0), new AsyncCallback<PCAImageResult>() {
+//            if (zoom) {
+////                currentDataSet = selection;
+//            }
+            greetingService.updatePCASelection(selection, new AsyncCallback<String>() {
                 @Override
                 public void onFailure(Throwable caught) {
                     RootPanel.get("loaderImage").setVisible(false);
                 }
 
                 @Override
-                public void onSuccess(PCAImageResult result) {
+                public void onSuccess(String result) {
 
-                    chart.setUrl(result.getImgString());
-                    tooltips = result.getXyName();
+                    chart.setUrl(result);
+                    thumbChart.setUrl(result);
+//                    tooltips = result.getXyName();
                     if (zoom) {
                         resetPlotBtn.enable();
                     }
-                    RootPanel.get("loaderImage").setVisible(false);
+//                    RootPanel.get("loaderImage").setVisible(false);
                 }
             });
 
         }
     }
-private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
+    private int selectionHeight, selectionWidth;//,startSelectionX,startSelectionY;
+
     /**
      * This method is responsible for initializing image information
      */
@@ -314,13 +370,17 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
             mouseMoveHandler = new MouseMoveHandler() {
                 @Override
                 public void onMouseMove(MouseMoveEvent event) {
-                    double yi = event.getY();
-                    double xi = event.getX();
+                    int pointY = event.getY();
+                    int pointX = event.getX();
+                    int plotWidthArea = tooltipInformationData.getPlotWidthArea();
+                    int plotHeightArea = tooltipInformationData.getPlotHeightArea();
+                    if ((event.getX() < (tooltipInformationData.getPlotLeft() - tooltipInformationData.getyAxisFactor()) || event.getX() > (tooltipInformationData.getPlotLeft() + plotWidthArea) || event.getY() < tooltipInformationData.getPlotTop() || event.getY() > (tooltipInformationData.getPlotTop() + plotHeightArea))) {
+                        clicked = false;
+                         toolTip.setText("");
+                                toolTip.setVisible(false);
+                    }
 
-                    int x = (int) xi;
-                    int y = (int) yi;
-
-                    if (clicked) {
+                    else if (clicked) {
                         //show rectangle
 //                        int width = 0;
 //                        int height = 0;
@@ -336,30 +396,65 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
                             selectionHeight = absStartY - event.getClientY();
                             absStartY = event.getClientY();
                         }
-                        rect.setHTML("<p style='opacity: 0.6;z-index:9000000;position: absolute;height:" + (selectionHeight) + "px; width:" + (selectionWidth) + "px; left:" + absStartX + "px;top:" + absStartY + "px;font-weight: bold; color:white;font-size: 10px;background: #CECEF6; border-style:solid;'>" + "</p>");
+                        rect.setHTML("<p style='opacity: 0.6;z-index:2000000001;position: absolute;height:" + (selectionHeight) + "px; width:" + (selectionWidth) + "px; left:" + absStartX + "px;top:" + absStartY + "px;font-weight: bold; color:white;font-size: 10px;background: #CECEF6; border-style:solid;'>" + "</p>");
                         rect.setVisible(true);
                     } else {
+                        //tooltip initilization
+                        try {
+                           
+//                            if ((event.getX() < (tooltipInformationData.getPlotLeft() - tooltipInformationData.getyAxisFactor()) || event.getX() > (tooltipInformationData.getPlotLeft() + plotWidthArea) || event.getY() < tooltipInformationData.getPlotTop() || event.getY() > (tooltipInformationData.getPlotTop() + plotHeightArea))) {
+//                                toolTip.setText("");
+//                                toolTip.setVisible(false);
+//                            } else {
+                                pointX = pointX - 1 - tooltipInformationData.getPlotLeft() + tooltipInformationData.getyAxisFactor();
+                                pointY -= tooltipInformationData.getPlotTop() - 1;
+                                String tooltipStr = "";
+                                double modPointX = (pointX * tooltipInformationData.getxUnitPix()) + tooltipInformationData.getMinX();//xstart units from min         
+                                double modPointY = tooltipInformationData.getMaxY() - (pointY * tooltipInformationData.getyUnitPix());
+                                double modDotXSize = 2 * tooltipInformationData.getxUnitPix();
+                                double modDotYSize = 2 * tooltipInformationData.getyUnitPix();
+                                for (int x = 0; x < tooltipInformationData.getPoints()[0].length; x++) {
+                                    double tempPointX = tooltipInformationData.getPoints()[0][x];
+                                    double tempPointY = tooltipInformationData.getPoints()[1][x];
+                                    if ((tempPointX == modPointX || (tempPointX <= (modPointX + modDotXSize) && tempPointX >= modPointX - modDotXSize)) && (tempPointY == modPointY || (tempPointY <= (modPointY + modDotYSize) && tempPointY >= (modPointY - modDotYSize)))) {
+                                        tooltipStr = tooltipStr + tooltipInformationData.getRowIds()[x];
+                                        tooltipStr += ",";
+                                    }
 
-                        String key = x + "," + y;
-                        String key1 = (x + 1) + "," + y;
-                        String key2 = (x - 1) + "," + y;
-                        String key3 = x + "," + (y + 1);
-                        String key4 = x + "," + (y - 1);
-                        if (tooltips.containsKey(key)) {
-                            updateToolTip(tooltips.get(key));
-
-                        } else if (tooltips.containsKey(key1)) {
-                            updateToolTip(tooltips.get(key1));
-                        } else if (tooltips.containsKey(key2)) {
-                            updateToolTip(tooltips.get(key2));
-                        } else if (tooltips.containsKey(key3)) {
-                            updateToolTip(tooltips.get(key3));
-                        } else if (tooltips.containsKey(key4)) {
-                            updateToolTip(tooltips.get(key4));
-                        } else {
-                            toolTip.setText("");
-                            toolTip.setVisible(false);
+                                }
+                                if (!tooltipStr.equals("")) {
+                                    tooltipStr = tooltipStr.substring(0, (tooltipStr.length() - 1));
+                                    updateToolTip(tooltipStr);
+                                } else {
+//                                     updateToolTip(" x  "+modPointX+"  y  "+modPointY);
+                                    toolTip.setText("");
+                                    toolTip.setVisible(false);
+                                }
+//                            }
+                        } catch (Exception e) {
+                            Window.alert(e.getMessage());
                         }
+
+////                        String key = pointX + "," + pointY;
+////                        String key1 = (pointX + 1) + "," + pointY;
+////                        String key2 = (pointX - 1) + "," + pointY;
+////                        String key3 = pointX + "," + (pointY + 1);
+////                        String key4 = pointX + "," + (pointY - 1);
+////                        if (tooltips.containsKey(key)) {
+////                            updateToolTip(tooltips.get(key));
+////
+////                        } else if (tooltips.containsKey(key1)) {
+////                            updateToolTip(tooltips.get(key1));
+////                        } else if (tooltips.containsKey(key2)) {
+////                            updateToolTip(tooltips.get(key2));
+////                        } else if (tooltips.containsKey(key3)) {
+////                            updateToolTip(tooltips.get(key3));
+////                        } else if (tooltips.containsKey(key4)) {
+////                            updateToolTip(tooltips.get(key4));
+////                        } else {
+////                            toolTip.setText("");
+////                            toolTip.setVisible(false);
+////                        }
                     }
                 }
             };
@@ -372,6 +467,8 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
                     toolTip.setText("");
                     toolTip.setVisible(false);
                     rect.setVisible(false);
+                    
+//                     imagePopup.hide();
                 }
             };
         }
@@ -381,7 +478,6 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
         if (outRegHandler != null) {
             outRegHandler.removeHandler();
         }
-       
 
         moveRegHandler = chart.addMouseMoveHandler(mouseMoveHandler);
         outRegHandler = this.chart.addMouseOutHandler(mouseOutHandler);
@@ -396,9 +492,9 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
                     clicked = false;
                     //update 
                     if (zoom) {
-                        zoomIn();
+                        zoomIn(startX, startY, endX, endY);
                     } else {
-                          getSelection(startX, startY, endX, endY);
+                        getSelection(startX, startY, endX, endY);
                     }
                 }
             };
@@ -433,12 +529,12 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
 
     private void updateToolTip(String lable) {
         String nString = "";
-        if (lable.length() >= 30) {
+        if (lable.length() >= 25) {
             String row = "";
             for (String str : lable.split(",")) {
                 nString = nString + str + ",";
                 row = row + str + ",";
-                if (row.length() >= 30) {
+                if (row.length() >= 25) {
                     nString = nString + "<br/>";
                     row = "";
                 }
@@ -449,7 +545,7 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
             nString = lable;
         }
 
-        toolTip.setHTML("<p style='height:55px;font-weight: bold; color:white;font-size: 10px;background: #819FF7; border-style:double;'>" + nString + "</p>");
+        toolTip.setHTML("<p style='height:60px;font-weight: bold; color:white;font-size: 10px;background: #819FF7; border-style:double;'>" + nString + "</p>");
         toolTip.setVisible(true);
     }
 
@@ -473,16 +569,16 @@ private int selectionHeight,selectionWidth;//,startSelectionX,startSelectionY;
         outRegHandler = null;
         upRegHandler = null;
         downRegHandler = null;
-        MainPCALayout = null;
-        imgLayout = null;
+        mainThumbPCALayout = null;
+        thumbImgLayout = null;
         buttonsLayout = null;
 //        selectionIndexMap = null;
-        chart = null;
+//        chart = null;
         toolTip = null;
 
         greetingService = null;
         resetPlotBtn = null;
-        currentDataSet = null;
+//        currentDataSet = null;
         selectedRows = null;
     }
 

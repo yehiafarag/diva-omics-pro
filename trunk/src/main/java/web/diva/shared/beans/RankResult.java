@@ -24,6 +24,53 @@ public class RankResult implements IsSerializable, Serializable {
     private int[] negRankToIndex;
     private int[] negIndexToRank;
     private int datasetId;
+    private int[] posRankToNegRank;
+
+    public double[][] getTableData() {
+        return tableData;
+    }
+
+    public void setTableData(double[][] tableData) {
+        this.tableData = tableData;
+    }
+
+    public String[] getRowIds() {
+        return rowIds;
+    }
+
+    public void setRowIds(String[] rowIds) {
+        this.rowIds = rowIds;
+    }
+
+    public String[] getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(String[] headers) {
+        this.headers = headers;
+    }
+
+    public int[] getPosRank() {
+        return posRank;
+    }
+
+    public void setPosRank(int[] posRank) {
+        this.posRank = posRank;
+    }
+
+    public int[] getNegRank() {
+        return negRank;
+    }
+
+    public void setNegRank(int[] negRank) {
+        this.negRank = negRank;
+    }
+    
+    private double[][]tableData;
+    private String[] rowIds;
+    private String[] headers;
+    private int[] posRank;
+    private int[] negRank;
 
     public String[][] getPosTableData() {
         return posTableData;
@@ -95,6 +142,14 @@ public class RankResult implements IsSerializable, Serializable {
 
     public void setNegIndexToRank(int[] negIndexToRank) {
         this.negIndexToRank = negIndexToRank;
+    }
+
+    public int[] getPosRankToNegRank() {
+        return posRankToNegRank;
+    }
+
+    public void setPosRankToNegRank(int[] posRankToNegRank) {
+        this.posRankToNegRank = posRankToNegRank;
     }
 
 }

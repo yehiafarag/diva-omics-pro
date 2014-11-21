@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
+import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAResults;
 import web.diva.shared.beans.RankResult;
@@ -108,7 +109,7 @@ public class FileSystemUtil {
         return null;
     }
 
-    public SomClusteringResult deSerializeSomClustResult(String name, String path) {
+    public ClusterResults deSerializeSomClustResult(String name, String path) {
 
         try {
             File dbFile = new File(path, name);
@@ -120,7 +121,7 @@ public class FileSystemUtil {
             InputStream buffer = new BufferedInputStream(file);
             ObjectInput input = new ObjectInputStream(buffer);
             //deserialize the List
-            SomClusteringResult serResult = (SomClusteringResult) input.readObject();
+            ClusterResults serResult = (ClusterResults) input.readObject();
             System.gc();
             return serResult;
 

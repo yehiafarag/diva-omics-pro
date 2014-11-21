@@ -51,7 +51,7 @@ public interface GreetingServiceAsync {
 
     public void updateLineChartSelection(int[] selection, double w, double h, AsyncCallback<String> asyncCallback);
 
-    public void updatePCASelection(int[] subSelectionData, int[] selection, boolean zoom, boolean selectAll, double w, double h, AsyncCallback<PCAImageResult> asyncCallback);
+    public void updatePCASelection(int[] selection,AsyncCallback<String> asyncCallback);
 
     public void computePCA(int comI, int comII, AsyncCallback<PCAImageResult> asyncCallback);
 
@@ -63,7 +63,8 @@ public interface GreetingServiceAsync {
     public void  updateUpperTree(int x,int y, double w, double h,AsyncCallback<SomClustTreeSelectionUpdate> asyncCallback);
 
      public void  pcaShowAll(boolean showAll,int[] selection,AsyncCallback<String> asyncCallback);
-      public void pcaZoom(boolean zoom,int xStart,int yStart,int yEnd,int xEnd, AsyncCallback<String> asyncCallback);
+      public void pcaZoomIn(int startX, int startY, int endX, int endY, AsyncCallback<PCAImageResult> asyncCallback);
+      public void pcaZoomReset(AsyncCallback<PCAImageResult> asyncCallback);
 
     
 }
