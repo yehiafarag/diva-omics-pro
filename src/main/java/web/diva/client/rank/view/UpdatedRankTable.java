@@ -52,7 +52,6 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
                     this.selectRecords(reIndexSelection);
                     try {
                         int scrollTo = posIndexToRank.length-posIndexToRank[selection[0]];
-                        Window.alert("descending   "+scrollTo+"    " +posIndexToRank[selection[0]]);
                         this.scrollToRow(scrollTo);
                         this.redraw();
                     } catch (Exception e) {
@@ -66,7 +65,6 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
                     try {
                         int scrollTo = posIndexToRank[selection[0]];
                         this.scrollToRow(scrollTo);
-                        Window.alert("scrollTo   " + scrollTo+"               "+this.getSortDirection().getValue());
                         this.redraw();
                     } catch (Exception e) {
                         Window.alert(e.getMessage());
