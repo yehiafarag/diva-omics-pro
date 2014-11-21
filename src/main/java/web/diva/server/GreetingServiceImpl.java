@@ -30,8 +30,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public String pcaZoom(boolean zoom, int xStart, int yStart, int yEnd, int xEnd) {
-        return compute.pcaZoom(zoom, xStart, yStart, xEnd, yEnd);
+    public PCAImageResult pcaZoomIn(int startX, int startY, int endX, int endY) {
+        return compute.pcaZoomIn(startX, startY, endX, endY);
+    }
+    @Override
+    public PCAImageResult pcaZoomReset() {
+        return compute.pcaZoomReset();
     }
 
  
@@ -57,9 +61,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 //
 //    private PCAPoint[] pcaIndexTable;
-    private PCAImageResult pcaImgResults;
+//    private PCAImageResult pcaImgResults;
     private DivaDataset divaDataset;
-    private DatasetInformation datasetInfo;
+//    private DatasetInformation datasetInfo;
     private String path;
 
     private final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
@@ -139,13 +143,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public PCAImageResult updatePCASelection(int[] subSelectionData, int[] selection, boolean zoom, boolean selectAll, double w, double h) {
-
-        
-        pcaImgResults = compute.updatePCASelection(subSelectionData, selection, zoom, selectAll, w, h,path, pcaChartImage);
-       
-        return pcaImgResults;
-
+    public String updatePCASelection(int[] selection) {
+        return compute.updatePCASelection(selection);
     }
     private RankResult rankResults;
 
@@ -199,7 +198,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
     @Override
     public LinkedHashMap<String, String>[] getGroupsPanelData() {
-        LinkedHashMap<String, String>[] activeGroupsData = compute.getGroupsPanelData();
+        LinkedHashMap<String, String>[] activeGroupsData =  new LinkedHashMap[2];
+        activeGroupsData[0] = compute.getRowGroupsPanelData();
+         activeGroupsData[1] = compute.getColGroupsPanelData();  
         return activeGroupsData;
     }
 

@@ -50,7 +50,7 @@ public class ProfilePlotImgeGenerator extends LineChart {
             if(str.length() > over)
                 over = str.length();
         }
-        width = xaxis.predictLength() + yaxis.predictWidth() + xaxis.endLength() + (over*3);
+        width = xaxis.predictLength() + yaxis.predictWidth() + xaxis.endLength() + (over*4);
         height = 400;
         setSize(width, 400);
         setDraw(getDataSelection(new int[]{}));
@@ -58,6 +58,7 @@ public class ProfilePlotImgeGenerator extends LineChart {
 
     }
 
+    @Override
     public String toImage(){
         BufferedImage image = new BufferedImage(width,height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();

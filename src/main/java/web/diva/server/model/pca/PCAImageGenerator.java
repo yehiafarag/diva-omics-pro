@@ -10,32 +10,32 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Vector;
 import javax.swing.border.Border;
 import no.uib.jexpress_modularized.core.dataset.Group;
-import no.uib.jexpress_modularized.core.visualization.Tools;
-import no.uib.jexpress_modularized.core.visualization.charts.DensScatterPlot;
-import no.uib.jexpress_modularized.core.visualization.documentation.MetaInfoNode;
+import no.uib.jexpress_modularized.core.model.Selection;
 import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.pca.model.ArrayUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtilities;
 import web.diva.server.model.beans.DivaDataset;
+import web.diva.shared.beans.UpdatedTooltip;
 
 /**
  *
  * @author Yehia Farag
  */
-public class PCAImageGenerator {
+public class PCAImageGenerator implements Serializable{
     //For speeding lookup
 
     private final DivaDataset divaDataset;
+////    private DivaDataset subZoomDataset;
     private boolean antialias = true;
     private PcaPlot plot;
-    private no.uib.jexpress_modularized.pca.computation.PcaResults pcaResults;
+    private final no.uib.jexpress_modularized.pca.computation.PcaResults pcaResults;
     private int mode3d = 1; //1=rotate, 2=zoom
     private String title = null;
     private int dotTolerance = 2;//Draw dots within this heat area
@@ -45,7 +45,8 @@ public class PCAImageGenerator {
     private boolean  paintstats = false;   //paint the stats?
     private boolean paintdensities = true;
     private boolean zoom = false;
-    private double[] zoomedRect;
+    private double[] zoomedRect = new double[4];
+    private UpdatedTooltip tooltips;
     /**
      * The first color in the density map
      */
@@ -80,13 +81,52 @@ public class PCAImageGenerator {
     private int zoomedpca = 0;
     private boolean quadratic = true;
     private boolean showPCA = true;
+    
+    private int[] notshadIndex ;
+    
+    
+    public boolean[] zoomedSelectionChange(int[] sel){
+    ArrayList<Integer> reIndexSel = new ArrayList<Integer>();
+            for (int x : sel) {
+                if (indexToZoomed[x]!= -100) {
+                    reIndexSel.add(indexToZoomed[x]);
+                }
+            }
+            int[] zoomSel = new int[reIndexSel.size()];
+            for(int x=0;x<zoomSel.length;x++){
+                zoomSel[x]= reIndexSel.get(x);
+            }
+            boolean[] notShaded = getSelectedIndexes(zoomSel);
+            return notShaded;
+    
+    }
 
     public void selectionChanged(int[] sel) {
-        boolean[] notShaded = getSelectedIndexes(sel);
-        if (shadowUnselected == false) {
+//        if (zoom) {
+//            ArrayList<Integer> reIndexSel = new ArrayList<Integer>();
+//            for (int x : sel) {
+//                if (indexToZoomed[x]!= -100) {
+//                    reIndexSel.add(indexToZoomed[x]);
+//                }
+//            }
+//            int[] zoomSel = new int[reIndexSel.size()];
+//            for(int x=0;x<zoomSel.length;x++){
+//                zoomSel[x]= reIndexSel.get(x);
+//            }
+//            boolean[] notShaded = getSelectedIndexes(zoomSel);
+//          
+////            plot.setNotShaded(notShaded);
+//
+//        } 
+//        else {
+            notshadIndex = sel;
+            boolean[] notShaded = getSelectedIndexes(sel);
             plot.setNotShaded(notShaded);
-            plot.forceFullRepaint();
-        }
+            
+//        }
+        if (shadowUnselected == false) {                
+                plot.forceFullRepaint();
+            }
     }
 
     public boolean isShadowUnselected() {
@@ -97,12 +137,12 @@ public class PCAImageGenerator {
         this.shadowUnselected = shadowUnselected;
     }
 
-    private void updateSelectionOnDataSet(boolean[] members) {
-        //OBS
-//        int[] selectedIndices = ArrayUtils.toIntArray(members);
-//        Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
-//        SelectionManager.getSelectionManager().setSelectedRows(points, selection);
-    }
+//    private void updateSelectionOnDataSet(boolean[] members) {
+//        //OBS
+////        int[] selectedIndices = ArrayUtils.toIntArray(members);
+////        Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
+////        SelectionManager.getSelectionManager().setSelectedRows(points, selection);
+//    }
 
     public PCAImageGenerator(PcaResults pcaResults, DivaDataset divaDataset,int pcax,int pcay) {
 
@@ -112,14 +152,17 @@ public class PCAImageGenerator {
         this.pcay = pcay;
         this.plot = new PcaPlot();
         plot.setMaximumSize(new Dimension(32767, 32767));
-        plot.setMinimumSize(new Dimension(12, 4));
-        plot.setPreferredSize(new Dimension(220, 212));
+        plot.setMinimumSize(new Dimension(700,400));
+        plot.setPreferredSize(new Dimension(700,400));
 //        isneurons = false;
         plot.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(120, 120, 120)));
         plot.setLayout(new java.awt.FlowLayout(0, 5, 1));
-        plot.setSize(220,212);
-        plot.dotsize = 2;
-        updatePlot(null);
+        plot.setSize(700,400);
+//        plot.dotsize = 5;
+        indexToZoomed = new int[divaDataset.getDataLength()];
+       
+//        
+        updatePlot();
        }
 
    
@@ -141,20 +184,72 @@ public class PCAImageGenerator {
 //    public void setFrameBG(Color color) {
 //        plot.setFrameBG(color);
 //    }
-
     public void forceFullRepaint() {
+        plot.FullRepaint = true;
+        plot.repaint();
         plot.forceFullRepaint();
     }
-    
-    public void zoom(boolean zoom, int[] indexes){
-        if(zoom){
-            updatePlot(indexes);
+
+//    public void zoomIn(int startX, int startY, int endX, int endY) {
+//        int[] indexes = getPCASelection(startX, startY, endX, endY);
+//
+//        if (indexes != null && indexes.length > 2) {
+////            zoom = true;
+//            zoomDataset(indexes);
+//            updatePlot(indexes);
+//            if(notshadIndex !=null)
+//                selectionChanged(notshadIndex);
+//
+//        } else {
+//            indexes = getPCASelection((startX - 5), (startY - 5), (endX + 5), (endY + 5));
+//            if (indexes != null && indexes.length > 2) {
+//
+////                zoom = true;
+//                zoomDataset(indexes);
+//                updatePlot(indexes);
+//                if(notshadIndex !=null)
+//                    selectionChanged(notshadIndex);
+//            }
+//        }
+//
+//    }
+
+//    private void zoomDataset(int[] selection) {
+//        double[][] subData = new double[selection.length][divaDataset.getDataWidth()];
+//        String[] names = new String[selection.length];
+//
+//        for (int x = 0; x < selection.length; x++) {
+//            subData[x] = divaDataset.getData()[selection[x]];
+//            names[x] = divaDataset.getRowIds()[selection[x]];
+//        }
+//
+//        this.subZoomDataset = new DivaDataset(subData, names, divaDataset.getColumnIds());
+//        for (Group g : divaDataset.getRowGroups()) {
+//            ArrayList<Integer> ind = new ArrayList<Integer>();
+//            for (int x : selection) {
+//                if (g.getIndices().contains(x)) {
+//                    ind.add(x);
+//
+//                }
+//
+//            }
+//////            if (ind.size() > 0) {
+//                int[] indexes = new int[ind.size()];
+//                for (int x = 0; x < ind.size(); x++) {
+//                    indexes[x] = ind.get(x);
+//                }
+//                Group tg = new Group(g.getName(), g.getColor(), Selection.TYPE.OF_ROWS, indexes);
+//                tg.setActive(g.isActive());
+//                subZoomDataset.addRowGroup(tg);
+////            }
+//
+//        }
+//
+//    }
+     public void zoomOut(){       
+            zoom = false;
+            updatePlot();
         
-        }
-        else{
-            
-            updatePlot(null);
-        }
     
     }
 
@@ -235,50 +330,57 @@ public class PCAImageGenerator {
      * from the SelectionManager is null, then an array of only false values are
      * returned.
      */
-    private boolean[] getSelectedIndexes(int[] sel) {    
+    private boolean[] getSelectedIndexes(int[] sel) {   
+//        if(zoom)
+//        {
+//             if (sel == null) {
+//                return new boolean[subZoomDataset.getDataLength()];
+//            }
+//            boolean[] ret = ArrayUtils.toBooleanArray(subZoomDataset.getDataLength(), sel);
+//            return ret;
+//        }else{
             if (sel == null) {
                 return new boolean[divaDataset.getDataLength()];
             }
             boolean[] ret = ArrayUtils.toBooleanArray(divaDataset.getDataLength(), sel);
             return ret;
+//        }
         
     }
 
     private double[][] points;
+//    private double[][] subZoomPoints;
+    private int[] zoomedToNormalIndex ;
+    private final int[] indexToZoomed ;
+    private String[] rowIds;
 
     public double[][] getPoints() {
         return points;
     }
-    private void updatePlot(int[] selection) {
+    private void updatePlot() {
         if (pcaResults == null) {
             return;
         }
-        if(selection == null){
+
             points = new double[2][(int) pcaResults.nrPoints()];
             for (int i = 0; i < pcaResults.nrPoints(); i++) {
-            points[0][i] = pcaResults.ElementAt(i, pcax);
-            points[1][i] = pcaResults.ElementAt(i, pcay);
-           
-        }
-        }
-        else{
-            for (int i = 0; i < selection.length; i++) {
-            points[0][i] = pcaResults.ElementAt(selection[i], pcax);
-            points[1][i] = pcaResults.ElementAt(selection[i], pcay);
-           
-        }
-        }
+                points[0][i] = pcaResults.ElementAt(i, pcax);
+                points[1][i] = pcaResults.ElementAt(i, pcay);
+               
+            } 
+            plot.data = divaDataset;
+            rowIds = divaDataset.getRowIds();
+            if(zoom)
+                plot.setPropsAndData(points[0], points[1],zoomedRect);
+            else
+                plot.setPropsAndData(points[0], points[1]);
+
         
-        plot.data = divaDataset;
-        if (zoom) {
-            plot.setPropsAndData(points[0], points[1], zoomedRect);
-        } else {
-            plot.setPropsAndData(points[0], points[1]);
-        }
         plot.setXaxisTitle("Principal Component " + (pcax + 1));
         plot.setYaxisTitle("Principal Component" + (pcay + 1));
-        plot.FullRepaint = true;
+        plot.FullRepaint = true;        
         plot.repaint();
+        plot.forceFullRepaint();
       
         
       
@@ -294,129 +396,24 @@ public class PCAImageGenerator {
         }catch(Exception e){e.printStackTrace();}
         String base64 = Base64.encodeBase64String(imageData);
         base64 = "data:image/png;base64," + base64;
+        
         return base64;
 
     }
 
-//    /**
-//     * Sweep the points within a square created by mouse dragging
-//     */
-    private void sweep(boolean[] members) {
-        System.out.println("PCAComponent: sweep()");
-        updateSelectionOnDataSet(members);
-        Tools t = new Tools();
-        List<Integer> v = new ArrayList<Integer>();
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < members.length; i++) {
-            if (members[i]) {
-                b.append(i);
-                b.append(",");
-                v.add(i);
-            }
-        }
 
-        if (b.length() > 1) {
-            b.setLength(b.length() - 1);
-        }
-
-        MetaInfoNode metainfonode = new MetaInfoNode(MetaInfoNode.pca);
-
-        if (v.size() > 0) {
-
-            metainfonode.put("Plot_Size", plot.getPlotSize().width + "," + plot.getPlotSize().height);
-            metainfonode.put("X-Component", String.valueOf(pcax + 1));
-            metainfonode.put("Y-Component", String.valueOf(pcay + 1));
-
-            Group Class = null;
-            boolean activeSet = false;
-            StringBuilder visibleGroups = new StringBuilder();
-            if (divaDataset.getRowGroups().size() > 1) {
-                for (int j = 0; j < divaDataset.getRowGroups().size(); j++) {
-                    Class = (Group) divaDataset.getRowGroups().get(j);
-                    activeSet = Class.isActive();//(Boolean)Class.elementAt(0);
-                    if (activeSet) {
-                        visibleGroups.append(Class.getName() + ",");
-                    }
-                }
-                visibleGroups.setLength(visibleGroups.length() - 1);
-                metainfonode.put("Groups_Visible", visibleGroups.toString());
-            }
-
-            metainfonode.put("Frame", plot.getFrameDescription());
-
-            metainfonode.put("Row indices", b.toString());
-
-
-            int i = ((Integer) plot.Layout.get("SbgSV")).intValue();
-            int colors = ((Integer) plot.Layout.get("colorsSV")).intValue();
-            int threshold = ((Integer) plot.Layout.get("tresholdSV")).intValue();
-
-            if (i == 0) {
-                metainfonode.put("Density Map", "On");
-                metainfonode.put("Density Map Colors", String.valueOf(colors));
-                metainfonode.put("Density Map Threshold", String.valueOf(threshold));
-            } else {
-                metainfonode.put("Density Map", "Off");
-            }
-        }
-    }
-
-//    private String getMeta() {
-//
-//
-//        String meta = "";
-//        if (plot.getframeType() == 0) {
-//        } else if (plot.getframeType() == 1) {
-//        }
-//
-//        meta += "Plot_Size_: (" + plot.getPlotSize().width + "," + plot.getPlotSize().height + ")\n";
-//        meta += "X-Component: " + (pcax + 1) + "\n";
-//        meta += "Y-Component: " + (pcay + 1) + "\n";
-//
-//        Group group = null;
-//        boolean activeSet = false;
-//
-//        if (divaDataset.getRowGroups().size() > 1) {
-//            meta += "Groups Visible: \n";
-//
-//            for (int j = 0; j < divaDataset.getRowGroups().size(); j++) {
-//
-//                group = (Group) divaDataset.getRowGroups().get(j);
-//                activeSet = group.isActive();
-//
-//                if (activeSet) {
-//                    meta += group.getName() + " (n=" + group.size() + ")\n";
-//                }
-//            }
-//            meta += "Note: Members of theese groups are not known.\n";
-//
-//        }
-//
-//        meta += "Colors: " + numcolors + "\n";
-//        meta += "Dot plot density threshold: " + dotTolerance;
-//
-//        return meta;
+//    public void zoomout() {
+//        subZoomDataset = null;
+//        updatePlot(null);
 //    }
-
-//    @Override
-//    public void finalize() {
-//        //This is just used for garbage collecting monitoring
-//        try {
-//            super.finalize();
-//        } catch (Throwable e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    public void ColumnSelectionHasChanged(Object source) {
-//    }
-
-    public void zoomout() {
-        plot.zoomout();
-    }
 
     public void setZoomPca(boolean zoom) {
         plot.zoompca = zoom;
+    }
+     public void setZoom(boolean zoom,int startX, int startY, int endX, int endY) {
+        this.zoom = zoom;        
+        this.zoomedRect = this.getSelectionRecatangle(startX, startY, endX, endY);
+        this.updatePlot();
     }
 
     public void setPaintNamesonClick(boolean paint) {
@@ -452,9 +449,115 @@ public class PCAImageGenerator {
     public no.uib.jexpress_modularized.core.visualization.charts.DensScatterPlot getPlot() {
         return plot;
     }
-    
-    
-    
+    public UpdatedTooltip getTooltipsInformationData() {
+//        if(tooltips !=null){
+//            return tooltips;
+//        }
+//        else if(zoom){
+//        UpdatedTooltip zoomTooltips = new UpdatedTooltip();
+//         int yAxisFactor = plot.left- plot.yaxis.predictWidth();
+//         int xAxisFactor = plot.bottom - plot.xaxis.predictWidth();
+//        int plotWidthArea = plot.Width() - (plot.left) - plot.right+yAxisFactor;
+//        int plotHeightArea = plot.getHeight() - plot.top - plot.bottom +xAxisFactor;
+//        zoomTooltips.setPlotWidth(plot.getWidth());
+//        zoomTooltips.setPlotHeight(plot.getHeight());
+//        zoomTooltips.setPlotHeightArea(plotHeightArea);
+//        zoomTooltips.setPlotWidthArea(plotWidthArea);
+//        zoomTooltips.setPlotRight(plot.right);
+//        zoomTooltips.setPlotTop(plot.top);
+//        zoomTooltips.setPlotBottom(plot.bottom);
+//        zoomTooltips.setPlotLeft(plot.left);
+//        zoomTooltips.setyAxisFactor(yAxisFactor);
+//        zoomTooltips.setxAxisFactor(xAxisFactor);
+//        double xDataArea = plot.xaxis.getDataMax() - plot.xaxis.getDataMin();
+//        double xUnitPix = xDataArea / (double) plotWidthArea;
+//        zoomTooltips.setxUnitPix(xUnitPix);
+//        double yDataArea = plot.yaxis.getDataMax() - plot.yaxis.getDataMin();
+//        double yUnitPix = yDataArea / (double) plotHeightArea;
+//        zoomTooltips.setyUnitPix(yUnitPix);
+//        zoomTooltips.setMinX(plot.xaxis.getDataMin());
+//        zoomTooltips.setMaxY(plot.yaxis.getDataMax());
+////        if(zoom)
+//            zoomTooltips.setPoints(subZoomPoints);
+//////        else
+//////            zoomTooltips.setPoints(points);
+//        zoomTooltips.setRowIds(rowIds); 
+//        
+//        printPlotData(plotHeightArea, plotWidthArea, xAxisFactor, yAxisFactor);
+//        //System.out.println("zoomed plot width "+(plot.getWidth())+" tooltips.setPlotHeight  "+(plot.getHeight())+"  tooltips.setPlotHeightArea  "+(plotHeightArea)+"tooltips.setPlotWidthArea  "+(plotWidthArea)+"   tooltips.setPlotRight   "+(plot.right)+" tooltips.setPlotTop   "+(plot.top)+" tooltips.setPlotBottom   "+(plot.bottom)+"tooltips.setPlotLeft  "+(plot.left)+"  tooltips.setyAxisFactor "+(yAxisFactor)+"      tooltips.setxAxisFactor "+(xAxisFactor));
+//        return zoomTooltips;
+//        
+//        }
+//        else{
+        tooltips = new UpdatedTooltip();
+        if (zoom) {
+            
+            try{
+            System.out.println("updated tooltip");
+            int plotWidthArea = (plot.getWidth() - plot.left - plot.right);
+            int plotHeightArea = plot.getHeight() - plot.top - plot.bottom;
+
+            double xDataArea = plot.getZoomedArea()[1] - plot.getZoomedArea()[0];
+            double xUnitPix = xDataArea / (double) plotWidthArea;
+
+            tooltips.setPlotWidth(plot.getWidth());
+            tooltips.setPlotHeight(plot.getHeight());
+            tooltips.setPlotHeightArea(plotHeightArea);
+            tooltips.setPlotWidthArea(plotWidthArea);
+            tooltips.setPlotRight(plot.right);
+            tooltips.setPlotTop(plot.top);
+            tooltips.setPlotBottom(plot.bottom);
+            tooltips.setPlotLeft(plot.left);
+            tooltips.setyAxisFactor(0);
+            tooltips.setxAxisFactor(0);
+//        double xDataArea =  plot.getZoomedArea()[1] -  plot.getZoomedArea()[0];
+//        double xUnitPix = xDataArea / (double) plotWidthArea;
+            tooltips.setxUnitPix(xUnitPix);
+            double yDataArea = plot.getZoomedArea()[3] - plot.getZoomedArea()[2];
+            double yUnitPix = yDataArea / (double) plotHeightArea;
+            tooltips.setyUnitPix(yUnitPix);
+            tooltips.setMinX(plot.getZoomedArea()[0]);
+            tooltips.setMaxY(plot.getZoomedArea()[3]);
+            tooltips.setPoints(points);
+            tooltips.setRowIds(rowIds);
+            }catch(Exception exp){exp.printStackTrace();}
+
+        } else {
+            int yAxisFactor = plot.left - plot.yaxis.predictWidth();
+            int xAxisFactor = plot.bottom - plot.xaxis.predictWidth();
+            int plotWidthArea = plot.Width() - (plot.left) - plot.right + yAxisFactor;
+            int plotHeightArea = plot.getHeight() - plot.top - plot.bottom + xAxisFactor;
+            tooltips.setPlotWidth(plot.getWidth());
+            tooltips.setPlotHeight(plot.getHeight());
+            tooltips.setPlotHeightArea(plotHeightArea);
+            tooltips.setPlotWidthArea(plotWidthArea);
+            tooltips.setPlotRight(plot.right);
+            tooltips.setPlotTop(plot.top);
+            tooltips.setPlotBottom(plot.bottom);
+            tooltips.setPlotLeft(plot.left);
+            tooltips.setyAxisFactor(yAxisFactor);
+            tooltips.setxAxisFactor(xAxisFactor);
+            double xDataArea = plot.xaxis.getDataMax() - plot.xaxis.getDataMin();
+            double xUnitPix = xDataArea / (double) plotWidthArea;
+            tooltips.setxUnitPix(xUnitPix);
+            double yDataArea = plot.yaxis.getDataMax() - plot.yaxis.getDataMin();
+            double yUnitPix = yDataArea / (double) plotHeightArea;
+            tooltips.setyUnitPix(yUnitPix);
+            tooltips.setMinX(plot.xaxis.getDataMin());
+            tooltips.setMaxY(plot.yaxis.getDataMax());
+//        if(zoom)
+//            tooltips.setPoints(subZoomPoints);
+//        else
+            tooltips.setPoints(points);
+            tooltips.setRowIds(rowIds);
+        }
+//        printPlotData(plotHeightArea, plotWidthArea, xAxisFactor, yAxisFactor);
+        return tooltips;
+//        }
+
+    }
+
+
 
 //    public no.uib.jexpress_modularized.pca.computation.PcaResults getPcaResults() {
 //        return pcaResults;
@@ -528,65 +631,227 @@ public class PCAImageGenerator {
 //    
 //    
 //    }
-    private Point sweepFrom,sweepTo;
-     public boolean[] getFramedIndexes( int startx,int starty,int endx,int endy) {
-
-        boolean[] ret = new boolean[plot.getXValues().length];
-
-        boolean[] tolerated = plot.getBackgroundFactory().getTolerated();
-
-        if (plot.getframeType() == 0) {
-            int sqxstart = Math.min(startx, endx);
-            int sqystart = Math.min(starty, endy);
-            int sqxend = (Math.max(startx, endx) - Math.min(startx, endx));
-            int sqyend = (Math.max(starty, endy) - Math.min(starty, endy));
-            sweepFrom = new Point(sqxstart, sqystart);
-            sweepTo = new Point(sqxend, sqyend);
-        }
-//        System.out.println(plot.getXValues().length);
-        for(int z=0;z<plot.getXValues().length;z++){
-            int x = plot.getXValues()[z];
-            int y = plot.getYValues()[z];
-//            System.out.println("on position "+z+"  x = "+x+"  and y = "+y);
-        
-        }
-//        for (int i = 0; i < ret.length; i++) {
+//    private Point sweepFrom,sweepTo;
+//     public boolean[] getFramedIndexes( int startx,int starty,int endx,int endy) {
 //
-//            //System.out.print("\n*");
+//        boolean[] ret = new boolean[plot.getXValues().length];
 //
-//            for (int j = 0; j < paths.size(); j++) //if( (dotColors!=null && dotColors[i]!=null) && (tolerated==null || tolerated[i]) && ((Shape)paths.elementAt(j)).contains(Nx[i], Ny[i])){
-//            {
-//                if ((tolerated == null || tolerated[i]) && ((Shape) paths.elementAt(j)).contains(Nx[i], Ny[i])) {
-//                    if (visible == null || visible[i]) {
-//                        ret[i] = true;
-//                    }
+//        boolean[] tolerated = plot.getBackgroundFactory().getTolerated();
 //
-//                }
-//            }
-//
+//        if (plot.getframeType() == 0) {
+//            int sqxstart = Math.min(startx, endx);
+//            int sqystart = Math.min(starty, endy);
+//            int sqxend = (Math.max(startx, endx) - Math.min(startx, endx));
+//            int sqyend = (Math.max(starty, endy) - Math.min(starty, endy));
+//            sweepFrom = new Point(sqxstart, sqystart);
+//            sweepTo = new Point(sqxend, sqyend);
 //        }
-
-        return ret;
-    }
+////        System.out.println(plot.getXValues().length);
+//        for(int z=0;z<plot.getXValues().length;z++){
+//            int x = plot.getXValues()[z];
+//            int y = plot.getYValues()[z];
+////            System.out.println("on position "+z+"  x = "+x+"  and y = "+y);
+//        
+//        }
+////        for (int i = 0; i < ret.length; i++) {
+////
+////            //System.out.print("\n*");
+////
+////            for (int j = 0; j < paths.size(); j++) //if( (dotColors!=null && dotColors[i]!=null) && (tolerated==null || tolerated[i]) && ((Shape)paths.elementAt(j)).contains(Nx[i], Ny[i])){
+////            {
+////                if ((tolerated == null || tolerated[i]) && ((Shape) paths.elementAt(j)).contains(Nx[i], Ny[i])) {
+////                    if (visible == null || visible[i]) {
+////                        ret[i] = true;
+////                    }
+////
+////                }
+////            }
+////
+////        }
+//
+//        return ret;
+//    }
      
      public int[] getPCASelection(int startX, int startY, int endX, int endY) {
          
-         int maxXM = Math.max(startX, endX);
-         int minXM = Math.min(startX, endX);
-         int maxYM = Math.max(startY, endY);
-         int minYM = Math.min(startY, endY);
-
-         int plotWidthArea = plot.Width() - plot.left - plot.right;
-         int plotHeightArea = plot.getHeight() - plot.top - plot.bottom;
-        if((minXM<plot.left && maxXM < plot.left)||(minXM>(plot.left+plotWidthArea))){
-            return  null;
-        }
-        if((minYM<plot.top && maxXM < plot.left)||(minYM>plot.top+plotHeightArea)){
-            return  null;
-        }
+//         int maxXM = Math.max(startX, endX);
+//         int minXM = Math.min(startX, endX);
+//         int maxYM = Math.max(startY, endY);
+//         int minYM = Math.min(startY, endY);
+//
+//         int yAxisFactor = plot.left- plot.yaxis.predictWidth();
+//         int xAxixFactor = plot.bottom - plot.xaxis.predictWidth();
+//         int plotWidthArea = (plot.getWidth() - plot.left - plot.right)+(yAxisFactor);
+//         int plotHeightArea = plot.getHeight() - plot.top - plot.bottom + xAxixFactor;
+//        
+//         if((minXM<(plot.left-yAxisFactor) && maxXM < (plot.left-yAxisFactor))||(minXM>(plot.left+plotWidthArea))){
+//            return  null;
+//        }
+//        if((minYM<plot.top && maxXM < plot.left)||(minYM>plot.top+plotHeightArea)){
+//            return  null;
+//        }
+//        
+//         minXM= minXM - plot.left +yAxisFactor;
+//         maxXM= maxXM - plot.left + yAxisFactor;
+//         minYM-=plot.top;
+//         maxYM-=plot.top;
+//        
+//        if((minXM<0 && maxXM >= 0))
+//             minXM =0;// plot.left;
+//        if(maxXM > plotWidthArea && minXM>= 0)
+//              maxXM = plotWidthArea;
+//        if((minYM<=0 && maxYM > 0))//plot.top))
+//             minYM = 0;//plot.top;
+//        if(maxYM >plotHeightArea&& minYM>= 0)
+//              maxXM = plotHeightArea;
+//        
+//        
+//          double xDataArea = plot.xaxis.maximum - plot.xaxis.minimum;
+//         double xUnitPix = xDataArea/(double) plotWidthArea ;
+//         double modStartX = (minXM * xUnitPix) + plot.xaxis.minimum;//xstart units from min         
+////         zoomedRect[0]=modStartX;
+//         double modEndX = (maxXM * xUnitPix) + plot.xaxis.minimum;
+////         zoomedRect[1]=modEndX;
+//         
+//         double yDataArea = plot.yaxis.maximum - plot.yaxis.minimum;
+//         double yUnitPix =  yDataArea/(double) plotHeightArea ;
+//         double modStartY = plot.yaxis.maximum - (maxYM * yUnitPix);
+////         zoomedRect[2]= modStartY;
+//         double modEndY = plot.yaxis.maximum - (minYM * yUnitPix);
+//          zoomedRect[3]= modEndY;
+         double[] selectRect = null;
+         if (zoom) {
+             try {
+                 selectRect = getZoomedSelectionRecatangle(startX, startY, endX, endY);
+                  System.out.println("pointX "+selectRect[0] +"   pointY  "+selectRect[2] +"  plot.left -  "+plot.left+"  plot.yaxis.predictWidth()  "+plot.yaxis.predictWidth());
         
-         minXM-=plot.left;
-         maxXM-=plot.left;
+//         System.out.println("zoomedpointX "+selectrectZoom[0] +"   zoomedpointY  "+selectrectZoom[2] +"  zoomedplot.left -  "+plot.left+"  zoomedplot.yaxis.predictWidth()  "+plot.yaxis.predictWidth());
+
+             } catch (Exception exp) {
+                 exp.printStackTrace();
+             }
+
+         } else {
+             selectRect = this.getSelectionRecatangle(startX, startY, endX, endY);
+         }
+
+//         System.out.println("selection index "+selectRect[0]+"  "+selectRect[1]+"  "+selectRect[2]+"  "+selectRect[3]+"  ");
+         HashSet<Integer> selectedPoints = new HashSet<Integer>();
+//         if (zoom) {
+//             for (int x = 0; x < subZoomPoints[0].length; x++) {
+//                 double pointX = subZoomPoints[0][x];
+//                 double pointY = subZoomPoints[1][x];
+//                 if (pointX >= modStartX && pointX <= modEndX && pointY >= modStartY && pointY <= modEndY) {
+//                     selectedPoints.add(zoomedToNormalIndex[x]);
+//                 }
+//
+//             }
+//         } else {
+
+         for (int x = 0; x < points[0].length; x++) {
+             double pointX = points[0][x];
+             double pointY = points[1][x];
+             if (pointX >= selectRect[0] && pointX <= selectRect[1] && pointY >= selectRect[2] && pointY <= selectRect[3]) {
+                 selectedPoints.add(x);
+             }
+
+         }
+//         }
+         if (selectedPoints.size() > 0) {
+
+             Integer[] selectedIndexes = new Integer[selectedPoints.size()];
+             System.arraycopy(selectedPoints.toArray(), 0, selectedIndexes, 0, selectedIndexes.length);
+
+//                 System.out.println("Selected indexes are ---->>> " + selectedPoints.toString());
+             int[] arr = new int[selectedIndexes.length];
+             arr = org.apache.commons.lang3.ArrayUtils.toPrimitive(selectedIndexes, selectedIndexes.length);
+             return arr;
+         }
+
+         return null;
+    }
+     
+     private double[] getZoomedSelectionRecatangle(int startX, int startY, int endX, int endY) {
+        
+         
+//         System.out.println("------ selection--->> "+plot.getZoomedArea()[0] +" ---  "+ plot.getZoomedArea()[1]);
+//         System.out.println("zoomed selection--->> "+plot.xaxis.getDataMax() +" ---  "+ plot.xaxis.getDataMin());
+        double[] selectionRect = new double[4];
+        int maxXM = Math.max(startX, endX);
+        int minXM = Math.min(startX, endX);
+        int maxYM = Math.max(startY, endY);
+        int minYM = Math.min(startY, endY);
+         System.out.println("stage 1 is ok maxXM "+maxXM+"  maxYM  "+maxYM);
+        int plotWidthArea = (plot.getWidth() - plot.left - plot.right);
+        int plotHeightArea = plot.getHeight() - plot.top - plot.bottom;
+
+        if ((minXM < (plot.left) && maxXM < (plot.left)) || (minXM > (plot.left+plotWidthArea))) {
+            System.out.println("stage 2 is ok "+(minXM < (plot.left) && maxXM < (plot.left))+"  "+(minXM > (plot.left)));
+            return null;
+        }
+        if ((minYM < plot.top && maxXM < plot.left) || (minYM > plot.top + plotHeightArea)) {
+            System.out.println("stage 3 is ok ");
+            return null;
+        }
+        minXM = minXM - plot.left ;
+        
+         System.out.println("stage4 is ok minXM "+minXM+"  plot.left  "+plot.left);
+        
+         maxXM= maxXM - plot.left ;
+         minYM-=plot.top;
+         maxYM-=plot.top;
+        
+        if((minXM<0 && maxXM >= 0))
+             minXM =0;// plot.left;
+        if(maxXM > plotWidthArea && minXM>= 0)
+              maxXM = plotWidthArea;
+        if((minYM<=0 && maxYM > 0))//plot.top))
+             minYM = 0;//plot.top;
+        if(maxYM >plotHeightArea&& minYM>= 0)
+              maxXM = plotHeightArea;
+        
+        
+          double xDataArea = plot.getZoomedArea()[1]  - plot.getZoomedArea()[0] ;
+         double xUnitPix = xDataArea/(double) plotWidthArea ;
+         double modStartX = (minXM * xUnitPix) + plot.getZoomedArea()[0] ;//xstart units from min    
+         selectionRect[0]= modStartX;
+//         zoomedRect[0]=modStartX;
+         double modEndX = (maxXM * xUnitPix) + plot.getZoomedArea()[0] ;
+//         zoomedRect[1]=modEndX;
+         selectionRect[1]= modEndX;
+         
+         double yDataArea = plot.getZoomedArea()[3]  - plot.getZoomedArea()[2] ;
+         double yUnitPix =  yDataArea/(double) plotHeightArea ;
+         double modStartY = plot.getZoomedArea()[3]  - (maxYM * yUnitPix);
+         selectionRect[2]=modStartY;
+//         zoomedRect[2]= modStartY;
+         double modEndY = plot.getZoomedArea()[3]  - (minYM * yUnitPix);
+         selectionRect[3]=modEndY;
+         return selectionRect;
+     
+     }
+
+    private double[] getSelectionRecatangle(int startX, int startY, int endX, int endY) {
+        double[] selectionRect = new double[4];
+        int maxXM = Math.max(startX, endX);
+        int minXM = Math.min(startX, endX);
+        int maxYM = Math.max(startY, endY);
+        int minYM = Math.min(startY, endY);
+
+        int yAxisFactor = plot.left - plot.yaxis.predictWidth();
+        int xAxixFactor = plot.bottom - plot.xaxis.predictWidth();
+        int plotWidthArea = (plot.getWidth() - plot.left - plot.right) + (yAxisFactor);
+        int plotHeightArea = plot.getHeight() - plot.top - plot.bottom + xAxixFactor;
+
+        if ((minXM < (plot.left - yAxisFactor) && maxXM < (plot.left - yAxisFactor)) || (minXM > (plot.left + plotWidthArea))) {
+            return null;
+        }
+        if ((minYM < plot.top && maxXM < plot.left) || (minYM > plot.top + plotHeightArea)) {
+            return null;
+        }
+//         System.out.println("plot.left  "+plot.left+"   plot.yaxis.predictWidth() "+plot.yaxis.getAWidth()+"  plot.bottom  " +plot.bottom +"plot.xaxis.predictWidth()  "+plot.xaxis.getAWidth()+"  yAxisFactor  "+yAxisFactor+"   xAxisFactor "+xAxixFactor);
+        minXM = minXM - plot.left + yAxisFactor;
+         maxXM= maxXM - plot.left + yAxisFactor;
          minYM-=plot.top;
          maxYM-=plot.top;
         
@@ -602,35 +867,63 @@ public class PCAImageGenerator {
         
           double xDataArea = plot.xaxis.maximum - plot.xaxis.minimum;
          double xUnitPix = xDataArea/(double) plotWidthArea ;
-         double modStartX = (minXM * xUnitPix) + plot.xaxis.minimum;//xstart units from min         
+         double modStartX = (minXM * xUnitPix) + plot.xaxis.minimum;//xstart units from min    
+         selectionRect[0]= modStartX;
+//         zoomedRect[0]=modStartX;
          double modEndX = (maxXM * xUnitPix) + plot.xaxis.minimum;
-
+//         zoomedRect[1]=modEndX;
+         selectionRect[1]= modEndX;
          
          double yDataArea = plot.yaxis.maximum - plot.yaxis.minimum;
          double yUnitPix =  yDataArea/(double) plotHeightArea ;
          double modStartY = plot.yaxis.maximum - (maxYM * yUnitPix);
+         selectionRect[2]=modStartY;
+//         zoomedRect[2]= modStartY;
          double modEndY = plot.yaxis.maximum - (minYM * yUnitPix);
-          
-          HashSet<Integer> selectedPoints = new HashSet<Integer>();
-        for(int x=0;x<points[0].length;x++){ 
-            double pointX = points[0][x];
-            double pointY = points[1][x];
-            if (pointX >= modStartX && pointX<= modEndX && pointY >= modStartY && pointY<= modEndY) {
-                selectedPoints.add(x);
-            }
-        
-        }if (selectedPoints.size() > 0) {
+         selectionRect[3]=modEndY;
+         return selectionRect;
+     
+     }
+     
 
-            Integer[] selectedIndexes = new Integer[selectedPoints.size()];
-            System.arraycopy(selectedPoints.toArray(), 0, selectedIndexes, 0, selectedIndexes.length);
+    public void initZoomInteraction(int[] selection) {
 
-            int[] arr = new int[selectedIndexes.length];
-            arr = org.apache.commons.lang3.ArrayUtils.toPrimitive(selectedIndexes, selectedIndexes.length);
-            return arr;
+        zoomedToNormalIndex = selection;
+        for (int x = 0; x < indexToZoomed.length; x++) {
+            indexToZoomed[x] = -100;
         }
-        
-        
-        return null;
+        for (int i = 0; i < selection.length; i++) {
+            indexToZoomed[selection[i]] = i;
+        }
     }
-    
+
+    public boolean[] getZoomedNotshadIndex() {
+
+        if (notshadIndex != null) {
+            return zoomedSelectionChange(notshadIndex);//notshadIndex
+        } else {
+            return null;
+        }
+
+     
+     }
+     
+     public int[] reindexZoomedSelectionIndexes(int[] zoomedSelection){
+     int [] reindexSelection = new int[zoomedSelection.length];
+     for(int z=0;z<zoomedSelection.length;z++){
+         reindexSelection[z] = zoomedToNormalIndex[zoomedSelection[z]];
+     }
+     return reindexSelection;
+//         if (zoom) {
+//             for (int x = 0; x < subZoomPoints[0].length; x++) {
+//                 double pointX = subZoomPoints[0][x];
+//                 double pointY = subZoomPoints[1][x];
+//                 if (pointX >= modStartX && pointX <= modEndX && pointY >= modStartY && pointY <= modEndY) {
+//                     selectedPoints.add(zoomedToNormalIndex[x]);
+//                 }
+//
+//             }
+//         }
+     
+     }
 }

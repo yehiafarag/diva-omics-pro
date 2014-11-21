@@ -56,7 +56,7 @@ public class ButtonsBarMenuComponent {
 
         pcaBtn = generateLabel("PCA");
 
-        rankBtn = generateLabel("Rank Product");
+        rankBtn = generateLabel(" Rank Product ");
 
         createGroupBtn = generateLabel("Create Groups/Datasets");
 
@@ -90,7 +90,7 @@ public class ButtonsBarMenuComponent {
         final Label btn = new Label(btnName);        
         btn.addStyleName("clickable");
         btn.setHeight("20px");
-        btn.setWidth(btnName.length() * 6 + "px");
+        btn.setWidth((btnName.length() * 6) + "px");
         return btn;
     }
     

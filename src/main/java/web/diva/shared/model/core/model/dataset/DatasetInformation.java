@@ -19,11 +19,11 @@ public class DatasetInformation implements IsSerializable {
     private int id;
     private String datasetInfo;
     private String[][] rowGroupsNames;
-    private String[][] omicsTabelData;
-    
+    private String[][] omicsTabelData;    
     private String[] pcaColNames;
 
     private LinkedHashMap<String, String> colNamesMap;
+    private LinkedHashMap<String,String> colGroupsNamesMap;
 
     public String[][] getOmicsTabelData() {
         return omicsTabelData;
@@ -103,5 +103,13 @@ public class DatasetInformation implements IsSerializable {
 
     public void setPcaColNames(String[] pcaColNames) {
         this.pcaColNames = pcaColNames;
+    }
+
+    public LinkedHashMap<String,String> getColGroupsNamesMap() {
+        return colGroupsNamesMap;
+    }
+
+    public void setColGroupsNamesMap(LinkedHashMap<String,String> colGroupsNamesMap) {
+        this.colGroupsNamesMap = colGroupsNamesMap;
     }
 }

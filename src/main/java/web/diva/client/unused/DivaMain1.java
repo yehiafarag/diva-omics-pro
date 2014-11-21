@@ -16,11 +16,11 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.omicstables.view.LeftPanelView;
-import web.diva.client.linechart.view.ProfilePlotComponent;
+import web.diva.client.profileplot.view.ProfilePlotComponent;
 import web.diva.client.pca.view.PCAPanel;
 import web.diva.client.pca.view.PCAPlot;
 import web.diva.client.rank.view.RankPanel;
-import web.diva.client.rank.view.RankTablesView;
+import web.diva.client.rank.view.RankTablesComponent;
 import web.diva.client.somclust.view.SomClustPanel;
 import web.diva.client.somclust.view.SomClustView;
 import web.diva.client.view.core.ActivateGroupPanel;
@@ -71,7 +71,7 @@ public class DivaMain1 {//implements EntryPoint {
     private final ModularizedListener[] compponents = new ModularizedListener[2];
 
     private SomClustView hierarchicalClustering;
-    private RankTablesView rankTables;
+    private RankTablesComponent rankTables;
     private InitImgs initImgs;
 //    private HeaderLayout header;
     private  ListBox selectDatasetList;
@@ -488,10 +488,10 @@ public class DivaMain1 {//implements EntryPoint {
 //                        if (pca != null) {
 //                            pca.remove();
 //                        }
-//                        pca = new PCAPlot(result, selectionManager, GWTClientService);
+//                        pca = new getPCAPlot(result, selectionManager, GWTClientService);
 //                        compponents[1] = (pca);
 //                        RootPanel.get("PCAChartResults").clear();
-//                        RootPanel.get("PCAChartResults").add(pca.PCAPlot());
+//                        RootPanel.get("PCAChartResults").add(pca.getPCAPlot());
 //                        busyTask(false);
 //                    }
 //                });
@@ -522,7 +522,7 @@ public class DivaMain1 {//implements EntryPoint {
 //                    public void onSuccess(RankResult result) {
 //                        RootPanel.get("datasetInformation").setVisible(true);
 //                        errorLabel.setText("");
-//                        rankTables = new RankTablesView(GWTClientService, selectionManager, result);
+//                        rankTables = new RankTablesComponent(GWTClientService, selectionManager, result);
 //                        RootPanel.get("RankTablesResults").clear();
 //                        RootPanel.get("RankTablesResults").add(rankTables);
 //                        RootPanel.get("loaderImage").setVisible(false);
@@ -1097,9 +1097,9 @@ public class DivaMain1 {//implements EntryPoint {
                 resultsTableView.disable();
             }
 
-            if (rankTables != null) {
-                rankTables.disable();
-            }
+//            if (rankTables != null) {
+//                rankTables.disable();
+//            }
 
             if (pca != null) {
                 pca.enable(false);
@@ -1120,9 +1120,9 @@ public class DivaMain1 {//implements EntryPoint {
                 resultsTableView.enable();
             }
 
-            if (rankTables != null) {
-                rankTables.enable();
-            }
+//            if (rankTables != null) {
+//                rankTables.enable();
+//            }
             if (pca != null) {
                 pca.enable(true);
             }

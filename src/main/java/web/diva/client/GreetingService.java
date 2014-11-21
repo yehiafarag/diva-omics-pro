@@ -1,6 +1,5 @@
 package web.diva.client;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import java.util.LinkedHashMap;
@@ -55,7 +54,7 @@ public interface GreetingService extends RemoteService {
 
     String updateLineChartSelection(int[] selection, double w, double h);
 
-    PCAImageResult updatePCASelection( int[] subSelectionData, int[] selection, boolean zoom, boolean selectAll, double w, double h);
+    String updatePCASelection( int[] selection);
 
     int[] getPCASelection(int startX, int startY, int endX, int endY);
 
@@ -67,7 +66,8 @@ public interface GreetingService extends RemoteService {
 
     String pcaShowAll(boolean showAll,int[] selection);
 
-    String pcaZoom(boolean zoom, int xStart, int yStart, int yEnd, int xEnd);
+    PCAImageResult pcaZoomIn(int startX, int startY, int endX, int endY);
+    PCAImageResult pcaZoomReset();
 
 
 }

@@ -6,7 +6,6 @@ package web.diva.client.somclust.view;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import web.diva.client.somclust.view.SomClustPanel;
 
 /**
  *
