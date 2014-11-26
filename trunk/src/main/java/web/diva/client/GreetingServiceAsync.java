@@ -2,6 +2,7 @@ package web.diva.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.TreeMap;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
@@ -29,7 +30,7 @@ public interface GreetingServiceAsync {
     
 //    public void computeHeatmap(int datasetId, ArrayList<String> indexer, ArrayList<String> colIndexer, AsyncCallback<HeatMapImageResult> asyncCallback);
 
-    public void computeRank(String perm, String seed, String[] colGropNames, String log2, AsyncCallback<RankResult> asyncCallback);
+    public void computeRank(String perm, String seed, List<String> colGropNames, String log2, AsyncCallback<RankResult> asyncCallback);
 
     public void createRowGroup(String name, String color, String type, int[] selection, AsyncCallback<Boolean> asyncCallback);
 

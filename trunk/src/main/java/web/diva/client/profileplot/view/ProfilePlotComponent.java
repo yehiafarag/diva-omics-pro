@@ -6,12 +6,13 @@ package web.diva.client.profileplot.view;
 
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RootPanel;
+//import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import web.diva.client.GreetingServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
@@ -50,16 +51,16 @@ public class ProfilePlotComponent extends ModularizedListener {
         }
     }
 
-    public ProfilePlotComponent(String results, SelectionManager selectionManager, GreetingServiceAsync greetingService) {
+    public ProfilePlotComponent(String results, SelectionManager selectionManager, GreetingServiceAsync greetingService, int height,int width) {
         this.greetingService = greetingService;
         this.classtype = 3;
         this.components.add(ProfilePlotComponent.this);
         this.selectionManager = selectionManager;
 
         this.selectionManager.addSelectionChangeListener(ProfilePlotComponent.this);
-        layout = new VerticalPanel();        
-        layout.setHeight("" + height + "px");
-        layout.setWidth("" + width + "px");        
+        layout = new VerticalPanel();   
+        layout.setHeight(height+"px");
+        layout.setWidth(width+"px");
         image = new Image(results);
        
         final PopupPanel imagePopup = new PopupPanel(true, true);
@@ -75,8 +76,6 @@ public class ProfilePlotComponent extends ModularizedListener {
         }, MouseOutEvent.getType());
 
         thumbImage = new Image(results);
-        thumbImage.setHeight("" + height + "px");
-        thumbImage.setWidth(width + "px");
         thumbImage.setStyleName("magnifying");
         thumbImage.ensureDebugId("cwBasicPopup-thumb");
         thumbImage.addStyleName("cw-BasicPopup-thumb");
@@ -89,6 +88,8 @@ public class ProfilePlotComponent extends ModularizedListener {
         });
         layout.add(thumbImage);
         
+        thumbImage.setHeight(height+"px");
+        thumbImage.setWidth(width+"px");
        
 
         layout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -103,18 +104,18 @@ public class ProfilePlotComponent extends ModularizedListener {
 
     private void updateSelection(int[] selection) {
         if (selection != null && selection.length > 0) {
-            RootPanel.get("loaderImage").setVisible(true);
+//            RootPanel.get("loaderImage").setVisible(true);
             greetingService.updateLineChartSelection(selection, width, height, new AsyncCallback<String>() {
                 @Override
                 public void onFailure(Throwable caught) {
-                    RootPanel.get("loaderImage").setVisible(false);
+//                    RootPanel.get("loaderImage").setVisible(false);
                 }
 
                 @Override
                 public void onSuccess(String result) {
                     image.setUrl(result);
                     thumbImage.setUrl(result);
-                    RootPanel.get("loaderImage").setVisible(false);
+//                    RootPanel.get("loaderImage").setVisible(false);
                 }
             });
         }

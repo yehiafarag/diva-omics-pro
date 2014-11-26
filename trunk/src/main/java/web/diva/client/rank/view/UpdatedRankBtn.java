@@ -15,20 +15,19 @@ import web.diva.shared.beans.ColumnGroup;
  *
  * @author Yehia Farag
  */
-public class RankBtn extends Label{
+public class UpdatedRankBtn extends Label{
     
     private final RankPanel rankPanel;
-    public  RankBtn(List<ColumnGroup> colGroupsList){
-        super(" Rank Product ");
+    public  UpdatedRankBtn(List<ColumnGroup> colGroupsList){
         rankPanel = new RankPanel(colGroupsList);
-        this.addStyleName("clickable");
-        this.setHeight("20px");
-        this.setWidth(" Rank Product ".length() * 6 + "px");
+        this.addStyleName("settings");
+        this.setHeight("16px");
+        this.setWidth("16px");
+        
         this.addClickHandler(new ClickHandler() {
-
             @Override
             public void onClick(ClickEvent event) {
-                rankPanel.show();
+                getRankPanel().show();
             }
         });
 
@@ -53,7 +52,7 @@ public class RankBtn extends Label{
         public String getLog2(){
           return rankPanel.getRadioGroupItem();
       }
-        public List<String>  getSelectColGroups(){
+        public List<String> getSelectColGroups(){
             return rankPanel.getSelectColGroups();
         }
         
@@ -63,6 +62,9 @@ public class RankBtn extends Label{
         public void rankPanelvalidate(){
         rankPanel.getForm2().validate();
         }
-    
+
+    public RankPanel getRankPanel() {
+        return rankPanel;
+    }
     
 }

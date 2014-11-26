@@ -35,8 +35,8 @@ public class LeftPanelView extends SectionStack {
     public LeftPanelView(SelectionManager selectionManager, DatasetInformation datasetInfo,int width) {
         this.setVisibilityMode(VisibilityMode.MUTEX);
 
-        this.setWidth(width);
-        this.setHeight(425);
+        this.setWidth("20%");
+        this.setHeight("80%");
         this.setScrollSectionIntoView(true);
 
         SectionStackSection section1 = new SectionStackSection(datasetInfo.getDatasetInfo());

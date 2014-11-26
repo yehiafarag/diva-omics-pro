@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.TreeMap;
 import javax.servlet.http.HttpSession;
 import web.diva.server.model.Computing;
@@ -149,7 +150,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     private RankResult rankResults;
 
     @Override
-    public RankResult computeRank(String perm, String seed, String[] colGropNames, String log2) {  
+    public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2) {  
             return compute.computeRank(perm, seed, colGropNames, log2);
     }
 

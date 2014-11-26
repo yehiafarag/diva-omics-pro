@@ -493,7 +493,6 @@ public class PCAImageGenerator implements Serializable{
         if (zoom) {
             
             try{
-            System.out.println("updated tooltip");
             int plotWidthArea = (plot.getWidth() - plot.left - plot.right);
             int plotHeightArea = plot.getHeight() - plot.top - plot.bottom;
 

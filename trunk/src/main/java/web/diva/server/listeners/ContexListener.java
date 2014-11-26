@@ -8,7 +8,6 @@ package web.diva.server.listeners;
 import java.io.File;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import web.diva.server.model.Computing;
 
 /**
  *

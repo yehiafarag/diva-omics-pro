@@ -39,110 +39,80 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
         } else {
             this.deselectAllRecords();
             ListGridRecord[] reIndexSelection = new ListGridRecord[selection.length];
-            int i = 0;
-
-            if (this.isSortField(headers[0]) || this.getSortField() == null) {
-
-                if (this.getSortDirection().getValue().equalsIgnoreCase("descending")) {
-
-                    
-                    for (int z : selection) {
+             int i = 0;
+             
+              for (int z : selection) {
                         reIndexSelection[i++] = posRecordMap[z];
                     }
                     this.selectRecords(reIndexSelection);
-                    try {
-                        int scrollTo = posIndexToRank.length-posIndexToRank[selection[0]];
-                        this.scrollToRow(scrollTo);
-                        this.redraw();
-                    } catch (Exception e) {
-                        Window.alert(e.getMessage());
-                    }
-                } else {
-                    for (int z : selection) {
-                        reIndexSelection[i++] = posRecordMap[z];
-                    }
-                    this.selectRecords(reIndexSelection);
-                    try {
-                        int scrollTo = posIndexToRank[selection[0]];
-                        this.scrollToRow(scrollTo);
-                        this.redraw();
-                    } catch (Exception e) {
-                        Window.alert(e.getMessage());
-                    }
-                }
-
-            } else {
-
-                if (this.getSortDirection().getValue().equalsIgnoreCase("descending")) {
-
-                    for (int z : selection) {
-                        reIndexSelection[i++] = negRecordMap[z];
-                    }
-                    this.selectRecords(reIndexSelection);
-                    try {
-                        int scrollTo = negIndexToRank.length-negIndexToRank[selection[0]];
-                        this.scrollToRow(scrollTo);
-                        this.redraw();
-                    } catch (Exception e) {
-                        Window.alert(e.getMessage());
-                    }
-                } else {
-                    for (int z : selection) {
-                        reIndexSelection[i++] = negRecordMap[z];
-                    }
-                    this.selectRecords(reIndexSelection);
-                    try {
-                        int scrollTo = negIndexToRank[selection[0]];
-                        this.scrollToRow(scrollTo);
-                        this.redraw();
-                    } catch (Exception e) {
-                        Window.alert(e.getMessage());
-                    }
-
-                }
-            }
+                     this.scrollToRow(this.getRecordIndex(reIndexSelection[0]));
+//
+//           
+//
+//            if (this.isSortField(headers[0]) || this.getSortField() == null) {
+//
+//                if (this.getSortDirection().getValue().equalsIgnoreCase("descending")) {
+//
+//                    
+//                    for (int z : selection) {
+//                        reIndexSelection[i++] = posRecordMap[z];
+//                    }
+//                    this.selectRecords(reIndexSelection);
+//                    try {
+//                        int scrollTo = posIndexToRank.length-posIndexToRank[selection[0]];
+//                        this.scrollToRow(scrollTo);
+//                        this.redraw();
+//                    } catch (Exception e) {
+//                        Window.alert(e.getMessage());
+//                    }
+//                } else {
+//                    for (int z : selection) {
+//                        reIndexSelection[i++] = posRecordMap[z];
+//                    }
+//                    this.selectRecords(reIndexSelection);
+//                    try {
+//                        int scrollTo = posIndexToRank[selection[0]];
+//                        this.scrollToRow(scrollTo);
+//                        this.redraw();
+//                    } catch (Exception e) {
+//                        Window.alert(e.getMessage());
+//                    }
+//                }
+//
+//            } else {
+//
+//                if (this.getSortDirection().getValue().equalsIgnoreCase("descending")) {
+//
+//                    for (int z : selection) {
+//                        reIndexSelection[i++] = negRecordMap[z];
+//                    }
+//                    this.selectRecords(reIndexSelection);
+//                    try {
+//                        int scrollTo = negIndexToRank.length-negIndexToRank[selection[0]];
+//                        this.scrollToRow(scrollTo);
+//                        this.redraw();
+//                    } catch (Exception e) {
+//                        Window.alert(e.getMessage());
+//                    }
+//                } else {
+//                    for (int z : selection) {
+//                        reIndexSelection[i++] = negRecordMap[z];
+//                    }
+//                    this.selectRecords(reIndexSelection);
+//                    try {
+//                        int scrollTo = negIndexToRank[selection[0]];
+//                        this.scrollToRow(scrollTo);
+//                        this.redraw();
+//                    } catch (Exception e) {
+//                        Window.alert(e.getMessage());
+//                    }
+//
+//                }
+//            }
 
         }
 
     }
-
-//    @Override
-//    public void selectionChanged(Selection.TYPE type) {
-//        if (selectionTag) {
-//            selectionTag = false;
-//            return;
-//        }
-//        if (type == Selection.TYPE.OF_ROWS) {
-//            Selection sel = selectionManager.getSelectedRows();
-//            if (sel != null && sel.getMembers().length > 0) {
-//                this.posIndexToRank(sel.getMembers());
-//
-//            }
-//        }
-//    }
-//    /**
-//     * This method is responsible for re-indexing omics data indexes to rank indexes (pre-update visualization method)
-//     * @param index - selected omics data indexes
-//     */
-//    private int[] posIndexToRank(int[] index) {
-//        greetingService.posIndexToRank(index, tableType, new AsyncCallback<int[]>() {
-//            @Override
-//            public void onFailure(Throwable caught) {
-//                RootPanel.get("loaderImage").setVisible(false);
-//            }
-//
-//            @Override
-//            public void onSuccess(int[] result) {
-//                if (result.length != 0) {
-//                    deselectAllRecords();
-//                    selectRecords(result);
-//                    scrollToRow(result[0]);
-//                }
-//
-//            }
-//        });
-//        return null;
-//    }
 
     @Override
     public void onSelectionChanged(SelectionEvent event) {
@@ -154,32 +124,19 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
 
     }
 
-//    private final ListGrid table;
     private ListGridRecord[] records;
     private final SelectionManager selectionManager;
-    private final int[] posRankToIndex, posIndexToRank,negRankToIndex,negIndexToRank;
+    private int[] posRankToIndex, negRankToIndex;//,negIndexToRankposIndexToRank
     private boolean selectionTag = false;
-    private final String[] headers;
-//    private int tableType = 1;
-//    private final GreetingServiceAsync greetingService;
+//    private final String[] headers;
 
     public UpdatedRankTable(SelectionManager selectionManager, int datasetId, RankResult results) {
-//        this.greetingService = greetingService;
-//        this.datasetId = datasetId;
-
-//        if (type.equalsIgnoreCase("NegRankTable")) {
-//            tableType = 2;
-//        }
         this.selectionManager = selectionManager;
-        this.posIndexToRank = results.getPosIndexToRank();
-        this.posRankToIndex = results.getPosRankToIndex();
-        this.negRankToIndex = results.getNegRankToIndex();
-        this.negIndexToRank= results.getNegIndexToRank();
-        this.headers=results.getHeaders();
-        
-       this.records = getRecodList(results.getTableData(), results.getHeaders(),results.getRowIds(),results.getPosRank(),results.getNegRank(),results.getPosRankToNegRank());      
-        
-        initGrid(results.getHeaders());       
+        initGrid(results.getHeaders()); 
+        this.updateRecords(results);   
+//        this.headers=results.getHeaders();        
+      
+           
         records = null;
         results=null;
        
@@ -192,15 +149,15 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
         setShowRecordComponentsByCell(true);
         setCanRemoveRecords(false);
         setShowHeaderContextMenu(false);
-        setHeight("200px");
+        setHeight("100%");
         setShowAllRecords(false);
-//        setCanSort(Boolean.FALSE);
+        setCanSort(Boolean.TRUE);
       
         ListGridField[] fields = new ListGridField[headers.length + 1];
         ListGridField index = (ListGridField) new ListGridField("index", "index".toUpperCase());
         index.setType(ListGridFieldType.INTEGER);
         index.setHidden(true);
-        index.setCanSort(false);
+//        index.setCanSort(false);
         fields[0] = index;
         for (int z = 1; z <= headers.length; z++) {
             ListGridField l = (ListGridField) new ListGridField(headers[z - 1],headers[z - 1].toUpperCase());
@@ -212,12 +169,12 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
             }
             else if (z==2 ) {
                 l.setAutoFitWidth(true);
-                l.setCanSort(false);
+//                l.setCanSort(false);
                 l.setType(ListGridFieldType.TEXT);
                 
             }
             else{
-            l.setCanSort(false);
+//            l.setCanSort(false);
             l.setType(ListGridFieldType.FLOAT);
             }
                 
@@ -228,7 +185,6 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
         setFields(fields);
         setCanResizeFields(true);
 
-        setData(records);
         setSelectionType(SelectionStyle.MULTIPLE);
         setLeaveScrollbarGap(false);
         setCanDragSelect(true);
@@ -331,5 +287,12 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
         return "rank table";
     }
 
-
+    public final void updateRecords(RankResult results) {
+//        this.posIndexToRank = results.getPosIndexToRank();
+        this.posRankToIndex = results.getPosRankToIndex();
+        this.negRankToIndex = results.getNegRankToIndex();
+//        this.negIndexToRank = results.getNegIndexToRank();
+        this.records = getRecodList(results.getTableData(), results.getHeaders(), results.getRowIds(), results.getPosRank(), results.getNegRank(), results.getPosRankToNegRank()); 
+        setData(records);
+    }
 }

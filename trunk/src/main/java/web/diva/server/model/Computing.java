@@ -30,6 +30,7 @@ import no.uib.jexpress_modularized.somclust.model.ClusterParameters;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.filesystem.DB;
 import web.diva.server.model.beans.DivaDataset;
+import web.diva.shared.beans.ColumnGroup;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.PCAPoint;
 import web.diva.shared.beans.PCAResults;
@@ -144,7 +145,8 @@ public class Computing implements Serializable{
         }
         datasetInfo.setColNamesMap(colNamesMap);
         datasetInfo.setColGroupsNamesMap(this.getColGroupsPanelData());
-
+        datasetInfo.setColGroupsList(this.getColumnGroups());
+        System.out.println("done ok");
 //        String[] geneTableData[] = new String[divaDataset.getRowGroups().size() + 1][divaDataset.getRowIds().length];
 //        //init gene names with index
 //        String[] geneNamesArr = divaDataset.getGeneNamesArr();
@@ -216,7 +218,7 @@ public class Computing implements Serializable{
         // init groups name and images
         for (int x = 0; x < rowGroupsNames.length; x++) {
             Group g = divaDataset.getRowGroups().get(x + 1);
-            String color = colGen.getImageColor(g.getHashColor(), path, img_color_name + g.getName());
+            String color = colGen.getImageColor(g.getHashColor());
             String[] groupFields = new String[]{g.getName(), color};
             rowGroupsNames[x] = groupFields;
             colorMap.put(g.getHashColor(), g.getColor());
@@ -1002,6 +1004,30 @@ public class Computing implements Serializable{
         }
         return colGroupsNamesMap;
     }
+      /**
+     * This method is used to get activate column group panel initialization
+     * data
+     *
+     * @return activate column group data
+     */
+    public List<ColumnGroup> getColumnGroups() {
+        List<ColumnGroup> colGroupsList = new ArrayList<ColumnGroup>();
+        for (int x = 0; x < divaDataset.getColumnGroups().size(); x++) {
+            ColumnGroup cg = new ColumnGroup();
+            cg.setName(divaDataset.getColumnGroups().get(x).getName());
+            String color = colGen.getImageColor(divaDataset.getColumnGroups().get(x).getHashColor());
+            cg.setColor(color);
+            int count =0;
+            if(divaDataset.getColumnGroups().get(x).getMembers() == null )
+                count = divaDataset.getColumnGroups().size();
+            else
+                count = divaDataset.getColumnGroups().get(x).getMembers().length;
+            cg.setCount(count);
+            colGroupsList.add(cg);
+            System.out.println("names   "+cg.getName()+"   "+divaDataset.getColumnGroups().get(x).getHashColor()+count);
+        }
+        return colGroupsList;
+    }
 
     private final Random rand = new Random();
 
@@ -1101,10 +1127,9 @@ public class Computing implements Serializable{
      * @param seed
      * @param colGropNames selected ranking columns indexes
      * @param log2
-     * @param divaDataset
      * @return rank results
      */
-    public RankResult computeRank(int datasetId, String perm, String seed, String[] colGropNames, String log2) {
+    public RankResult computeRank(int datasetId, String perm, String seed, List<String> colGropNames, String log2) {
         String type = "TwoClassUnPaired";
         int iPerm = Integer.valueOf(perm);
         int iSeed = Integer.valueOf(seed);
@@ -1114,20 +1139,20 @@ public class Computing implements Serializable{
         }
         int[] col1 = null;
         int[] col2 = null;
-        if (colGropNames.length == 1) {
+        if (colGropNames.size() == 1) {
             type = "OneClass";
             for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
-                if (colGropNames[0].split(",")[1].equalsIgnoreCase(g.getName())) {
+                if (colGropNames.get(0).equalsIgnoreCase(g.getName())) {
                     col1 = g.getMembers();
                 }
             }
-        } else if (colGropNames.length == 2) {
+        } else if (colGropNames.size() == 2) {
             type = "TwoClassUnPaired";
             for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
-                if (colGropNames[0].split(",")[1].equalsIgnoreCase(g.getName())) {
+                if (colGropNames.get(0).equalsIgnoreCase(g.getName())) {
                     col1 = g.getMembers();
                 }
-                if (colGropNames[1].split(",")[1].equalsIgnoreCase(g.getName())) {
+                if (colGropNames.get(1).equalsIgnoreCase(g.getName())) {
                     col2 = g.getMembers();
                 }
             }
@@ -1204,7 +1229,7 @@ public class Computing implements Serializable{
         return results;
     }
 
-    public RankResult computeRank(String perm, String seed, String[] colGropNames, String log2) {
+    public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2) {
         System.out.println("log2 "+log2);
         String colGroupName = "";
         RankResult rankResults = null;
