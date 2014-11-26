@@ -48,8 +48,8 @@ public class PCAPlot extends ModularizedListener {
     private boolean enable = true;
 //    private int[] currentDataSet;
     private int[] selectedRows;
-    private final int height = 212;
-    private final int width = 250;
+    private final int height = 10;
+    private final int width = 10;
     private MouseMoveHandler mouseMoveHandler;
     private MouseOutHandler mouseOutHandler;
     private MouseUpHandler mouseUpHandler;
@@ -91,7 +91,7 @@ public class PCAPlot extends ModularizedListener {
         }
     }
 
-    public PCAPlot(final PCAImageResult results, SelectionManager selectionManager, GreetingServiceAsync greetingService) {
+    public PCAPlot(final PCAImageResult results, SelectionManager selectionManager, GreetingServiceAsync greetingService,int height) {
 
         this.greetingService = greetingService;
         this.classtype = 4;
@@ -99,20 +99,21 @@ public class PCAPlot extends ModularizedListener {
         this.selectionManager = selectionManager;
         this.selectionManager.addSelectionChangeListener(PCAPlot.this);
         mainThumbPCALayout = new VerticalPanel();
-        mainThumbPCALayout.setHeight(height + "px");
-        mainThumbPCALayout.setWidth(width + "px");
+//        mainThumbPCALayout.setHeight("100%");//(height + "px");
+//        mainThumbPCALayout.setWidth("50%");//width + "px");
        
         //tooltip  init
         RootPanel.get("tooltip").add(toolTip);
         
         
-        thumbImgLayout = new VerticalPanel();
-        thumbImgLayout.setWidth(width + "px");
+        thumbImgLayout = new VerticalPanel();        
         mainThumbPCALayout.add(thumbImgLayout);
+        thumbImgLayout.setWidth("100%");
+        thumbImgLayout.setHeight(height+"px");
 
         thumbChart = new Image();
-        thumbChart.setHeight("" + height + "px");
-        thumbChart.setWidth(width + "px");
+        thumbChart.setHeight(height+"px");
+        thumbChart.setWidth("100%");
         thumbChart.setStyleName("magnifying");
         thumbChart.ensureDebugId("cwBasicPopup-thumb");
         thumbChart.addStyleName("cw-BasicPopup-thumb");

@@ -3,6 +3,7 @@ package web.diva.client;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.TreeMap;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
@@ -32,7 +33,7 @@ public interface GreetingService extends RemoteService {
 
     PCAImageResult computePCA(int comI, int comII);
 
-    RankResult computeRank( String perm, String seed, String[] colGropNames, String log2);
+    RankResult computeRank( String perm, String seed, List<String> colGropNames, String log2);
 
     Boolean createRowGroup(String name, String color, String type, int[] selection);
 

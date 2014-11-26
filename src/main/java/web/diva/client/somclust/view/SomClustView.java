@@ -21,6 +21,7 @@ import web.diva.shared.beans.SomClusteringResult;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  *
@@ -43,16 +44,17 @@ public class SomClustView extends ModularizedListener {
     private final HeatmapImg heatMapImg;
     private final Image scaleImg;
     private final HLayout clusterLayout = new HLayout();
-    private final ScrollPanel clusteringPanel = new ScrollPanel();
+    private final VerticalPanel clusteringPanel = new VerticalPanel();
     private final VLayout leftSideLayout = new VLayout();
     private final VLayout rightSideLayout = new VLayout();
 
-    public SomClustView(SomClusteringResult somClusteringResults, SelectionManager selectionManager, GreetingServiceAsync greetingService, int width) {
+    public SomClustView(SomClusteringResult somClusteringResults, SelectionManager selectionManager, GreetingServiceAsync greetingService, int width,int height) {
         this.greetingService = greetingService;
-        clusteringPanel.setHeight(425 + "px");
+        clusteringPanel.setHeight(height + "px");
         clusteringPanel.setWidth(width + "px");
-        clusteringPanel.setAlwaysShowScrollBars(false);
-        clusteringPanel.setStyleName("testo");
+        clusteringPanel.setBorderWidth(1);
+//        clusteringPanel.setAlwaysShowScrollBars(false);
+        clusteringPanel.setStyleName("clusterLayout");
         defaultSideTreeImgURL = somClusteringResults.getSideTreeImgUrl();
         upperTreeImg = new TreeImg(somClusteringResults.getUpperTreeImgUrl(), somClusteringResults.getColNode(), 1);
         upperTreeImg.setHeight("70px");
@@ -147,7 +149,7 @@ public class SomClustView extends ModularizedListener {
         somClusteringResults = null;
     }
 
-    public ScrollPanel componentView() {
+    public VerticalPanel componentView() {
         return clusteringPanel;
     }
 

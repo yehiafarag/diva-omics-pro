@@ -7,10 +7,9 @@ package web.diva.client.rank.view;
 
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
 import com.smartgwt.client.types.Alignment;
-import com.smartgwt.client.types.MultipleAppearance;
-import com.smartgwt.client.types.ReadOnlyDisplayAppearance;
-import com.smartgwt.client.types.TitleOrientation;
+import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
@@ -19,12 +18,18 @@ import com.smartgwt.client.widgets.events.CloseClickEvent;
 import com.smartgwt.client.widgets.events.CloseClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.RadioGroupItem;
-import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.validator.IsIntegerValidator;
+import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridField;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
+import com.smartgwt.client.widgets.grid.events.CellSelectionChangedEvent;
+import com.smartgwt.client.widgets.grid.events.CellSelectionChangedHandler;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import web.diva.shared.beans.ColumnGroup;
 
 /**
  *
@@ -33,12 +38,13 @@ import java.util.LinkedHashMap;
  */
 public final class RankPanel extends Window {
 
-    private final SelectItem selectColGroups;
+//    private final SelectItem selectColGroups;
     private final RadioGroupItem radioGroupItem;
     private final TextItem permutation, seed;
     private final IButton okBtn;
     private final HTML errorlabl;
     private final DynamicForm form2;
+    private ListGrid selectionTable;
 
     public DynamicForm getForm2() {
         return form2;
@@ -48,9 +54,9 @@ public final class RankPanel extends Window {
         return errorlabl;
     }
 
-    public RankPanel(LinkedHashMap<String, String> colGroupsNamesMap) {
+    public RankPanel(List<ColumnGroup> colGroupsList) {
         this.setWidth(400);
-        this.setHeight(400);
+        this.setHeight(350);
         this.setTitle("Differential Expression");
         this.setShowMinimizeButton(false);
         this.setIsModal(false);
@@ -62,36 +68,66 @@ public final class RankPanel extends Window {
             }
         });
 
-        VLayout vlo = new VLayout();
-        vlo.setWidth("100%");
-        vlo.setHeight("100%");
-        this.addItem(vlo);
+        VLayout mainBodyLayout = new VLayout();
+        mainBodyLayout.setWidth("100%");
+        mainBodyLayout.setHeight("100%");
+        this.addItem(mainBodyLayout);
 
         DynamicForm form = new DynamicForm();
-        form.setHeight("50%");
         form.setIsGroup(true);
         form.setWidth("100%");
         form.setPadding(5);
-        selectColGroups = new SelectItem();
-        selectColGroups.setTitle("COLUMN GROUPS (MAX 2)");
-        selectColGroups.setTitleOrientation(TitleOrientation.TOP);
-        selectColGroups.setTextAlign(Alignment.CENTER);
-        selectColGroups.setTitleAlign(Alignment.CENTER);
-        selectColGroups.setMultiple(true);
-        selectColGroups.setMultipleAppearance(MultipleAppearance.GRID);
-        selectColGroups.setWidth("100%");
-        selectColGroups.setHeight("60%");
-        this.updateData(colGroupsNamesMap);
+        
+        selectionTable = new ListGrid();
+        initSelectionTable();
+        mainBodyLayout.addMember(selectionTable);
+//        selectColGroups = new SelectItem();
+//        selectColGroups.setTitle("COLUMN GROUPS (MAX 2)");
+//        selectColGroups.setTitleOrientation(TitleOrientation.TOP);
+//        selectColGroups.setTextAlign(Alignment.CENTER);
+//        selectColGroups.setTitleAlign(Alignment.CENTER);
+//        selectColGroups.setMultiple(true);
+//        selectColGroups.setMultipleAppearance(MultipleAppearance.GRID);
+//        selectColGroups.setWidth("100%");
+//        selectColGroups.setHeight("60%");
+        this.updateData(colGroupsList);
+        selectionTable.addCellSelectionChangedHandler(new CellSelectionChangedHandler() {
+
+            @Override
+            public void onCellSelectionChanged(CellSelectionChangedEvent event) {
+
+                ListGridRecord[] records = selectionTable.getRecords();
+                int counter = 0;
+                for (ListGridRecord record : records) {
+                    if (Boolean.valueOf(record.getAttribute("selection")) == true) {
+                        counter++;
+                        if (counter > 1)
+                        {
+                            event.cancel();
+                            errorlabl.setVisible(true);
+                            
+                        }
+                    }
+                }
+            }
+
+        });
 
         radioGroupItem = new RadioGroupItem();
         radioGroupItem.setHeight("20%");
         radioGroupItem.setWidth("100%");
-        radioGroupItem.setTitle("Values");
+        radioGroupItem.setTitle("");
         radioGroupItem.setValueMap("Log 2", "Linear");
         radioGroupItem.setValue("Log 2");
         radioGroupItem.setShouldSaveValue(true);
 
+        form.setGroupTitle("Values");
+        form.setHeight("25%");
+        form.setWidth("100%");
+        form.setGroupBorderCSS("color:gray;");
+        
         form2 = new DynamicForm();
+        form2.setGroupBorderCSS("color:gray;");
         form2.setGroupTitle("Permutations");
         form2.setIsGroup(true);
         form2.setHeight("25%");
@@ -111,12 +147,12 @@ public final class RankPanel extends Window {
         seed.disable();
         seed.setValue(Random.nextInt(1000000001));
 
-        form.setFields(selectColGroups, radioGroupItem);
+        form.setFields(radioGroupItem);
         form2.setFields(permutation, seed);
         form.redraw();
         form2.redraw();
-        vlo.addMember(form);
-        vlo.addMember(form2);
+        mainBodyLayout.addMember(form);
+        mainBodyLayout.addMember(form2);
 
         HLayout hlo = new HLayout();
         hlo.setWidth("100%");
@@ -130,14 +166,14 @@ public final class RankPanel extends Window {
         hlo.setMargin(10);
         hlo.setMembersMargin(20);
         hlo.setAlign(Alignment.CENTER);
-        vlo.addMember(hlo);
+        mainBodyLayout.addMember(hlo);
 
         errorlabl = new HTML("<h4 style='color:red;margin-left: 20px;height=20px;'>PLEASE CHECK YOUR DATA INPUT .. PLEASE NOTE THAT YOU CAN NOT SELECT MORE THAN 2 GROUPS</h4>");
         errorlabl.setVisible(false);
         errorlabl.setHeight("15%");
         errorlabl.setWidth("100%");
-        vlo.addMember(errorlabl);
-        colGroupsNamesMap = null;
+        mainBodyLayout.addMember(errorlabl);
+        colGroupsList = null;
 
         newSeedBtn.addClickHandler(new ClickHandler() {
             @Override
@@ -148,7 +184,7 @@ public final class RankPanel extends Window {
 
     }
 
-    public void updateData(LinkedHashMap<String, String> colGroupsNamesMap) {
+    public void updateData(List<ColumnGroup> colGroupsList) {
         if (errorlabl != null) {
             errorlabl.setVisible(false);
         }
@@ -156,13 +192,22 @@ public final class RankPanel extends Window {
             form2.clearErrors(true);
             form2.redraw();
         }
+        updateRecors(colGroupsList);
 
-        selectColGroups.setValueMap(colGroupsNamesMap);
+//        selectColGroups.setValueMap(colGroupsNamesMap);
 
     }
 
-    public String[] getSelectColGroups() {
-        return selectColGroups.getValues();
+    public  List<String> getSelectColGroups() {
+        List<String> selectionList = new ArrayList<String>();
+        ListGridRecord[] records = selectionTable.getRecords();
+        for (ListGridRecord record : records) {
+            if (Boolean.valueOf(record.getAttribute("selection")) == true) {
+                selectionList.add(record.getAttribute("groupName"));
+            }
+        }
+        return selectionList;
+        
     }
 
     public String getRadioGroupItem() {
@@ -179,6 +224,57 @@ public final class RankPanel extends Window {
 
     public IButton getOkBtn() {
         return okBtn;
+    }
+    private void initSelectionTable() {
+        
+        selectionTable.setTitle("COLUMN GROUPS (MAX 2)");
+        selectionTable.setWidth100();
+        selectionTable.setHeight("70%");
+        
+        ListGridField selectField = new ListGridField("selection", "Selection");  
+        selectField.setType(ListGridFieldType.BOOLEAN);  
+        selectField.setCanEdit(true);  
+        selectField.setAutoFitWidth(true);
+        
+        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 50);  
+        groupNameField.setAlign(Alignment.CENTER);  
+        groupNameField.setType(ListGridFieldType.TEXT);  
+        groupNameField.setAutoFitWidth(true);
+       
+        ListGridField colorField = new ListGridField("color", "Color");  
+        colorField.setAlign(Alignment.CENTER);  
+        colorField.setType(ListGridFieldType.IMAGE);          
+        colorField.setCanEdit(false);  
+        colorField.setAutoFitWidth(true);
+        
+        ListGridField countField = new ListGridField("count", "Count");  
+        countField.setAlign(Alignment.CENTER);  
+        countField.setType(ListGridFieldType.INTEGER); 
+        countField.setAutoFitWidth(true);
+  
+        selectionTable.setFields(new ListGridField[] {selectField, groupNameField, colorField,countField});  
+        
+        
+        
+        
+
+    }
+    
+    private void updateRecors(List<ColumnGroup> colGroupsList){
+        ListGridRecord[] records = new ListGridRecord[colGroupsList.size()];
+        int index=0;
+        for(ColumnGroup cgr:colGroupsList){
+             ListGridRecord record = new ListGridRecord();  
+        record.setAttribute("selection", false);  
+        record.setAttribute("groupName", cgr.getName());  
+        com.google.gwt.user.client.Window.alert((cgr.getColor() == null)+cgr.getColor());
+        record.setAttribute("color", new Image(cgr.getColor()));  
+        record.setAttribute("count", cgr.getCount());  
+        records[index++]=record;
+        
+        }
+       
+    selectionTable.setData(records);  
     }
 
 }

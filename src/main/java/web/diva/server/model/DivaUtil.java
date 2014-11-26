@@ -34,7 +34,7 @@ public class DivaUtil {
         if (!divaDataset.getColumnGroups().isEmpty()) {
             List<Group> tgl = new ArrayList<Group>();
             for (Group g : divaDataset.getColumnGroups()) {
-                g.setGeneList(initGroupGeneList(divaDataset.getGeneIndexNameMap(), g.getMembers()));
+//                g.setGeneList(initGroupGeneList(divaDataset.getGeneIndexNameMap(), g.getMembers()));
                 tgl.add(g);
             }
             divaDataset.getColumnGroups().clear();

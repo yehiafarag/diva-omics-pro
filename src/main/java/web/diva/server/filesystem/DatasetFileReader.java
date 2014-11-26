@@ -5,7 +5,9 @@
  */
 package web.diva.server.filesystem;
 
+import java.awt.Color;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
@@ -16,7 +18,7 @@ import utility.FilesReader;
  * @author Yehia Farag
  * this class is responsible for read dataset text files 
  */
-public class DatasetFileReader {
+public class DatasetFileReader implements Serializable{
 
     // File to write to.
     private final FilesReader fr = new FilesReader();
@@ -40,7 +42,11 @@ public class DatasetFileReader {
         for (no.uib.jexpress_modularized.core.dataset.Group g : dataset.getColumnGroups()) {
             if (g.getName().equalsIgnoreCase("ALL")) {
                 g.setActive(true);
+                g.setColor(Color.BLACK);
                 updatedColActiveGroupList.add(g);
+                for(int x=0;x<dataset.getColumnIds().length;x++){
+                    g.addMember(x);
+                }
                 break;
             }
         }

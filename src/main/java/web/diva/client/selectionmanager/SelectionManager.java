@@ -6,9 +6,9 @@ package web.diva.client.selectionmanager;
 //import com.google.gwt.user.client.Window;
 //import com.google.gwt.user.client.ui.RootPanel;
 
-import com.google.gwt.user.client.Window;
 import java.util.ArrayList;
 import java.util.List;
+import web.diva.client.view.core.BusyTaskIndicator;
 //import java.util.HashMap;
 
 /**
@@ -211,5 +211,11 @@ public class SelectionManager {
         selectedColumns= null;
         selectedRows = null;
     
+    }
+    
+    private final BusyTaskIndicator busyIndicator = new BusyTaskIndicator();
+    public void busyTask(boolean busy) {
+        busyIndicator.busyTask(busy); 
+
     }
 }

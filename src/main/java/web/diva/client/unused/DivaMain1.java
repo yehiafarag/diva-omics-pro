@@ -388,7 +388,7 @@ public class DivaMain1 {//implements EntryPoint {
                     public void onSuccess(SomClusteringResult result) {
 //                        RootPanel.get("datasetInformation").setVisible(true);
                         errorLabel.setText("");
-                        hierarchicalClustering = new SomClustView(result, selectionManager,GWTClientService,10);
+                        hierarchicalClustering = new SomClustView(result, selectionManager,GWTClientService,10,10);
 //                        RootPanel.get("SomClusteringResults").clear();
 //                        RootPanel.get("SomClusteringResults").add(hierarchicalClustering.componentView());
 //                        generateHeatMap(hierarchicalClustering.getIndexer(), hierarchicalClustering.getColIndexer());

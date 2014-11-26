@@ -5,6 +5,7 @@
  */
 package web.diva.server.filesystem;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,14 +23,13 @@ import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAResults;
 import web.diva.shared.beans.RankResult;
-import web.diva.shared.unused.SomClusteringResult;
 
 /**
  *
  * @author Yehia Farag
  * this class represents the main file system class in DIVA
  */
-public class DB implements Serializable{
+public class DB implements IsSerializable{
 
     private final FileSystemUtil databaseUtil = new FileSystemUtil();
     private Map<Integer, String> datasetsNameMap;

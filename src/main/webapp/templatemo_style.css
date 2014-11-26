@@ -15,7 +15,7 @@ body {
 	width: 100%;
         overflow:  hidden;
         display: table;
-        background: #e3e3e3;
+        background: #ffffff;;
 }
 
 a:link, a:visited {	color: #494949; text-decoration: underline; }
@@ -56,18 +56,18 @@ h3 {
 }
 
 #templatemo_container {
-    width: 1200px;
+    width: 100%;
     margin: auto;
 }
 
 #templatemo_header {
-    width: 1200px;
-    height: 150px;
+    width: 100%;
+    height: 125px;
 
 }
 
 #templatemo_header_logo {
-    width: 1200px;
+    width: 100%;
     height: 80px;
     background: url(images/templatemo_logo.jpg);
     padding: 1px 0 0 0;
@@ -82,7 +82,7 @@ h3 {
     font-style:normal;
 
 
-    color: #fff;
+    color: #ffffff;
     margin: 30px 0 0 106px;
     float: left;
 }
@@ -96,7 +96,7 @@ h3 {
 
 
 .labels {
-    color: #fff;
+    color: #ffffff;
     font-size: 12px;
 }
 
@@ -104,7 +104,6 @@ h3 {
     float: left;
     width: 166px;
     height: 24px;
-    border: none;	
     border: none;
     color : #686868;
     background: url(images/templatemo_search_field.jpg) no-repeat;
@@ -126,7 +125,7 @@ h3 {
 
 #templatemo_menu {
     float: left;
-    width: 1200px;
+    width: 100%;
     height: 48px;
     background: url(images/templatemo_menu_bg.jpg);
     padding: 5px 0 0 0;
@@ -152,7 +151,7 @@ h3 {
     text-align: center;
     text-decoration: none;
     background: url(images/templatemo_menu_divider.png) center right no-repeat;
-    color: #fff;	
+    color: #ffffff;	
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     outline: none;
@@ -203,15 +202,15 @@ h3 {
 }
 
 #templatemo_content_area {
-    width: 1200px;
+    width: 100%;
     margin: 10px 0 0 0;
 }
 
 #templatemo_left {
     float: left;
-    width: 250px;
-    padding: 0 15px;
-    margin: 0 2px 0 0;
+    width: 20%;
+    padding: 0 0px;
+    margin: 0 0 0 0;
 }
 
 #templatemo_left span.big {
@@ -226,9 +225,10 @@ h3 {
 
 #templatemo_mid{
     float: left;
-    width: 500px;
+    width: 45%;
+    /*background-color:red;*/  
     margin: 0 3px;
-    padding: 0 5px;
+    padding: 0 0px;
 }
 
 .category_list {
@@ -262,16 +262,17 @@ h3 {
 
 #templatemo_right {
     float: right;
-    width: 350px;
+    width: 33%;
+    overflow: auto;
     margin: 0 0 0 0;
     padding: 0 5px;
 }
 
 .templatmo_v_line {
-    height: 425px;
+    height: 100%;
     float: left;
     width: 2px;
-    background:#e3e3e3;
+    background:#ffffff;
 }
 
 .templatemo_h_line {
@@ -326,17 +327,17 @@ h3 {
     padding: 15px 0 0 0;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 12px;
-    color: #fff;
+    color: #ffffff;
     text-align: center;
 }
 
 #templatemo_footer a {
-    color: #fff;
+    color: #ffffff;
     text-decoration: underline;
 }
 
 #templatemo_footer a:hover {
-    color: #fff;
+    color: #ffffff;
     text-decoration: none;
 }
 
@@ -354,7 +355,7 @@ h3 {
     text-align: center;
     text-decoration: none;
     background: url(images/templatemo_menu_divider.png) center right no-repeat;
-    color: #fff;	
+    color: #ffffff;	
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
     outline: none;
@@ -408,13 +409,14 @@ h3 {
 
 
 }  
-.testo{
+.clusterLayout{
 
     background-color:  #e3e3e3;  
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     margin-left: 0;
     float: left;
+    float: right;
     
     /*overflow: hidden;*/
 }
@@ -523,4 +525,53 @@ html>body .gwt-DecoratedPopupPanel {
 }
 .clusterTreeOver{
     cursor: default;
+}
+.maxmize{
+    float: right;
+    
+    cursor: pointer;
+    background: url(images/max.png) right no-repeat;    
+}
+
+.minmize{
+    float: right;
+    
+    cursor: pointer;
+    background: url(images/min.gif) right no-repeat;    
+}
+
+.settings{
+    float: right;
+    cursor: pointer;
+    background: url(images/settings.png) right no-repeat;    
+}
+.layouttest{
+    
+    background:  #23b14d;
+}
+.layouttest1{
+    
+    background: #a18800;
+}
+.layouttest2{
+    
+    background:  #4d749f;
+}
+.layouttest3{
+    
+    background:  violet;
+}
+.layouttest4{
+    
+    background:  tomato;
+}
+.layouttest5{
+    
+    background:   salmon;
+}
+.labelheader{
+    font-size: 12px;
+    font-weight: bold;
+    font-family:  Arial, Helvetica, sans-serif;
+    
 }

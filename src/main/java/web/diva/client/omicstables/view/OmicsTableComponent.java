@@ -17,6 +17,10 @@ import com.smartgwt.client.widgets.events.DragStopHandler;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
+import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitEvent;
+import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitHandler;
+import java.util.HashMap;
+import java.util.Map;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
@@ -26,7 +30,7 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
  * @author Yehia Farag
  * omics information table that has rows ids, and activated groups colors
  */
-public final class OmicsTableComponent extends ModularizedListener implements IsSerializable {
+public final class OmicsTableComponent extends ModularizedListener implements IsSerializable, FilterEditorSubmitHandler{
 
     private final OmicsTable omicsIdTable;
     private ListGridRecord[] records;
@@ -35,6 +39,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     private SelectItem colSelectionTable;
     private boolean mouseSelection = false;
     private boolean selectionTag = false;
+    private final Map<String,ListGridRecord> infoSearchingMap= new HashMap<String,ListGridRecord>();
 
     @Override
     public String toString() {
@@ -43,12 +48,15 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
 
     public void setSelectionTable(ListGrid selectionTable) {
         this.selectionTable = selectionTable;
+        selectionTable.setShowFilterEditor(false);
         selectionChanged(Selection.TYPE.OF_ROWS);
     }
 
     public OmicsTableComponent(SelectionManager selectionManager, DatasetInformation datasetInfo) {
+         
         this.records = getRecodList(datasetInfo);
         this.omicsIdTable = new OmicsTable(datasetInfo, 375);
+        
         this.selectionManager = selectionManager;
         initGrid();
         this.classtype = 1;
@@ -108,6 +116,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
         });
         omicsIdTable.setCanSort(false);
         records = null;
+        omicsIdTable.addFilterEditorSubmitHandler(OmicsTableComponent.this);
 
     }
 
@@ -124,6 +133,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     private ListGridRecord[] getRecodList(DatasetInformation datasetInfo) {
 
         ListGridRecord[] recordsInit = new ListGridRecord[datasetInfo.getOmicsTabelData()[0].length];
+        infoSearchingMap.clear();
         for (int x = 0; x < recordsInit.length; x++) {
             ListGridRecord record = new ListGridRecord();
             record.setAttribute("gene", datasetInfo.getOmicsTabelData()[0][x]);
@@ -133,6 +143,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 }
             }
             record.setAttribute("index", x);
+            infoSearchingMap.put(datasetInfo.getOmicsTabelData()[0][x].toUpperCase(), record);
             recordsInit[x] = record;
         }
         return recordsInit;
@@ -173,7 +184,8 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                             selectionTable.redraw();
                         }
 //                    }
-                    omicsIdTable.scrollToRow(selectedRows[0]);
+                    omicsIdTable.scrollToRow(omicsIdTable.getRecordIndex(omicsIdTable.getSelectedRecords()[0]));
+//                        omicsIdTable.fetchData();
                 }catch(Exception e){Window.alert(e.getLocalizedMessage());}
                 }
             }
@@ -203,4 +215,14 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     @Override
     public void remove() {
     }
+
+    @Override
+    public void onFilterEditorSubmit(FilterEditorSubmitEvent event) {
+        String keyword = event.getCriteria().getValues().get("gene").toString();
+        if (infoSearchingMap.containsKey(keyword.toUpperCase())) {
+            Selection selection = new Selection(Selection.TYPE.OF_ROWS, new int[]{infoSearchingMap.get(keyword).getAttributeAsInt("index")});
+            selectionManager.setSelectedRows(selection);
+        }
+    }
+
 }

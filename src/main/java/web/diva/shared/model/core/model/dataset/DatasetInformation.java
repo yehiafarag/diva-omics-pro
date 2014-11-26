@@ -5,6 +5,8 @@ package web.diva.shared.model.core.model.dataset;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import java.util.LinkedHashMap;
+import java.util.List;
+import web.diva.shared.beans.ColumnGroup;
 
 /**
  *
@@ -21,6 +23,8 @@ public class DatasetInformation implements IsSerializable {
     private String[][] rowGroupsNames;
     private String[][] omicsTabelData;    
     private String[] pcaColNames;
+    
+    private List<ColumnGroup> colGroupsList;
 
     private LinkedHashMap<String, String> colNamesMap;
     private LinkedHashMap<String,String> colGroupsNamesMap;
@@ -111,5 +115,13 @@ public class DatasetInformation implements IsSerializable {
 
     public void setColGroupsNamesMap(LinkedHashMap<String,String> colGroupsNamesMap) {
         this.colGroupsNamesMap = colGroupsNamesMap;
+    }
+
+    public List<ColumnGroup> getColGroupsList() {
+        return colGroupsList;
+    }
+
+    public void setColGroupsList(List<ColumnGroup> colGroupsList) {
+        this.colGroupsList = colGroupsList;
     }
 }
