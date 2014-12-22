@@ -212,6 +212,9 @@ public class PCAPlot extends ModularizedListener {
         rect = new HTML();
         rect.setVisible(false);
         RootPanel.get().add(rect);
+         
+        
+        
 
         /**
          * *****************
@@ -398,7 +401,7 @@ public class PCAPlot extends ModularizedListener {
                             absStartY = event.getClientY();
                         }
                         rect.setHTML("<p style='opacity: 0.6;z-index:2000000001;position: absolute;height:" + (selectionHeight) + "px; width:" + (selectionWidth) + "px; left:" + absStartX + "px;top:" + absStartY + "px;font-weight: bold; color:white;font-size: 10px;background: #CECEF6; border-style:solid;'>" + "</p>");
-                        rect.setVisible(true);
+                        rect.setVisible(clicked);
                     } else {
                         //tooltip initilization
                         try {
@@ -582,5 +585,5 @@ public class PCAPlot extends ModularizedListener {
 //        currentDataSet = null;
         selectedRows = null;
     }
-
+ 
 }

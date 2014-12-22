@@ -7,9 +7,13 @@ package web.diva.client.rank.view;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import java.util.List;
-import web.diva.shared.beans.ColumnGroup;
+import web.diva.client.GreetingServiceAsync;
+import web.diva.client.selectionmanager.SelectionManager;
+import web.diva.shared.beans.DivaGroup;
 
 /**
  *
@@ -18,8 +22,13 @@ import web.diva.shared.beans.ColumnGroup;
 public class UpdatedRankBtn extends Label{
     
     private final RankPanel rankPanel;
-    public  UpdatedRankBtn(List<ColumnGroup> colGroupsList){
-        rankPanel = new RankPanel(colGroupsList);
+     private final GreetingServiceAsync GWTClientService;
+ private final  SelectionManager selectionManager;
+    public  UpdatedRankBtn(SelectionManager selectionManager,GreetingServiceAsync GWTClientService){
+        this.selectionManager = selectionManager;
+        this.GWTClientService=GWTClientService;
+        
+        rankPanel = new RankPanel();
         this.addStyleName("settings");
         this.setHeight("16px");
         this.setWidth("16px");
@@ -27,7 +36,7 @@ public class UpdatedRankBtn extends Label{
         this.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                getRankPanel().show();
+                updateAndViewRankPanel();               
             }
         });
 
@@ -36,6 +45,7 @@ public class UpdatedRankBtn extends Label{
     rankPanel.hide();
     }
       public void showPanel(){
+          rankPanel.center();
     rankPanel.show();
     }
       
@@ -65,6 +75,28 @@ public class UpdatedRankBtn extends Label{
 
     public RankPanel getRankPanel() {
         return rankPanel;
+    }
+      private void updateAndViewRankPanel() {
+        selectionManager.busyTask(true,true);
+        GWTClientService.getColGroups(new AsyncCallback<List<DivaGroup>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                Window.alert("An error occurred while attempting to contact the server");
+//                        init=false;
+                selectionManager.busyTask(false,true);
+            }
+
+            @Override
+            public void onSuccess(List<DivaGroup> result) {
+
+                getRankPanel().updateData(result);
+                 getRankPanel().show();
+                getRankPanel().center();
+                 selectionManager.busyTask(false,true);
+
+            }
+        });
+
     }
     
 }

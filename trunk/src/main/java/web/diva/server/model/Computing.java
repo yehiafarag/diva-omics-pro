@@ -5,7 +5,7 @@
  */
 package web.diva.server.model;
 
-import web.diva.server.unused.PCAGenerator;
+import web.diva.server.model.profileplot.ProfilePlotImgeGenerator;
 import web.diva.server.model.pca.PCAImageGenerator;
 import java.awt.Color;
 import java.io.Serializable;
@@ -13,13 +13,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TreeMap;
-import javax.servlet.http.HttpSession;
 import no.uib.jexpress_modularized.core.dataset.Group;
 import no.uib.jexpress_modularized.core.model.Selection;
 import no.uib.jexpress_modularized.pca.computation.PcaCompute;
@@ -30,7 +32,7 @@ import no.uib.jexpress_modularized.somclust.model.ClusterParameters;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.filesystem.DB;
 import web.diva.server.model.beans.DivaDataset;
-import web.diva.shared.beans.ColumnGroup;
+import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.PCAPoint;
 import web.diva.shared.beans.PCAResults;
@@ -43,37 +45,42 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
  *
  * @author yehia Farag this class represents main diva logic layer
  */
-public class Computing implements Serializable{
+public class Computing implements Serializable {
 
     private DivaDataset divaDataset;
+
+    public String getPath() {
+        return path;
+    }
     private DatasetInformation datasetInfo;
     private final DB database = new DB();
     private final DivaUtil util = new DivaUtil();
-    private final GroupColorUtil colGen = new GroupColorUtil();
+    private final GroupColorUtil colorImageGenerator = new GroupColorUtil();
     private final String path;
     private TreeMap<Integer, String> datasetsMap;
     private HashSet<String> computingDataList;
     private final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
     private final Calendar cal = Calendar.getInstance();
-    private final String img_color_name = "groupCol" + dateFormat.format(cal.getTime()).replace(":", " ");
+//    private final String img_color_name = "groupCol" + dateFormat.format(cal.getTime()).replace(":", " ");
 
     private final HashMap<String, Color> colorMap = new HashMap<String, Color>();
 
-    private final String text_file_name = "Export Data" + dateFormat.format(cal.getTime()).replace(":", " ");
-    private  SomClustImgGenerator somClustImgGenerator ;    
-    private PCAPoint[] pcaIndexTable;    
+//    private final String text_file_name = "Export Data" + dateFormat.format(cal.getTime()).replace(":", " ");
+    private SomClustImgGenerator somClustImgGenerator;
+    private PCAPoint[] pcaIndexTable;
     private PCAResults PCAResult;
-    
+
     private ProfilePlotImgeGenerator profilePlotGenerator;
-    private  PCAImageGenerator mainPCAGenerator;//zoomedPCAGenerator,inusePCAGenerator;
-    public Computing(HttpSession httpSession, String path) {
-        if (httpSession != null) {
-            httpSession.setAttribute("imgColorName", img_color_name);
-            httpSession.setAttribute("textFile", text_file_name);
-        }
+    private PCAImageGenerator mainPCAGenerator;//zoomedPCAGenerator,inusePCAGenerator;
+
+    public Computing(String path) {
+//        if (httpSession != null) {
+//            httpSession.setAttribute("imgColorName", img_color_name);
+//            httpSession.setAttribute("textFile", text_file_name);
+//        }
         database.initDivaDatasets(path);
         this.path = path;
-        datasetsMap = getAvailableDatasetsMap();
+        getAvailableDatasetsMap();
         computingDataList = getAvailableComputingFileList();
 
     }
@@ -85,10 +92,10 @@ public class Computing implements Serializable{
      * @return datasetsMap
      */
     public final TreeMap<Integer, String> getAvailableDatasetsMap() {
-        if (datasetsMap == null) {
-            datasetsMap = database.getAvailableDatasets(path);
-        }
+//        if (datasetsMap == null) {
+        datasetsMap = database.getAvailableDatasets(path);
         return datasetsMap;
+//        }
     }
 
     /**
@@ -100,7 +107,7 @@ public class Computing implements Serializable{
     public final HashSet< String> getAvailableComputingFileList() {
         if (computingDataList == null) {
             computingDataList = database.getAvailableComputingFileList(path);
-            System.out.println("computingDataList "+computingDataList);
+//            System.out.println("computingDataList "+computingDataList);
         }
         return computingDataList;
     }
@@ -109,12 +116,12 @@ public class Computing implements Serializable{
 
         try {
             divaDataset = database.getDivaDataset(datasetId);
-            divaDataset.setGeneColorArr(util.updateGroupsColorArray(divaDataset.getGeneNamesArr(), divaDataset.getRowGroups()));
+//            divaDataset.setGeneColorArr(util.updateGroupsColorArray(divaDataset.getGeneNamesArr(), divaDataset.getRowGroups()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
         updateDatasetInfo();
-        initOmicsTableData();        
+        initOmicsTableData();
         return datasetInfo;
     }
 
@@ -129,8 +136,7 @@ public class Computing implements Serializable{
      * @return datasetInformation
      */
     private void updateDatasetInfo() {
-        
-         datasetInfo = new DatasetInformation();
+        datasetInfo = new DatasetInformation();
         datasetInfo.setId(divaDataset.getId());
         datasetInfo.setRowsNumb(divaDataset.getDataLength());
         datasetInfo.setColNumb(divaDataset.getDataWidth());
@@ -138,119 +144,69 @@ public class Computing implements Serializable{
         datasetInfo.setColGroupsNumb(divaDataset.getColumnGroups().size() - 1);
         datasetInfo.setDatasetInfo(divaDataset.getInfoHeaders()[0]);
 
-        datasetInfo.setPcaColNames(getPcaColNames());
         LinkedHashMap<String, String> colNamesMap = new LinkedHashMap<String, String>();
         for (int x = 0; x < divaDataset.getColumnIds().length; x++) {
             colNamesMap.put("" + x, divaDataset.getColumnIds()[x]);
         }
         datasetInfo.setColNamesMap(colNamesMap);
         datasetInfo.setColGroupsNamesMap(this.getColGroupsPanelData());
-        datasetInfo.setColGroupsList(this.getColumnGroups());
-        System.out.println("done ok");
-//        String[] geneTableData[] = new String[divaDataset.getRowGroups().size() + 1][divaDataset.getRowIds().length];
-//        //init gene names with index
-//        String[] geneNamesArr = divaDataset.getGeneNamesArr();
-//        geneTableData[0] = divaDataset.getGeneNamesArr();
-//        divaDataset.setGeneColorArr(util.updateGroupsColorArray(geneNamesArr, divaDataset.getRowGroups()));
-//        int index = 1;
-//        String[][] rowGroupsNames = new String[divaDataset.getRowGroups().size() - 1][];
-//
-//        colorMap.clear();
-//        colorMap.put("#000000", Color.BLACK);
-//        colorMap.put("#BDBDBD", Color.LIGHT_GRAY);
-//        // init groups name and images
-//        for (int x = 0; x < rowGroupsNames.length; x++) {
-//            Group g = divaDataset.getRowGroups().get(x + 1);
-//            String color = colGen.getImageColor(g.getHashColor(), path, img_color_name + g.getName());
-//            String[] groupFields = new String[]{g.getName(), color};
-//            rowGroupsNames[x] = groupFields;
-//            colorMap.put(g.getHashColor(), g.getColor());
-//        }
-//
-//        for (Group g : divaDataset.getRowGroups()) {
-//            String[] col = new String[geneNamesArr.length];
-//            for (int x = 0; x < geneNamesArr.length; x++) {
-//                String color = "#FFFFFF";
-//                if (g.isActive() && g.getGeneList().contains(geneNamesArr[x])) {
-//                    for (String[] groupField : rowGroupsNames) {
-//                        if (groupField[0].equalsIgnoreCase(g.getName())) {
-//                            color = groupField[1];
-//                        }
-//                    }
-//                }
-//                col[x] = color;
-//            }
-//            geneTableData[index] = col;
-//            index++;
-//
-//        }
-//        if (profilePlotGenerator != null) {
-////            profilePlotGenerator.updateChartColors(geneNamesArr, colorMap);
-//        }
-//        datasetInfo = new DatasetInformation();
-//        datasetInfo.setId(divaDataset.getId());
-//        datasetInfo.setRowsNumb(divaDataset.getDataLength());
-//        datasetInfo.setColNumb(divaDataset.getDataWidth());
-//        datasetInfo.setRowGroupsNumb(divaDataset.getRowGroups().size() - 1);
-//        datasetInfo.setColGroupsNumb(divaDataset.getColumnGroups().size() - 1);
-//        datasetInfo.setDatasetInfo(divaDataset.getInfoHeaders()[0]);
-//        LinkedHashMap<String, String> colNamesMap = new LinkedHashMap<String, String>();
-//        for (int x = 0; x < divaDataset.getColumnIds().length; x++) {
-//            colNamesMap.put("" + x, divaDataset.getColumnIds()[x]);
-//        }
-//        datasetInfo.setOmicsTabelData(geneTableData);
-//        datasetInfo.setRowGroupsNames(rowGroupsNames);
-//        datasetInfo.setColNamesMap(colNamesMap);
-//        return datasetInfo;
+        datasetInfo.setColGroupsList(this.initDivaColumnGroups());
+        datasetInfo.setRowGroupList(this.initDivaRowGroups());
+
     }
 
     private void initOmicsTableData() {
-        String[][] omicsTableData = new String[divaDataset.getRowGroups().size() + 1][divaDataset.getRowIds().length];
-        //init gene names with index
-        String[] geneNamesArr = divaDataset.getGeneNamesArr();
-        omicsTableData[0] = divaDataset.getGeneNamesArr();
+        String[][] omicsTableData = new String[divaDataset.getRowGroups().size()][divaDataset.getRowIds().length];
+        System.out.println("row groups number " + divaDataset.getRowGroups().size());
+        omicsTableData[0] = divaDataset.getRowIds();
         int index = 1;
-        String[][] rowGroupsNames = new String[divaDataset.getRowGroups().size() - 1][];
-
-        colorMap.clear();
         colorMap.put("#000000", Color.BLACK);
         colorMap.put("#BDBDBD", Color.LIGHT_GRAY);
         // init groups name and images
-        for (int x = 0; x < rowGroupsNames.length; x++) {
-            Group g = divaDataset.getRowGroups().get(x + 1);
-            String color = colGen.getImageColor(g.getHashColor());
-            String[] groupFields = new String[]{g.getName(), color};
-            rowGroupsNames[x] = groupFields;
+        Map<String, String> groupImgMap = new HashMap<String, String>();//String[]{rowGroup.getName(), color};
+
+        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
+            Group g = divaDataset.getRowGroups().get(x);
+            if (g.getName().equalsIgnoreCase("All")) {
+                continue;
+            }
+
+            String colorUrl = colorImageGenerator.getImageColor(g.getHashColor());
+            groupImgMap.put(g.getName(), colorUrl);
             colorMap.put(g.getHashColor(), g.getColor());
         }
 
-        for (Group g : divaDataset.getRowGroups()) {
-            String[] col = new String[geneNamesArr.length];
-            for (int x = 0; x < geneNamesArr.length; x++) {
-                String color = "#FFFFFF";
-                if (g.isActive() && g.getGeneList().contains(geneNamesArr[x])) {
-                    for (String[] groupField : rowGroupsNames) {
-                        if (groupField[0].equalsIgnoreCase(g.getName())) {
-                            color = groupField[1];
-                        }
-                    }
-                }
-                col[x] = color;
+        for (Group rowGroup : divaDataset.getRowGroups()) {
+
+            if (rowGroup.getName().equalsIgnoreCase("All")) {
+                continue;
             }
-            omicsTableData[index] = col;
+            Set geneList = new HashSet(rowGroup.getGeneList());
+            String[] rowGroupColumn = new String[divaDataset.getDataLength()];
+            for (int x = 0; x < divaDataset.getDataLength(); x++) {
+                String color = "#FFFFFF";
+                if (rowGroup.isActive() && geneList.contains(divaDataset.getRowIds()[x])) {
+                    rowGroupColumn[x] = groupImgMap.get(rowGroup.getName());
+                } else {
+                    rowGroupColumn[x] = color;
+                }
+
+            }
+            omicsTableData[index] = rowGroupColumn;
             index++;
 
         }
-        datasetInfo.setOmicsTabelData(omicsTableData);        
-        datasetInfo.setRowGroupsNames(rowGroupsNames);
-        
+        datasetInfo.setOmicsTabelData(omicsTableData);
+
     }
 
     public DatasetInformation getDatasetInformation() {
         return datasetInfo;
     }
 
-    public SomClusteringResult computeSomClustering(int linkage, int distanceMeasure) throws IllegalArgumentException {
+    public SomClusteringResult computeSomClustering(int linkage, int distanceMeasure, boolean clusterColumns) throws IllegalArgumentException {
+
+        System.out.println("clust colo is " + clusterColumns);
         String linkageStr = "WPGMA";
         String distanceMeasureStr = "";
         ClusterParameters.LINKAGE link = null;
@@ -306,31 +262,50 @@ public class Computing implements Serializable{
                 break;
 
         }
-        
-         ClusterResults results = null;
-        String key = divaDataset.getName() + "_SomClust_" + linkage + "_" + distanceMeasure + ".ser";
+
+        ClusterResults results = null;
+        String key = divaDataset.getName() + "_SomClust_" + linkage + "_" + distanceMeasure + "_" + clusterColumns + ".ser";
         if (computingDataList.contains(key)) {
             results = database.getSomClustResult(key);
         } else {
-           ClusterParameters parameter = new ClusterParameters();
-        parameter.setDistance(distanceMeasure);
-        parameter.setClusterSamples(true);
+            ClusterParameters parameter = new ClusterParameters();
+            parameter.setDistance(distanceMeasure);
+            parameter.setClusterSamples(clusterColumns);
 
-        parameter.setLink(link);
-        SOMClustCompute som = new SOMClustCompute(divaDataset, parameter);
-        results = som.runClustering();
-         database.saveSomClustResult(key, results);
+            parameter.setLink(link);
+            SOMClustCompute som = new SOMClustCompute(divaDataset, parameter);
+            results = som.runClustering();
+            database.saveSomClustResult(key, results);
             computingDataList.add(key);
 
         }
-        
-        
 
-        
-        somClustImgGenerator = new SomClustImgGenerator(results.getRowDendrogramRootNode(), results.getColumnDendrogramRootNode());
+        SomClusteringResult res = new SomClusteringResult();
+        String[] colNames = new String[divaDataset.getColumnIds().length];
+        int[] colArrangement = new int[divaDataset.getColumnIds().length];
+        if (clusterColumns) {
+            somClustImgGenerator = new SomClustImgGenerator(results.getRowDendrogramRootNode(), results.getColumnDendrogramRootNode());
+            String upperTreeBase64 = somClustImgGenerator.generateTopTree(results.getColumnDendrogramRootNode());
+            res.setUpperTreeImgUrl(upperTreeBase64);
+            res.setColNode(somClustImgGenerator.getTooltipsUpperNode());
 
+            for (int x = 0; x < somClustImgGenerator.getUpperTree().arrangement.length; x++) {
+                colNames[x] = divaDataset.getColumnIds()[somClustImgGenerator.getUpperTree().arrangement[x]];
+                colArrangement[x] = somClustImgGenerator.getUpperTree().arrangement[x];
+            }
+        } else {
+            somClustImgGenerator = new SomClustImgGenerator(results.getRowDendrogramRootNode(), null);
+            colNames = divaDataset.getColumnIds();
+            for (int x = 0; x < divaDataset.getColumnIds().length; x++) {
+                colArrangement[x] = x;
+            }
+
+        }
+
+        res.setColNames(colNames);
         String sideTreeBase64 = somClustImgGenerator.generateSideTree(results.getRowDendrogramRootNode());
-        String upperTreeBase64 = somClustImgGenerator.generateTopTree(results.getColumnDendrogramRootNode());
+       
+
         final java.text.NumberFormat numformat;
         numformat = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
         numformat.setMaximumFractionDigits(3);
@@ -340,15 +315,9 @@ public class Computing implements Serializable{
             double[] row = divaDataset.getData()[somClustImgGenerator.getSideTree().arrangement[x]];
             double[] arrangedColRow = new double[row.length];
             for (int y = 0; y < row.length; y++) {
-                arrangedColRow[y] = Double.valueOf(numformat.format(row[somClustImgGenerator.getUpperTree().arrangement[y]]));
+                arrangedColRow[y] = Double.valueOf(numformat.format(row[colArrangement[y]]));
             }
             values[x] = arrangedColRow;
-        }
-
-        String[] colNames = new String[somClustImgGenerator.getUpperTree().arrangement.length];
-
-        for (int x = 0; x < somClustImgGenerator.getUpperTree().arrangement.length; x++) {
-            colNames[x] = divaDataset.getColumnIds()[somClustImgGenerator.getUpperTree().arrangement[x]];
         }
 
         String[] rowNames = new String[somClustImgGenerator.getSideTree().arrangement.length];
@@ -357,20 +326,24 @@ public class Computing implements Serializable{
             rowNames[x] = divaDataset.getRowIds()[somClustImgGenerator.getSideTree().arrangement[x]];
         }
 
-        String heatmapUrl = somClustImgGenerator.generateHeatMap(divaDataset);
-        String scaleUrl = somClustImgGenerator.generateScale(divaDataset);
-        SomClusteringResult res = new SomClusteringResult();
+        String heatmapUrl = somClustImgGenerator.generateHeatMap(divaDataset, clusterColumns);
+        String scaleUrl = somClustImgGenerator.generateScale(divaDataset, clusterColumns);
+
         res.setSideTreeImgUrl(sideTreeBase64);
-        res.setUpperTreeImgUrl(upperTreeBase64);
+
         res.setHeatMapImgUrl(heatmapUrl);
         res.setScaleImgUrl(scaleUrl);
         res.setDistanceMeasure(distanceMeasureStr);
         res.setLinkage(linkageStr);
-        res.setColNode(somClustImgGenerator.getTooltipsUpperNode());
+
         res.setRowNode(somClustImgGenerator.getTooltipsSideNode());
-        res.setColNames(colNames);
+
         res.setRowNames(rowNames);
-        res.setValues(values);
+        res.setValues(values); 
+        res.setSideTreeHeight(somClustImgGenerator.getLeftTreeHeight());
+        res.setSideTreeWidth(somClustImgGenerator.getLeftTreeWidth());
+        res.setTopTreeHeight(somClustImgGenerator.getTopTreeHeight());
+        res.setTopTreeWidth(somClustImgGenerator.getTopTreeWidth());
         return res;
 
     }
@@ -403,6 +376,7 @@ public class Computing implements Serializable{
 
     /**
      * This method is used to update line chart
+     *
      * @param selection - selected omics data indexes
      * @return line chart image results
      */
@@ -412,7 +386,6 @@ public class Computing implements Serializable{
         }
         return profilePlotGenerator.toImage();
     }
-
 
     public PCAImageResult computePCA(int comI, int comII) {
         String key = divaDataset.getName() + "_PCA_" + comI + "_" + comII + ".ser";
@@ -434,7 +407,7 @@ public class Computing implements Serializable{
         pcaImgResults.setImgString(mainPCAGenerator.toImage());
         return pcaImgResults;
     }
-    
+
     /**
      * This method is responsible for retrieving PCA results
      *
@@ -446,7 +419,7 @@ public class Computing implements Serializable{
         return results;
     }
 
- private final PCAUtil pcaUtil = new PCAUtil();
+    private final PCAUtil pcaUtil = new PCAUtil();
 
     /**
      * This method is used to compute pca
@@ -462,88 +435,36 @@ public class Computing implements Serializable{
         return PCAResult;
     }
 
-    private final PCAGenerator pcaGen = new PCAGenerator();
-
     /**
      * This method is used to update pca
      *
-     * @param subSelectionData - sub-selection indexes
-     * @param selection - selected omics data indexes
-     * @param selectAll - select all data indexes
-     * @param zoom - boolean
-     * @param w - width
-     * @param h - height
-     * @param path - path to divaFiles folder
-     * @param pcaChartImage pca image name
+     * @param selection selected indexes
      * @return PCA image results
      */
     public String updatePCASelection(int[] selection) {
-        if(selection != null){
-           
-        for(int x:selection)
-            System.err.println("selection index "+x);
-        }
-//        if(zoom)
-//        {            
-//            mainPCAGenerator.zoomedSelectionChange(selection);
-//            mainPCAGenerator.selectionChanged(selection);
-//            boolean []  notShad = mainPCAGenerator.zoomedSelectionChange(selection);
-//            zoomedPCAGenerator.setNotShaded(notShad);
-//            zoomedPCAGenerator.forceFullRepaint();
-//            return zoomedPCAGenerator.toImage();
-        
-//        }
-//        PCAImageResult pcaImgResults = pcaGen.generateChart(path, PCAResult, subSelectionData, selection, zoom, selectAll, pcaChartImage, w, h, divaDataset);
-//        pcaImgResults.setDatasetId(divaDataset.getId());
-       
-//        Object[] obj = pcaUtil.getTooltips(pcaImgResults, PCAResult.getPoints());
-//        HashMap<String, String> tooltips = (HashMap<String, String>) obj[0];
-//        pcaIndexTable = (PCAPoint[]) obj[1];
-//////        pcaImgResults.setXyName(tooltips);
-//////        pcaImgResults.setIndexeMap(pcaIndexTable);
-//        else
-            mainPCAGenerator.selectionChanged(selection);
-//        pcaImgResults.setImgString(updatedPCAGenerator.toImage());
-        
-        
+
+        mainPCAGenerator.selectionChanged(selection);
+
         return mainPCAGenerator.toImage();
 
     }
-    
-    public String pcaShowAll(boolean showAll, int[] sel){
-      mainPCAGenerator.setShadowUnselected(showAll);
-            if (showAll == false) {
-                mainPCAGenerator.selectionChanged(sel);
-            } else {
-                mainPCAGenerator.setNotShaded(null);
 
-            }
-      mainPCAGenerator.forceFullRepaint();
-//      System.out.println(showAll);
-      
-//      if(zoom)
-//        {
-//            System.err.println("show all !!");
-//
-//            boolean[] notShad = mainPCAGenerator.getZoomedNotshadIndex();
-//            zoomedPCAGenerator.setShadowUnselected(showAll);
-//
-//            if (showAll == false) {
-//                zoomedPCAGenerator.setNotShaded(notShad);
-//            } else {
-//                zoomedPCAGenerator.setNotShaded(null);
-//                
-//
-//            }
-//            zoomedPCAGenerator.forceFullRepaint();
-//            return zoomedPCAGenerator.toImage();
-//
-//        }
+    public String pcaShowAll(boolean showAll, int[] sel) {
+        mainPCAGenerator.setShadowUnselected(showAll);
+        if (showAll == false) {
+            mainPCAGenerator.selectionChanged(sel);
+        } else {
+            mainPCAGenerator.setNotShaded(null);
+
+        }
+        mainPCAGenerator.forceFullRepaint();
+
         return mainPCAGenerator.toImage();
 
     }
 
     private boolean zoom = false;
+
     public PCAImageResult pcaZoomIn(int startX, int startY, int endX, int endY) {
 //        int[] indexes = null;
 //        DivaDataset zoomedDataset = null;
@@ -560,7 +481,6 @@ public class Computing implements Serializable{
 //            zoom = true;
 //        PcaCompute pcacompute = new PcaCompute(zoomedDataset);
 //        zoomedPCAGenerator = new PCAImageGenerator(pcacompute.createPCA(), zoomedDataset, mainPCAGenerator.getPcax(),mainPCAGenerator.getPcay());
-       
 //        updatedPCAGenerator = new PCAImageGenerator(, zoomDataset(indexes), 0, 1);
 //         boolean[] notShad = mainPCAGenerator.getZoomedNotshadIndex();
 //         if(notShad != null)
@@ -569,6 +489,7 @@ public class Computing implements Serializable{
 //             zoomedPCAGenerator.selectionChanged(new int[]{});
 //            System.err.println("start zooming");
 //        zoomedPCAGenerator.forceFullRepaint();
+        System.out.println("zoom in is working");
         mainPCAGenerator.setZoom(true, (startX), (startY), (endX), (endY));
         PCAImageResult pcaImgResults = new PCAImageResult();
         pcaImgResults.setDatasetId(divaDataset.getId());
@@ -581,76 +502,27 @@ public class Computing implements Serializable{
 //        return null;
     }
 
-    private DivaDataset zoomDataset(int[] selection) {
-        double[][] subData = new double[selection.length][divaDataset.getDataWidth()];
-        String[] names = new String[selection.length];
-        for (int x = 0; x < selection.length; x++) {
-            subData[x] = divaDataset.getData()[selection[x]];
-            names[x] = divaDataset.getRowIds()[selection[x]];
-        }
-
-        DivaDataset subZoomDataset = new DivaDataset(subData, names, divaDataset.getColumnIds());
-        for (Group g : divaDataset.getRowGroups()) {
-            ArrayList<Integer> ind = new ArrayList<Integer>();
-            for (int x : selection) {
-                if (g.getIndices().contains(x)) {
-                    ind.add(x);
-
-                }
-
-            }
-////            if (ind.size() > 0) {
-            int[] indexes = new int[ind.size()];
-            for (int x = 0; x < ind.size(); x++) {
-                indexes[x] = ind.get(x);
-            }
-            Group tg = new Group(g.getName(), g.getColor(), Selection.TYPE.OF_ROWS, indexes);
-            tg.setActive(g.isActive());
-            subZoomDataset.addRowGroup(tg);
-//            }
-
-        }
-        return subZoomDataset;
-
-    }
-
+   
     public PCAImageResult pcaZoomReset() {
         zoom = false;
 
 //       int startx,int starty,int endx,int endy
 //        updatedPCAGenerator.zoomOut();
         //get selection
-        
         //remap it 
-        
         //generate new generator
 //        updatedPCAGenerator = new 
 //        updatedPCAGenerator.forceFullRepaint();
         mainPCAGenerator.zoomOut();
         PCAImageResult pcaImgResults = new PCAImageResult();
-        pcaImgResults.setDatasetId(divaDataset.getId());        
+        pcaImgResults.setDatasetId(divaDataset.getId());
         //set current selection 
-        pcaImgResults.setImgString(mainPCAGenerator.toImage());        
+        pcaImgResults.setImgString(mainPCAGenerator.toImage());
         pcaImgResults.setTooltipInformatinData(mainPCAGenerator.getTooltipsInformationData());
         return pcaImgResults;
 
     }
 
-
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
 //     
 //      /**
 //     * This method is used to load selected tempDivaDataset from the file system
@@ -668,14 +540,6 @@ public class Computing implements Serializable{
 //        return tempDivaDataset;
 //
 //    }
-    
-    
-    
-    
-    
-    
-    
-
 //    /**
 //     * This method is responsible for initializing all datasets and convert them
 //     * from text files to serialized files this method will be called at the
@@ -686,15 +550,9 @@ public class Computing implements Serializable{
 //    public void initDivaDatasets() {
 //        database.initDivaDatasets(path);
 //    }
-
-   
-
-    
-    
-    
     /**
-     * This method is used to get selected tempDivaDataset from the file system and
- initialize it
+     * This method is used to get selected tempDivaDataset from the file system
+     * and initialize it
      *
      * @param datasetId - dataset id
      * @return tempDivaDataset
@@ -709,100 +567,49 @@ public class Computing implements Serializable{
         return tempDivaDataset;
 
     }
-    
-    
-    
-
-  
-    
-    
 
     /**
      * This method is used to activate groups
      *
      * @param rowGroups - row groups ids
-     * @param colGroups - column groups ids
-     * @param divaDataset - update diva dataset information
      * @return tempDivaDataset
      */
-    public DivaDataset activateGroups(String[] rowGroups, String[] colGroups, DivaDataset divaDataset) {
+    public DatasetInformation activateGroups(String[] rowGroups) {
 
         if (rowGroups != null && rowGroups.length > 0) {
             List<no.uib.jexpress_modularized.core.dataset.Group> updatedActiveGroupList = new ArrayList<no.uib.jexpress_modularized.core.dataset.Group>();
             for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getRowGroups()) {
+
+//                if(g.getName().equalsIgnoreCase("All")){
+//                g.setColor(Color.LIGHT_GRAY);
+//                }else
                 g.setActive(false);
+
                 updatedActiveGroupList.add(g);
             }
             divaDataset.getRowGroups().clear();
             divaDataset.getRowGroups().addAll(updatedActiveGroupList);
             updatedActiveGroupList.clear();
+            for (Group g : divaDataset.getRowGroups()) {
+                for (String gName : rowGroups) {
 
-            for (String str : rowGroups) {
-                String gName = str.split(",")[1];
-                if (gName.equalsIgnoreCase("ALL")) {
-                    updatedActiveGroupList.clear();
-                    for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getRowGroups()) {
-                        if (g.getName().equalsIgnoreCase("ALL")) {
-                            g.setActive(true);
-                        } else {
-                            g.setActive(false);
-                        }
-                        updatedActiveGroupList.add(g);
+                    if (gName.equalsIgnoreCase(g.getName())) {
+//                        if (g.getName().equalsIgnoreCase("All")) {
+//                            g.setColor(Color.BLACK);
+//                        } else {
+                        g.setActive(true);
+//                        }
+                        break;
                     }
-                    break;
 
-                } else {
-
-                    for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getRowGroups()) {
-                        if (g.getName().equalsIgnoreCase(gName)) {
-                            g.setActive(true);
-                        }
-                        updatedActiveGroupList.add(g);
-                    }
                 }
-            }
-        }
-
-        if (colGroups != null && colGroups.length > 0) {
-            List<no.uib.jexpress_modularized.core.dataset.Group> updatedActiveGroupList = new ArrayList<no.uib.jexpress_modularized.core.dataset.Group>();
-            for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
-                g.setActive(false);
                 updatedActiveGroupList.add(g);
+
             }
-            divaDataset.getColumnGroups().clear();
-            divaDataset.getColumnGroups().addAll(updatedActiveGroupList);
-            updatedActiveGroupList.clear();
-
-            for (String str : colGroups) {
-                String gName = str.split(",")[1];
-                if (gName.equalsIgnoreCase("ALL")) {
-                    updatedActiveGroupList.clear();
-                    for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
-                        if (g.getName().equalsIgnoreCase("ALL")) {
-                            g.setActive(true);
-                        } else {
-                            g.setActive(false);
-                        }
-                        updatedActiveGroupList.add(g);
-                    }
-                    break;
-
-                } else {
-
-                    for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
-                        if (g.getName().equalsIgnoreCase(gName)) {
-                            g.setActive(true);
-                        }
-                        updatedActiveGroupList.add(g);
-                    }
-                }
-            }
-            divaDataset.getColumnGroups().clear();
-            divaDataset.getColumnGroups().addAll(updatedActiveGroupList);
-            updatedActiveGroupList.clear();
-
+            divaDataset.getRowGroups().clear();
+            divaDataset.getRowGroups().addAll(updatedActiveGroupList);
         }
-        return divaDataset;
+        return getDatasetInformation();
 
     }
 
@@ -811,37 +618,37 @@ public class Computing implements Serializable{
      *
      * @param name - row group name
      * @param color - row group hashed color
-     * @param type - group type (row)
+     * @param description - group description (row)
      * @param selection - omics data indexes
-     * @param divaDataset
      * @return tempDivaDataset
      */
-    public DivaDataset createRowGroup(String name, String color, String type, int[] selection, DivaDataset divaDataset) {
+    public DatasetInformation createRowGroup(String name, String color, String description, int[] selection) {
 
-        List<Group> updatedActiveGroupList = new ArrayList<Group>();
-        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
-            no.uib.jexpress_modularized.core.dataset.Group g = divaDataset.getRowGroups().get(x);
-            if (x == (divaDataset.getRowGroups().size() - 1)) {
-                g.setActive(true);
-            } else {
-                g.setActive(false);
-            }
-            updatedActiveGroupList.add(g);
-        }
-        divaDataset.getRowGroups().clear();
-        divaDataset.getRowGroups().addAll(updatedActiveGroupList);
-        List<Group> updatedDevaActiveGroupList = new ArrayList<Group>();
-        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
-            Group g = divaDataset.getRowGroups().get(x);
-            if (x == (divaDataset.getRowGroups().size() - 1)) {
-                g.setActive(true);
-            } else {
-                g.setActive(false);
-            }
-            updatedDevaActiveGroupList.add(g);
-        }
-        divaDataset.getRowGroups().clear();
-        divaDataset.getRowGroups().addAll(updatedDevaActiveGroupList);
+//        System.out.println("Create group "+name+"  "+ color+"  "+description+"  "+selection.length);
+//        List<Group> updatedActiveGroupList = new ArrayList<Group>();
+//        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
+//            no.uib.jexpress_modularized.core.dataset.Group rowGroup = divaDataset.getRowGroups().get(x);
+//            if (x == (divaDataset.getRowGroups().size() - 1)) {
+//                rowGroup.setActive(true);
+//            } else {
+//                rowGroup.setActive(false);
+//            }
+//            updatedActiveGroupList.add(rowGroup);
+//        }
+//        divaDataset.getRowGroups().clear();
+//        divaDataset.getRowGroups().addAll(updatedActiveGroupList);
+//        List<Group> updatedDevaActiveGroupList = new ArrayList<Group>();
+//        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
+//            Group rowGroup = divaDataset.getRowGroups().get(x);
+//            if (x == (divaDataset.getRowGroups().size() - 1)) {
+//                rowGroup.setActive(true);
+//            } else {
+//                rowGroup.setActive(false);
+//            }
+//            updatedDevaActiveGroupList.add(rowGroup);
+//        }
+//        divaDataset.getRowGroups().clear();
+//        divaDataset.getRowGroups().addAll(updatedDevaActiveGroupList);
         Color c = null;
         if (color == null || color.equals("")) {
             c = generatRandColor();
@@ -851,9 +658,17 @@ public class Computing implements Serializable{
         Selection.TYPE s = Selection.TYPE.OF_ROWS;
         Group jG = new Group(name, c, new Selection(s, selection));
         jG.setActive(true);
+        jG.setHashColor(color);
+        jG.setDescription(description);
         jG.setGeneList(util.initGroupGeneList(divaDataset.getGeneIndexNameMap(), jG.getMembers()));
+        Collections.reverse(divaDataset.getRowGroups());
         divaDataset.addRowGroup(jG);
-        return divaDataset;
+        Collections.reverse(divaDataset.getRowGroups());
+
+//        divaDataset.addRowGroup(jG);
+        this.updateDatasetInfo();
+        this.initOmicsTableData();
+        return this.getDatasetInformation();
     }
 
     /**
@@ -861,31 +676,27 @@ public class Computing implements Serializable{
      *
      * @param name - column group name
      * @param color - column group hashed color
-     * @param type - group type (columns)
-     * @param strSelection - column data ids
-     * @param divaDataset
+     * @param description - group description (columns)
+     * @param selection selection indexes
      * @return tempDivaDataset
      */
-    public DivaDataset createColGroup( String name, String color, String type, String[] strSelection, DivaDataset divaDataset) {
-        if (strSelection == null || strSelection.length == 0) {
-            return null;
-        }
-        int[] selection = new int[strSelection.length];
-        for (int x = 0; x < strSelection.length; x++) {
-            selection[x] = Integer.valueOf(strSelection[x]);
-        }
+    public DatasetInformation createColGroup(String name, String color, String description, int[] selection) {
         Color c = null;
         if (color == null || color.equals("")) {
             c = generatRandColor();
         } else {
             c = hex2Rgb(color);
         }
-        Selection.TYPE s = null;
-        s = Selection.TYPE.OF_COLUMNS;
-        no.uib.jexpress_modularized.core.dataset.Group jG = new no.uib.jexpress_modularized.core.dataset.Group(name, c, new Selection(s, selection));
+        Selection.TYPE s = Selection.TYPE.OF_COLUMNS;
+        Group jG = new Group(name, c, new Selection(s, selection));
         jG.setActive(true);
+        jG.setHashColor(color);
+        jG.setDescription(description);
         divaDataset.addColumnGroup(jG);
-        return divaDataset;
+        this.updateDatasetInfo();
+        this.initOmicsTableData();
+
+        return this.getDatasetInformation();
     }
 
     /**
@@ -893,14 +704,28 @@ public class Computing implements Serializable{
      *
      * @param name - dataset name
      * @param selection - omics data indexes
-     * @param path - path to divaFiles folder
-     * @param divaDataset
-     * @param newDsName - new sub-dataset name
+     * @param type - group name
+     *
      * @return new dataset id
      */
-    public Integer createSubDataset(String name, int[] selection, String path, DivaDataset divaDataset, String newDsName) {
-        TreeMap<Integer, String> datasetsMap = getAvailableDatasetsMap();
+    public Integer createSubDataset(String name, String type, int[] selection) {
+        getAvailableDatasetsMap();
         int id = datasetsMap.lastKey() + 1;
+        String newDsName = name.toUpperCase() + " ( SUB DS - " + divaDataset.getName() + " )";
+        if (datasetsMap.containsValue(newDsName)) {
+            newDsName = newDsName + " - " + dateFormat.format(cal.getTime()).replace(":", " ") + "";
+        }
+
+        if (selection == null) {
+            for (Group g : divaDataset.getRowGroups()) {
+                if (g.getName().equalsIgnoreCase(type)) {
+                    selection = g.getMembers();
+                    break;
+                }
+
+            }
+
+        }
         double[][] newdata = new double[selection.length][];
         String[] newRowIds = new String[selection.length];
         boolean[][] newMissingMeasurments = new boolean[selection.length][];
@@ -917,8 +742,28 @@ public class Computing implements Serializable{
         newDS.setMissingMeasurements(newMissingMeasurments);
         newDS.addRowAnnotationNameInUse(divaDataset.getInfoHeaders()[0]);
         newDS.setName(newDsName);
-        database.setDataset(newDS, id);
-        return id;
+
+        newDS.setRowIds(newRowIds);
+        newDS.getColumnGroups().clear();
+
+        newDS.getColumnGroups().addAll(divaDataset.getColumnGroups());
+        newDS.getRowGroups().clear();
+        Group g = new Group("all", Color.BLACK, new Selection(Selection.TYPE.OF_ROWS, selection));
+        newDS.addRowGroup(g);
+        newDS = util.initDivaDs(newDS, id);
+        String[] geneNamesArr = util.initGeneNamesArr(newDS.getGeneIndexNameMap());
+        newDS.setGeneNamesArr(geneNamesArr);
+
+        for (int dsKey : datasetsMap.keySet()) {
+            String dsName = datasetsMap.get(dsKey);
+            if (newDsName.equalsIgnoreCase(dsName)) {
+                newDS.setId(dsKey);
+                break;
+            }
+        }
+        database.setDataset(newDS);
+
+        return newDS.getId();
 
     }
     /*
@@ -933,23 +778,33 @@ public class Computing implements Serializable{
      * @param divaDataset
      */
     public void saveTxtDataset(int datasetId, DivaDataset divaDataset) {
-        database.setDataset(divaDataset, datasetId);
+        database.setDataset(divaDataset);
     }
 
     /**
      * This method is used to store updated datasets
      *
      * @param newName - new updated dataset name
-     * @param divaDataset
-     * @param path - path to divaFiles folder
      * @return dataset id
      */
-    public Integer saveDataset(String newName, DivaDataset divaDataset, String path) {
-        TreeMap<Integer, String> datasetsMap = getAvailableDatasetsMap();
-        int id = datasetsMap.lastKey() + 1;
+    public Integer saveDataset(String newName) {
+
+        newName = (newName.toUpperCase() + " (" + divaDataset.getName() + " )");
+        getAvailableDatasetsMap();
+        if (datasetsMap.containsValue(newName)) {
+            newName += " - " + dateFormat.format(cal.getTime()).replace(":", " ");
+        }
+
         divaDataset.setName(newName);
-        database.setDataset(divaDataset, id);
-        return id;
+        database.setDataset(divaDataset);
+        getAvailableDatasetsMap();
+        for (int dsKey : datasetsMap.keySet()) {
+            String dsName = datasetsMap.get(dsKey);
+            if (newName.equalsIgnoreCase(dsName)) {
+                return dsKey;
+            }
+        }
+        return 0;
     }
 
     /**
@@ -974,13 +829,14 @@ public class Computing implements Serializable{
     public String[] getPcaColNames() {
         String[] pcaColNames = new String[divaDataset.getColumnIds().length];
         for (int x = 0; x < pcaColNames.length; x++) {
-            pcaColNames[x] = "Principal Component nr " + x;
+            pcaColNames[x] = "Principal Component nr " + (x + 1);
         }
         return pcaColNames;
     }
 
     /**
      * This method is used to get activate row group panel initialization data
+     *
      * @return activate row group data
      */
     public LinkedHashMap<String, String> getRowGroupsPanelData() {
@@ -988,45 +844,80 @@ public class Computing implements Serializable{
         LinkedHashMap<String, String> rowGroupsNamesMap = new LinkedHashMap<String, String>();
         for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
             rowGroupsNamesMap.put(divaDataset.getRowGroups().get(x).isActive() + "," + divaDataset.getRowGroups().get(x).getName(), divaDataset.getRowGroups().get(x).getName());
-        }     
+        }
 
         return rowGroupsNamesMap;
     }
-    
-     /**
-     * This method is used to get activate column group panel initialization data
-     * @return activate column group data
-     */
-     public LinkedHashMap<String, String> getColGroupsPanelData() {
-        LinkedHashMap<String, String> colGroupsNamesMap = new LinkedHashMap<String, String>();      
-        for (int x = 0; x < divaDataset.getColumnGroups().size(); x++) {
-            colGroupsNamesMap.put(divaDataset.getColumnGroups().get(x).isActive() + "," + divaDataset.getColumnGroups().get(x).getName(), divaDataset.getColumnGroups().get(x).getName());
-        }
-        return colGroupsNamesMap;
-    }
-      /**
+
+    /**
      * This method is used to get activate column group panel initialization
      * data
      *
      * @return activate column group data
      */
-    public List<ColumnGroup> getColumnGroups() {
-        List<ColumnGroup> colGroupsList = new ArrayList<ColumnGroup>();
+    public LinkedHashMap<String, String> getColGroupsPanelData() {
+        LinkedHashMap<String, String> colGroupsNamesMap = new LinkedHashMap<String, String>();
         for (int x = 0; x < divaDataset.getColumnGroups().size(); x++) {
-            ColumnGroup cg = new ColumnGroup();
+            colGroupsNamesMap.put(divaDataset.getColumnGroups().get(x).isActive() + "," + divaDataset.getColumnGroups().get(x).getName(), divaDataset.getColumnGroups().get(x).getName());
+        }
+        return colGroupsNamesMap;
+    }
+
+    /**
+     * This method is used to get activate column group panel initialization
+     * data
+     *
+     * @return activate column group data
+     */
+    public List<DivaGroup> initDivaColumnGroups() {
+        List<DivaGroup> colGroupsList = new ArrayList<DivaGroup>();
+        for (int x = 0; x < divaDataset.getColumnGroups().size(); x++) {
+            DivaGroup cg = new DivaGroup();
             cg.setName(divaDataset.getColumnGroups().get(x).getName());
-            String color = colGen.getImageColor(divaDataset.getColumnGroups().get(x).getHashColor());
+            String color = colorImageGenerator.getImageColor(divaDataset.getColumnGroups().get(x).getHashColor());
             cg.setColor(color);
-            int count =0;
-            if(divaDataset.getColumnGroups().get(x).getMembers() == null )
+            int count = 0;
+            if (divaDataset.getColumnGroups().get(x).getMembers() == null) {
                 count = divaDataset.getColumnGroups().size();
-            else
+            } else {
                 count = divaDataset.getColumnGroups().get(x).getMembers().length;
+            }
             cg.setCount(count);
             colGroupsList.add(cg);
-            System.out.println("names   "+cg.getName()+"   "+divaDataset.getColumnGroups().get(x).getHashColor()+count);
         }
         return colGroupsList;
+    }
+
+    /**
+     * This method is used to get activate column group panel initialization
+     * data
+     *
+     * @return activate column group data
+     */
+    public List<DivaGroup> initDivaRowGroups() {
+        Set<String> groups = new HashSet<String>();
+        List<DivaGroup> rowGroupsList = new ArrayList<DivaGroup>();
+        for (int x = 0; x < divaDataset.getRowGroups().size(); x++) {
+            if (groups.contains(divaDataset.getRowGroups().get(x).getName())) {
+                continue;
+            }
+            groups.add(divaDataset.getRowGroups().get(x).getName());
+            DivaGroup divaGroup = new DivaGroup();
+            divaGroup.setName(divaDataset.getRowGroups().get(x).getName());
+            String color = colorImageGenerator.getImageColor(divaDataset.getRowGroups().get(x).getHashColor());
+            divaGroup.setColor(color);
+            divaGroup.setMembers(divaDataset.getRowGroups().get(x).getMembers());
+            divaGroup.setActive(divaDataset.getRowGroups().get(x).isActive());
+            int count = 0;
+            if (divaDataset.getRowGroups().get(x).getMembers() == null) {
+                count = divaDataset.getRowGroups().size();
+            } else {
+                count = divaDataset.getRowGroups().get(x).getMembers().length;
+            }
+            divaGroup.setCount(count);
+            rowGroupsList.add(divaGroup);
+        }
+        return rowGroupsList;
     }
 
     private final Random rand = new Random();
@@ -1052,17 +943,22 @@ public class Computing implements Serializable{
      * @return group color
      */
     private Color hex2Rgb(String colorStr) {
+        if(colorStr.equalsIgnoreCase("red"))
+            return Color.red;
+        if(!colorStr.contains("#"))
+            return  Color.decode(colorStr);
+                    else{
         return new Color(
                 Integer.valueOf(colorStr.substring(1, 3), 16),
                 Integer.valueOf(colorStr.substring(3, 5), 16),
                 Integer.valueOf(colorStr.substring(5, 7), 16));
+        }
     }
 
     /**
      * ***** analysis methods ********
      */
 //    private final SOMClustUtil somClustUtil = new SOMClustUtil();
-
 //    /**
 //     * This method is used to compute clustering analysis
 //     *
@@ -1097,7 +993,6 @@ public class Computing implements Serializable{
 //        System.gc();
 //        return results;
 //    }
-
     /**
      * This method is used to compute clustering heat-map
      *
@@ -1114,9 +1009,6 @@ public class Computing implements Serializable{
 //        HeatMapImageResult imge = hmGenerator.getHeatMapResults();
 //        return imge;
 //    }
-
-   
-   
     private final RankUtil rankUtil = new RankUtil();
 
     /**
@@ -1230,7 +1122,7 @@ public class Computing implements Serializable{
     }
 
     public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2) {
-        System.out.println("log2 "+log2);
+//        System.out.println("log2 "+log2);
         String colGroupName = "";
         RankResult rankResults = null;
         for (String str : colGropNames) {
@@ -1241,11 +1133,13 @@ public class Computing implements Serializable{
             rankResults = getRankResult(key);
 
         } else {
-            try{
-            rankResults = computeRank(divaDataset.getId(), perm, seed, colGropNames, log2);
-            saveRankResult(key, rankResults);
-            computingDataList.add(key);
-        }catch(Exception e){System.err.println(e.getMessage());}
+            try {
+                rankResults = computeRank(divaDataset.getId(), perm, seed, colGropNames, log2);
+                saveRankResult(key, rankResults);
+                computingDataList.add(key);
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
         }
         return rankResults;
     }
@@ -1253,15 +1147,13 @@ public class Computing implements Serializable{
     /**
      * This method is responsible for exporting data
      *
-     * @param divaDataset
-     * @param groupName - selected group name
+     * @param gName - selected group name
      * @param path - path to divaFiles folder
      * @param url - context url
      * @param textFileName - exported file name
      * @return exported file url
      */
-    public String exportDataTotext(DivaDataset divaDataset, String groupName, String path, String url, String textFileName) {
-        String gName = groupName.split(",")[1];
+    public String exportDataTotext(String gName, String path, String url, String textFileName) {
         Group g = null;
         for (Group gr : divaDataset.getRowGroups()) {
             if (gr.getName().equalsIgnoreCase(gName)) {
@@ -1271,6 +1163,10 @@ public class Computing implements Serializable{
         }
         return util.exportDataTotext(divaDataset, g, path, url, textFileName);
 
+    }
+
+     public List<DivaGroup> getColGroups() {
+        return datasetInfo.getColGroupsList();
     }
 
     public int[] getPCASelection(int startX, int startY, int endX, int endY) {
@@ -1342,10 +1238,11 @@ public class Computing implements Serializable{
 //        return null;
     }
 
-    public DatasetInformation activateGroups(String[] rowGroups, String[] colGroups) {
-        divaDataset = activateGroups(rowGroups, colGroups, divaDataset);
-        updateDatasetInfo();
-        return datasetInfo;
-    }
+//    public DatasetInformation activateGroups(String[] rowGroups) {
+//        divaDataset = activateGroups(rowGroups, colGroups, divaDataset);
+//       
+//        this.updateDatasetInfo();
+//        return datasetInfo;
+//    }
     
 }

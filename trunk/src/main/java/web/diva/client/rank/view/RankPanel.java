@@ -6,44 +6,45 @@
 package web.diva.client.rank.view;
 
 import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.Window;
+import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
-import com.smartgwt.client.widgets.events.CloseClickEvent;
-import com.smartgwt.client.widgets.events.CloseClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.RadioGroupItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.validator.IsIntegerValidator;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import com.smartgwt.client.widgets.grid.events.CellSelectionChangedEvent;
-import com.smartgwt.client.widgets.grid.events.CellSelectionChangedHandler;
+import com.smartgwt.client.widgets.grid.events.CellClickEvent;
+import com.smartgwt.client.widgets.grid.events.CellClickHandler;
+import com.smartgwt.client.widgets.grid.events.EditCompleteEvent;
+import com.smartgwt.client.widgets.grid.events.EditCompleteHandler;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.ArrayList;
 import java.util.List;
-import web.diva.shared.beans.ColumnGroup;
+import web.diva.shared.beans.DivaGroup;
 
 /**
  *
- * @author Yehia Farag
- * pup-up window for rank panel user inputs
+ * @author Yehia Farag pup-up window for rank panel user inputs
  */
-public final class RankPanel extends Window {
+public final class RankPanel extends PopupPanel {
 
 //    private final SelectItem selectColGroups;
-    private final RadioGroupItem radioGroupItem;
-    private final TextItem permutation, seed;
+    private RadioGroupItem radioGroupItem;
+    private TextItem permutation, seed;
     private final IButton okBtn;
-    private final HTML errorlabl;
-    private final DynamicForm form2;
+    private HTML errorlabl;
+    private DynamicForm form2;
     private ListGrid selectionTable;
 
     public DynamicForm getForm2() {
@@ -53,116 +54,152 @@ public final class RankPanel extends Window {
     public HTML getErrorlabl() {
         return errorlabl;
     }
+    private final VLayout mainBodyLayout;
 
-    public RankPanel(List<ColumnGroup> colGroupsList) {
-        this.setWidth(400);
-        this.setHeight(350);
-        this.setTitle("Differential Expression");
-        this.setShowMinimizeButton(false);
-        this.setIsModal(false);
-        this.centerInPage();
-        this.addCloseClickHandler(new CloseClickHandler() {
+    public RankPanel() {
+        this.setAnimationEnabled(true);
+        this.ensureDebugId("cwBasicPopup-imagePopup");
+        this.setModal(true);
+
+//        this.setWidth(400 + "px");
+//        this.setHeight(300 + "px");
+        mainBodyLayout = new VLayout();
+        
+        mainBodyLayout.setWidth(400);
+        mainBodyLayout.setHeight(300);
+       
+
+        HLayout topLayout = new HLayout();
+        topLayout.setMembersMargin(1);
+        topLayout.setWidth(400);
+        topLayout.setHeight(20);
+        mainBodyLayout.addMember(topLayout);
+        Label title = new Label("Rank Product (Differential Expression)");
+        title.setStyleName("labelheader");
+        topLayout.addMember(title);
+        title.setWidth(384 + "px");
+
+        Label closeBtn = new Label();
+
+        closeBtn.addStyleName("close");
+        closeBtn.setHeight("16px");
+        closeBtn.setWidth("16px");
+
+        closeBtn.addClickHandler(new ClickHandler() {
+
             @Override
-            public void onCloseClick(CloseClickEvent event) {
+            public void onClick(ClickEvent event) {
                 hide();
             }
         });
 
-        VLayout mainBodyLayout = new VLayout();
-        mainBodyLayout.setWidth("100%");
-        mainBodyLayout.setHeight("100%");
-        this.addItem(mainBodyLayout);
+        topLayout.addMember(closeBtn);
 
-        DynamicForm form = new DynamicForm();
-        form.setIsGroup(true);
-        form.setWidth("100%");
-        form.setPadding(5);
-        
-        selectionTable = new ListGrid();
-        initSelectionTable();
-        mainBodyLayout.addMember(selectionTable);
-//        selectColGroups = new SelectItem();
-//        selectColGroups.setTitle("COLUMN GROUPS (MAX 2)");
-//        selectColGroups.setTitleOrientation(TitleOrientation.TOP);
-//        selectColGroups.setTextAlign(Alignment.CENTER);
-//        selectColGroups.setTitleAlign(Alignment.CENTER);
-//        selectColGroups.setMultiple(true);
-//        selectColGroups.setMultipleAppearance(MultipleAppearance.GRID);
-//        selectColGroups.setWidth("100%");
-//        selectColGroups.setHeight("60%");
-        this.updateData(colGroupsList);
-        selectionTable.addCellSelectionChangedHandler(new CellSelectionChangedHandler() {
 
-            @Override
-            public void onCellSelectionChanged(CellSelectionChangedEvent event) {
+        mainBodyLayout.setMargin(5);
+        try {
+            mainBodyLayout.setMembersMargin(5);
 
-                ListGridRecord[] records = selectionTable.getRecords();
-                int counter = 0;
-                for (ListGridRecord record : records) {
-                    if (Boolean.valueOf(record.getAttribute("selection")) == true) {
-                        counter++;
-                        if (counter > 1)
-                        {
-                            event.cancel();
-                            errorlabl.setVisible(true);
-                            
-                        }
-                    }
+            Label tableTitle = new Label("COLUMN GROUPS (MAX 2)");
+            tableTitle.setHeight("20px");
+            mainBodyLayout.addMember(tableTitle);
+            selectionTable = new ListGrid();
+            initSelectionTable();
+            mainBodyLayout.addMember(selectionTable);
+//            this.updateData(colGroupsList);
+//            selectionTable.addCellSelectionChangedHandler(new CellSelectionChangedHandler() {
+//
+//                @Override
+//                public void onCellSelectionChanged(CellSelectionChangedEvent event) {
+//
+//                    ListGridRecord[] records = selectionTable.getRecords();
+//                    int counter = 0;
+//                    for (ListGridRecord record : records) {
+//                        if (Boolean.valueOf(record.getAttribute("selection")) == true) {
+//                            counter++;
+//                            if (counter > 1) {
+//                                event.cancel();
+//                                errorlabl.setVisible(true);
+//
+//                            }
+//                        }
+//                    }
+//                }
+//
+//            });
+
+            DynamicForm form = new DynamicForm();
+            form.setIsGroup(true);
+            form.setWidth("100%");
+            form.setMargin(5);
+            form.setGroupTitle("Values");
+            form.setHeight("25%");
+            form.setWidth("100%");
+
+            radioGroupItem = new RadioGroupItem();
+            radioGroupItem.setHeight("20%");
+            radioGroupItem.setWidth("100%");
+            radioGroupItem.setTitle("");
+            radioGroupItem.setValueMap("Log 2", "Linear");
+            radioGroupItem.setValue("Log 2");
+            radioGroupItem.setShouldSaveValue(true);
+            form.setFields(radioGroupItem);
+            form.redraw();
+            mainBodyLayout.addMember(form);
+
+            form2 = new DynamicForm();
+            form2.setGroupTitle("Permutations");
+            form2.setIsGroup(true);
+            form2.setHeight("25%");
+            form2.setWidth("100%");
+            form2.setMargin(5);
+            form2.setPadding(1);
+            permutation = new TextItem();
+            permutation.setTitle("Permutation");
+            permutation.setBrowserInputType("digits");
+            permutation.setRequired(true);
+
+            permutation.setValidators(new IsIntegerValidator());
+            permutation.setValue(400);
+
+            seed = new TextItem();
+            seed.setTitle("Seed");
+            seed.setRequired(true);
+            seed.setBrowserInputType("digits");
+            seed.disable();
+            seed.setValue(Random.nextInt(1000000001));
+
+            ButtonItem btn = new ButtonItem();
+            btn.setShowTitle(true);
+            btn.setTitle("New seed");
+            btn.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler() {
+
+                @Override
+                public void onClick(com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
+                    seed.setValue(Random.nextInt(1000000001));
                 }
-            }
+            });
 
-        });
 
-        radioGroupItem = new RadioGroupItem();
-        radioGroupItem.setHeight("20%");
-        radioGroupItem.setWidth("100%");
-        radioGroupItem.setTitle("");
-        radioGroupItem.setValueMap("Log 2", "Linear");
-        radioGroupItem.setValue("Log 2");
-        radioGroupItem.setShouldSaveValue(true);
+            form2.setFields(permutation, seed, btn);
+            
 
-        form.setGroupTitle("Values");
-        form.setHeight("25%");
-        form.setWidth("100%");
-        form.setGroupBorderCSS("color:gray;");
-        
-        form2 = new DynamicForm();
-        form2.setGroupBorderCSS("color:gray;");
-        form2.setGroupTitle("Permutations");
-        form2.setIsGroup(true);
-        form2.setHeight("25%");
-        form2.setWidth("100%");
-        permutation = new TextItem();
-        permutation.setTitle("Permutation");
-        permutation.setBrowserInputType("digits");
-        permutation.setRequired(true);
+            form2.redraw();
+            mainBodyLayout.addMember(form2);
 
-        permutation.setValidators(new IsIntegerValidator());
-        permutation.setValue(400);
-
-        seed = new TextItem();
-        seed.setTitle("Seed");
-        seed.setRequired(true);
-        seed.setBrowserInputType("digits");
-        seed.disable();
-        seed.setValue(Random.nextInt(1000000001));
-
-        form.setFields(radioGroupItem);
-        form2.setFields(permutation, seed);
-        form.redraw();
-        form2.redraw();
-        mainBodyLayout.addMember(form);
-        mainBodyLayout.addMember(form2);
+        } catch (Exception e) {
+            Window.alert("error is ");
+        }
 
         HLayout hlo = new HLayout();
         hlo.setWidth("100%");
         hlo.setHeight("10%");
 
-        IButton newSeedBtn = new IButton("Create new seed");
-        hlo.addMember(newSeedBtn);
-
+//        IButton newSeedBtn = new IButton("Create new seed");
+//        hlo.addMember(newSeedBtn);
         okBtn = new IButton("Process");
         hlo.addMember(okBtn);
+
         hlo.setMargin(10);
         hlo.setMembersMargin(20);
         hlo.setAlign(Alignment.CENTER);
@@ -173,18 +210,16 @@ public final class RankPanel extends Window {
         errorlabl.setHeight("15%");
         errorlabl.setWidth("100%");
         mainBodyLayout.addMember(errorlabl);
-        colGroupsList = null;
-
-        newSeedBtn.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                seed.setValue(Random.nextInt(1000000001));
-            }
-        });
+//        colGroupsList = null;
+        mainBodyLayout.redraw();
+         this.add(mainBodyLayout);
+        mainBodyLayout.setStyleName("modalLayout");
+        this.show();
+        this.hide();
 
     }
 
-    public void updateData(List<ColumnGroup> colGroupsList) {
+    public void updateData(List<DivaGroup> colGroupsList) {
         if (errorlabl != null) {
             errorlabl.setVisible(false);
         }
@@ -192,24 +227,26 @@ public final class RankPanel extends Window {
             form2.clearErrors(true);
             form2.redraw();
         }
-        updateRecors(colGroupsList);
-
-//        selectColGroups.setValueMap(colGroupsNamesMap);
+        updateRecords(colGroupsList);
 
     }
 
-    public  List<String> getSelectColGroups() {
-        List<String> selectionList = new ArrayList<String>();
-        ListGridRecord[] records = selectionTable.getRecords();
-        for (ListGridRecord record : records) {
-            if (Boolean.valueOf(record.getAttribute("selection")) == true) {
-                selectionList.add(record.getAttribute("groupName"));
-            }
-        }
+    public List<String> getSelectColGroups() {
+       
+      
+//        for (int x=0;x<rownumber;x++) {
+//            Record record= selectionTable.getRecordList().get(x);
+//            Window.alert(record.getAttributeAsBoolean("selection")+"");
+//            if (record.getAttributeAsBoolean("selection") == true) {                
+//            
+//            selectionList.add(record.getAttribute("groupName"));
+//            }
+//        }
         return selectionList;
-        
+
     }
 
+    private  List<String> selectionList = new ArrayList<String>();
     public String getRadioGroupItem() {
         return radioGroupItem.getValueAsString();
     }
@@ -225,56 +262,76 @@ public final class RankPanel extends Window {
     public IButton getOkBtn() {
         return okBtn;
     }
+
     private void initSelectionTable() {
-        
-        selectionTable.setTitle("COLUMN GROUPS (MAX 2)");
+
         selectionTable.setWidth100();
-        selectionTable.setHeight("70%");
-        
-        ListGridField selectField = new ListGridField("selection", "Selection");  
-        selectField.setType(ListGridFieldType.BOOLEAN);  
-        selectField.setCanEdit(true);  
-        selectField.setAutoFitWidth(true);
-        
-        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 50);  
-        groupNameField.setAlign(Alignment.CENTER);  
-        groupNameField.setType(ListGridFieldType.TEXT);  
-        groupNameField.setAutoFitWidth(true);
-       
-        ListGridField colorField = new ListGridField("color", "Color");  
-        colorField.setAlign(Alignment.CENTER);  
-        colorField.setType(ListGridFieldType.IMAGE);          
-        colorField.setCanEdit(false);  
-        colorField.setAutoFitWidth(true);
-        
-        ListGridField countField = new ListGridField("count", "Count");  
-        countField.setAlign(Alignment.CENTER);  
-        countField.setType(ListGridFieldType.INTEGER); 
-        countField.setAutoFitWidth(true);
-  
-        selectionTable.setFields(new ListGridField[] {selectField, groupNameField, colorField,countField});  
-        
-        
-        
-        
+        selectionTable.setHeight(100);
+        selectionTable.setLeaveScrollbarGap(false);
+        selectionTable.setShowHeaderContextMenu(false);
+        ListGridField selectField = new ListGridField("Selection", "Selection");
+        selectField.setType(ListGridFieldType.BOOLEAN);
+        selectField.setCanEdit(true);
+//        selectField.setAutoFitWidth(true);
+
+        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 50);
+        groupNameField.setAlign(Alignment.CENTER);
+        groupNameField.setType(ListGridFieldType.TEXT);
+        groupNameField.setWidth(107);
+        ListGridField colorField = new ListGridField("color", "Color");
+        colorField.setAlign(Alignment.CENTER);
+        colorField.setType(ListGridFieldType.IMAGE);
+        colorField.setCanEdit(false);
+
+        ListGridField countField = new ListGridField("count", "Count");
+        countField.setAlign(Alignment.CENTER);
+        countField.setType(ListGridFieldType.INTEGER);
+        selectionTable.setFields(new ListGridField[]{selectField, groupNameField, colorField, countField});
+        selectionTable.addCellClickHandler(new CellClickHandler() {
+
+            @Override
+            public void onCellClick(CellClickEvent event) {
+               
+//               boolean test =  event.getRecord().getAttributeAsBoolean("Selection");
+//               Window.alert("test is "+test+"  gname is : "+event.getRecord().getAttributeAsString("groupName"));
+               
+            }
+        });
+        selectionTable.addEditCompleteHandler(new EditCompleteHandler() {
+
+            @Override
+            public void onEditComplete(EditCompleteEvent event) {
+                 boolean test =  event.getNewValuesAsRecord().getAttributeAsBoolean("Selection");
+                  
+                  if(selectionList.contains(event.getOldValues().getAttributeAsString("groupName"))){
+                      if(!test){
+                          selectionList.remove(event.getOldValues().getAttributeAsString("groupName"));                         
+                      }
+                  }else if(test){
+                      selectionList.add(event.getOldValues().getAttributeAsString("groupName"));
+                  }
+            }
+        });
+      
 
     }
-    
-    private void updateRecors(List<ColumnGroup> colGroupsList){
+
+    private void updateRecords(List<DivaGroup> colGroupsList) {
+       selectionList.clear();
         ListGridRecord[] records = new ListGridRecord[colGroupsList.size()];
-        int index=0;
-        for(ColumnGroup cgr:colGroupsList){
-             ListGridRecord record = new ListGridRecord();  
-        record.setAttribute("selection", false);  
-        record.setAttribute("groupName", cgr.getName());  
-        com.google.gwt.user.client.Window.alert((cgr.getColor() == null)+cgr.getColor());
-        record.setAttribute("color", new Image(cgr.getColor()));  
-        record.setAttribute("count", cgr.getCount());  
-        records[index++]=record;
-        
+        int index = 0;
+        for (DivaGroup cgr : colGroupsList) {
+            ListGridRecord record = new ListGridRecord();
+            record.setAttribute("selection", false);
+           
+            record.setAttribute("groupName", cgr.getName().toUpperCase());
+            record.setAttribute("color", cgr.getColor());
+            record.setAttribute("count", cgr.getCount());
+            records[index++] = record;
+
         }
-       
-    selectionTable.setData(records);  
+
+        selectionTable.setData(records);
     }
 
 }

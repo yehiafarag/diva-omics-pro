@@ -17,9 +17,9 @@ public class DivaDataset extends Dataset implements Serializable {
 
     private Map<Integer, String> geneIndexNameMap;
     private Map<String, Integer> geneNameIndexMap;
-    private String[] geneColorArr;
+//    private String[] geneColorArr;
     private String[] geneNamesArr;
-    private Map<Integer, Number[]> membersMap;
+//    private Map<Integer, Number[]> membersMap;
     private Number[][] lineChartPointArr;
 
     public int getId() {
@@ -31,13 +31,13 @@ public class DivaDataset extends Dataset implements Serializable {
     }
     private int id;
 
-    public Map<Integer, Number[]> getMembersMap() {
-        return membersMap;
-    }
+//    public Map<Integer, Number[]> getMembersMap() {
+//        return membersMap;
+//    }
 
-    public void setMembersMap(Map<Integer, Number[]> membersMap) {
-        this.membersMap = membersMap;
-    }
+//    public void setMembersMap(Map<Integer, Number[]> membersMap) {
+//        this.membersMap = membersMap;
+//    }
 
     public DivaDataset(double[][] data, String[] names, String[] colnames) {
         super(data, names, colnames);
@@ -59,13 +59,13 @@ public class DivaDataset extends Dataset implements Serializable {
         this.geneNameIndexMap = geneNameIndexMap;
     }
 
-    public String[] getGeneColorArr() {
-        return geneColorArr;
-    }
-
-    public void setGeneColorArr(String[] geneColorArr) {
-        this.geneColorArr = geneColorArr;
-    }
+//    public String[] getGeneColorArr() {
+//        return geneColorArr;
+//    }
+//
+//    public void setGeneColorArr(String[] geneColorArr) {
+//        this.geneColorArr = geneColorArr;
+//    }
 
     public String[] getGeneNamesArr() {
         return geneNamesArr;

@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Vector;
 import javax.swing.border.Border;
-import no.uib.jexpress_modularized.core.dataset.Group;
-import no.uib.jexpress_modularized.core.model.Selection;
 import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.pca.model.ArrayUtils;
 import org.apache.commons.codec.binary.Base64;
@@ -152,12 +150,15 @@ public class PCAImageGenerator implements Serializable{
         this.pcay = pcay;
         this.plot = new PcaPlot();
         plot.setMaximumSize(new Dimension(32767, 32767));
-        plot.setMinimumSize(new Dimension(700,400));
-        plot.setPreferredSize(new Dimension(700,400));
+        plot.setMinimumSize(new Dimension(900,700));
+        plot.setPreferredSize(new Dimension(900,700));
 //        isneurons = false;
-        plot.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(120, 120, 120)));
+        plot.setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLUE));
         plot.setLayout(new java.awt.FlowLayout(0, 5, 1));
-        plot.setSize(700,400);
+        plot.setSize(900,700);
+        plot.setBackground(Color.WHITE);
+        
+       
 //        plot.dotsize = 5;
         indexToZoomed = new int[divaDataset.getDataLength()];
        
@@ -185,7 +186,7 @@ public class PCAImageGenerator implements Serializable{
 //        plot.setFrameBG(color);
 //    }
     public void forceFullRepaint() {
-        plot.FullRepaint = true;
+        plot.setFullRepaint(true);
         plot.repaint();
         plot.forceFullRepaint();
     }
@@ -278,15 +279,16 @@ public class PCAImageGenerator implements Serializable{
     }
 
     public boolean isZoompca() {
-        return plot.zoompca;
+        return plot.isZoompca();
     }
 
     public boolean isPaintNamesonClick() {
 
-        return plot.paintNamesonClick;
+        return plot.isPaintNamesonClick();
     }
 
     public boolean[] getFramedIndexes() {
+        System.out.println("getFramedIndexes");
         return plot.getFramedIndexes();
     }
 
@@ -368,7 +370,7 @@ public class PCAImageGenerator implements Serializable{
                 points[1][i] = pcaResults.ElementAt(i, pcay);
                
             } 
-            plot.data = divaDataset;
+            plot.setData(divaDataset);
             rowIds = divaDataset.getRowIds();
             if(zoom)
                 plot.setPropsAndData(points[0], points[1],zoomedRect);
@@ -378,9 +380,12 @@ public class PCAImageGenerator implements Serializable{
         
         plot.setXaxisTitle("Principal Component " + (pcax + 1));
         plot.setYaxisTitle("Principal Component" + (pcay + 1));
-        plot.FullRepaint = true;        
-        plot.repaint();
+     
+//        plot.Layout.put("chartbgSV", new Color(255, 255, 255));
+        plot.setFullRepaint(true);        
+//        plot.repaint();
         plot.forceFullRepaint();
+        
       
         
       
@@ -408,7 +413,7 @@ public class PCAImageGenerator implements Serializable{
 //    }
 
     public void setZoomPca(boolean zoom) {
-        plot.zoompca = zoom;
+        plot.setZoompca(zoom);
     }
      public void setZoom(boolean zoom,int startX, int startY, int endX, int endY) {
         this.zoom = zoom;        
@@ -417,7 +422,7 @@ public class PCAImageGenerator implements Serializable{
     }
 
     public void setPaintNamesonClick(boolean paint) {
-        plot.paintNamesonClick = paint;
+        plot.setPaintNamesonClick(paint);
     }
 
     
@@ -446,7 +451,7 @@ public class PCAImageGenerator implements Serializable{
         this.pcaz = pcaz;
     }
 
-    public no.uib.jexpress_modularized.core.visualization.charts.DensScatterPlot getPlot() {
+    public PcaPlot getPlot() {
         return plot;
     }
     public UpdatedTooltip getTooltipsInformationData() {
@@ -721,10 +726,7 @@ public class PCAImageGenerator implements Serializable{
          double[] selectRect = null;
          if (zoom) {
              try {
-                 selectRect = getZoomedSelectionRecatangle(startX, startY, endX, endY);
-                  System.out.println("pointX "+selectRect[0] +"   pointY  "+selectRect[2] +"  plot.left -  "+plot.left+"  plot.yaxis.predictWidth()  "+plot.yaxis.predictWidth());
-        
-//         System.out.println("zoomedpointX "+selectrectZoom[0] +"   zoomedpointY  "+selectrectZoom[2] +"  zoomedplot.left -  "+plot.left+"  zoomedplot.yaxis.predictWidth()  "+plot.yaxis.predictWidth());
+                 selectRect = getZoomedSelectionRecatangle(startX, startY, endX, endY);        
 
              } catch (Exception exp) {
                  exp.printStackTrace();
@@ -772,15 +774,11 @@ public class PCAImageGenerator implements Serializable{
      
      private double[] getZoomedSelectionRecatangle(int startX, int startY, int endX, int endY) {
         
-         
-//         System.out.println("------ selection--->> "+plot.getZoomedArea()[0] +" ---  "+ plot.getZoomedArea()[1]);
-//         System.out.println("zoomed selection--->> "+plot.xaxis.getDataMax() +" ---  "+ plot.xaxis.getDataMin());
         double[] selectionRect = new double[4];
         int maxXM = Math.max(startX, endX);
         int minXM = Math.min(startX, endX);
         int maxYM = Math.max(startY, endY);
         int minYM = Math.min(startY, endY);
-         System.out.println("stage 1 is ok maxXM "+maxXM+"  maxYM  "+maxYM);
         int plotWidthArea = (plot.getWidth() - plot.left - plot.right);
         int plotHeightArea = plot.getHeight() - plot.top - plot.bottom;
 
@@ -789,13 +787,9 @@ public class PCAImageGenerator implements Serializable{
             return null;
         }
         if ((minYM < plot.top && maxXM < plot.left) || (minYM > plot.top + plotHeightArea)) {
-            System.out.println("stage 3 is ok ");
             return null;
         }
-        minXM = minXM - plot.left ;
-        
-         System.out.println("stage4 is ok minXM "+minXM+"  plot.left  "+plot.left);
-        
+        minXM = minXM - plot.left ;        
          maxXM= maxXM - plot.left ;
          minYM-=plot.top;
          maxYM-=plot.top;
@@ -880,6 +874,8 @@ public class PCAImageGenerator implements Serializable{
 //         zoomedRect[2]= modStartY;
          double modEndY = plot.yaxis.maximum - (minYM * yUnitPix);
          selectionRect[3]=modEndY;
+         
+         System.out.println("selection rectangele is "+ modStartX+"  "+modEndX);
          return selectionRect;
      
      }

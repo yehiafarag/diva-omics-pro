@@ -10,6 +10,11 @@
     <!-- Other module inherits                                      -->
     <inherits name="com.smartgwt.SmartGwt"/>   
     <inherits name="com.mogaleaf.SimpleColorPicker"/>
+    
+    <inherits name="com.smartgwt.SmartGwtNoScript"/>
+    <inherits name="com.smartgwt.DrawingNoScript"/>
+    <inherits name="com.smartgwt.tools.SmartGwtTools"/>
+    <inherits name="com.smartgwt.Drawing"/>;
 
     <!-- Specify the app entry point class.                         -->
     <entry-point class='web.diva.client.DivaMain'/>

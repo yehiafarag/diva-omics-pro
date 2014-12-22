@@ -5,6 +5,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
+import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
@@ -20,14 +21,14 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
 public interface GreetingService extends RemoteService {
 
     //load dataset information
-    TreeMap<Integer, String> getAvailableDatasets();
+    TreeMap<Integer, String> getAvailableDatasets(int userBrowserId);
 
     DatasetInformation setMainDataset(int datasetId);
 
     String computeProfilePlot(double w, double h);
 
 //    SomClusteringResult computeSomClustering(int datasetId, int linkage, int distanceMeasure) throws IllegalArgumentException;
-    SomClusteringResult computeSomClustering(int linkage, int distanceMeasure) throws IllegalArgumentException;
+    SomClusteringResult computeSomClustering(int linkage, int distanceMeasure,boolean clusterColumns) throws IllegalArgumentException;
 
 //    HeatMapImageResult computeHeatmap(int datasetId, ArrayList<String> indexer, ArrayList<String> colIndexer);
 
@@ -35,17 +36,17 @@ public interface GreetingService extends RemoteService {
 
     RankResult computeRank( String perm, String seed, List<String> colGropNames, String log2);
 
-    Boolean createRowGroup(String name, String color, String type, int[] selection);
+    DatasetInformation createRowGroup(String name, String color, String type, int[] selection);
 
-    Boolean createColGroup(String name, String color, String type, String[] selection);
+    DatasetInformation createColGroup(String name, String color, String type, int[] selection);
 
-    Integer createSubDataset(String name, int[] selection);
+    Integer createSubDataset(String name,String type, int[] selection);
 
     DatasetInformation updateDatasetInfo();
 
-    DatasetInformation activateGroups(String[] rowGroups, String[] colGroups);
+    DatasetInformation activateGroups(String[] rowGroups);
 
-    String exportData(String rowGroups);
+    String exportData(String rowGroup);
 
     Integer saveDataset(String newName);
 
@@ -69,6 +70,7 @@ public interface GreetingService extends RemoteService {
 
     PCAImageResult pcaZoomIn(int startX, int startY, int endX, int endY);
     PCAImageResult pcaZoomReset();
+    List<DivaGroup> getColGroups();
 
 
 }

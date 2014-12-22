@@ -6,6 +6,7 @@
 package web.diva.client.omicstables.view;
 
 import com.smartgwt.client.types.ListGridFieldType;
+import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.widgets.Button;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
@@ -15,75 +16,69 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
  *
  * @author Yehia Farag
  */
-public class OmicsTable extends ListGrid{
+public class OmicsTable extends ListGrid {
     
-    
-    public OmicsTable(DatasetInformation datasetInfo,int height)
-    {
-         setShowRecordComponents(true);
+    public OmicsTable(DatasetInformation datasetInfo) {
+        setShowRecordComponents(true);
         setShowRecordComponentsByCell(true);
         setCanRemoveRecords(false);
-        setHeight(100 + "%");
-        setWidth("100%");
+        setShowHeaderContextMenu(false);
         setShowAllRecords(false);
-        setShowRollOver(false);
-        ListGridField[] fields = new ListGridField[(3 + datasetInfo.getRowGroupsNumb())];
-        ListGridField nameField = new ListGridField("gene", datasetInfo.getDatasetInfo());
-        nameField.setWidth("30%");
-        nameField.setCanFilter(true);
-        nameField.setType(ListGridFieldType.TEXT);
+        setCanSort(Boolean.TRUE);        
+        setSelectionType(SelectionStyle.MULTIPLE);
+        setCanResizeFields(true);
+        setShowEdges(false);
+
+//        setLeaveScrollbarGap(false);
+        setCanDragSelect(true);
+        
+        this.setStyleName("borderless");
+//        this.setBorder("0px sold black");
+        
         ListGridField indexField = new ListGridField("index", " ");
         indexField.setWidth("50px");
         indexField.setType(ListGridFieldType.INTEGER);
-
         indexField.setCanFilter(false);
-        ListGridField allField = new ListGridField("all", "ALL");
-        allField.setWidth("8px");
+        
+        ListGridField nameField = new ListGridField("gene", datasetInfo.getDatasetInfo());
+//        nameField.setAutoFitWidth(true);
+        nameField.setCanFilter(true);
+        nameField.setType(ListGridFieldType.TEXT);
+        
+        ListGridField allField = new ListGridField("all", "All Indexes");
+        allField.setWidth("23px");
         allField.setIconVAlign("center");
         allField.setCanFilter(false);
         allField.setType(ListGridFieldType.ICON);
         allField.setIcon("../images/b.png");
-
+        allField.setShowTitle(false);
+        allField.setShowDownIcon(true);
+        
+        ListGridField[] fields = new ListGridField[(3 + datasetInfo.getRowGroupsNumb())];
         fields[0] = indexField;
         fields[1] = (nameField);
         fields[2] = allField;
         for (int z = 0; z < datasetInfo.getRowGroupsNumb(); z++) {
-
-            ListGridField temLGF = new ListGridField(datasetInfo.getRowGroupsNames()[z][0], datasetInfo.getRowGroupsNames()[z][0].toUpperCase());
-            temLGF.setWidth("8px");
-            temLGF.setShowValueIconOnly(true);
-            temLGF.setCanFilter(false);
-            temLGF.setIconVAlign("center");
-            temLGF.setType(ListGridFieldType.IMAGE);
-            temLGF.setIcon(datasetInfo.getOmicsTabelData()[z + 2][0]);
-            fields[z + 3] = temLGF;
+            ListGridField rowGroupListGridField = new ListGridField(datasetInfo.getRowGroupList().get(z).getName(), datasetInfo.getRowGroupList().get(z).getName());            
+            rowGroupListGridField.setShowValueIconOnly(false);
+            rowGroupListGridField.setCanFilter(false);
+            rowGroupListGridField.setShowTitle(false);
+            rowGroupListGridField.setIconVAlign("center");
+            rowGroupListGridField.setType(ListGridFieldType.IMAGE);
+            rowGroupListGridField.setWidth("23px");
+            rowGroupListGridField.setIcon(datasetInfo.getRowGroupList().get(z).getColor());
+            fields[z + 3] = rowGroupListGridField;
         }
         setFields(fields);
-
         setCanResizeFields(true);
-        setCanSort(false);
-//        setAutoFetchData(false);
         setFilterButtonPrompt("searching...");
-//
+        
         this.setShowFilterEditor(true);
-//        this.setFilterOnKeypress(false);
         Button filterBtn = new Button();
-        filterBtn.setIcon("http://www.culturainglesasp.com.br/wps/themes/html/Portal_Internet/icons/SearchButton.gif");
-//        filterBtn.setWidth(15);
+        filterBtn.setIcon("../images/searchBtn.png");        
         filterBtn.setTitle("search");
         this.setFilterButtonProperties(filterBtn);
-
-//        draw();
-//        this.addFilterEditorSubmitHandler(new FilterEditorSubmitHandler() {
-//
-//            @Override
-//            public void onFilterEditorSubmit(FilterEditorSubmitEvent event) {
-//                Window.alert("filter is submitted " + event.getCriteria().getValues());
-//            }
-//        });
-//        setSelectionType(SelectionStyle.MULTIPLE);
-//        setLeaveScrollbarGap(false);
-//        setCanDragSelect(true);
-
+        draw();
+        
     }
 }

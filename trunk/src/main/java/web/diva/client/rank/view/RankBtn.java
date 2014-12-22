@@ -9,7 +9,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Label;
 import java.util.List;
-import web.diva.shared.beans.ColumnGroup;
+import web.diva.shared.beans.DivaGroup;
 
 /**
  *
@@ -18,9 +18,9 @@ import web.diva.shared.beans.ColumnGroup;
 public class RankBtn extends Label{
     
     private final RankPanel rankPanel;
-    public  RankBtn(List<ColumnGroup> colGroupsList){
+    public  RankBtn(List<DivaGroup> colGroupsList){
         super(" Rank Product ");
-        rankPanel = new RankPanel(colGroupsList);
+        rankPanel = new RankPanel();
         this.addStyleName("clickable");
         this.setHeight("20px");
         this.setWidth(" Rank Product ".length() * 6 + "px");

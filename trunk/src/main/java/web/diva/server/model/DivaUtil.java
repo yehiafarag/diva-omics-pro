@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.Map;
 import no.uib.jexpress_modularized.core.dataset.Group;
 import web.diva.server.model.beans.DivaDataset;
 
-public class DivaUtil {
+public class DivaUtil implements Serializable{
 
     public Map<Integer, String> initIndexNameGeneMap(String[] rowIds) {
         Map<Integer, String> geneMap = new HashMap<Integer, String>();
@@ -34,7 +35,7 @@ public class DivaUtil {
         if (!divaDataset.getColumnGroups().isEmpty()) {
             List<Group> tgl = new ArrayList<Group>();
             for (Group g : divaDataset.getColumnGroups()) {
-//                g.setGeneList(initGroupGeneList(divaDataset.getGeneIndexNameMap(), g.getMembers()));
+                g.setGeneList(initGroupGeneList(divaDataset.getGeneIndexNameMap(), g.getMembers()));
                 tgl.add(g);
             }
             divaDataset.getColumnGroups().clear();
@@ -42,17 +43,17 @@ public class DivaUtil {
         }
 
         if (!divaDataset.getRowGroups().isEmpty()) {
-            List<Group> tgl = new ArrayList<Group>();
+            List<Group> tempGroupList = new ArrayList<Group>();
             for (Group g : divaDataset.getRowGroups()) {
                 g.setGeneList(initGroupGeneList(divaDataset.getGeneIndexNameMap(), g.getMembers()));
-                tgl.add(g);
+                tempGroupList.add(g);
             }
             divaDataset.getRowGroups().clear();
-            divaDataset.getRowGroups().addAll(tgl);
+            divaDataset.getRowGroups().addAll(tempGroupList);
 
         }
-        Map<Integer, Number[]> membersMap = initIndexMembers(divaDataset);
-        divaDataset.setMembersMap(membersMap);
+//        Map<Integer, Number[]> membersMap = initIndexMembers(divaDataset);
+//        divaDataset.setMembersMap(membersMap);
         return divaDataset;
     }
 
@@ -74,21 +75,21 @@ public class DivaUtil {
 
     }
 
-    public Map<Integer, Number[]> initIndexMembers(DivaDataset dataset) {
-        Map<Integer, Number[]> memberMaps = new HashMap<Integer, Number[]>();
-        for (int x = 0; x < dataset.getDataLength(); x++) {
-            double[] row = dataset.getData()[x];
-            Number[] points = new Number[row.length];
-            for (int y = 0; y < dataset.getDataWidth(); y++) {
-                points[y] = row[y];
-            }
-
-            memberMaps.put(x, points);
-
-        }
-
-        return memberMaps;
-    }
+//    public Map<Integer, Number[]> initIndexMembers(DivaDataset dataset) {
+//        Map<Integer, Number[]> memberMaps = new HashMap<Integer, Number[]>();
+//        for (int x = 0; x < dataset.getDataLength(); x++) {
+//            double[] row = dataset.getData()[x];
+//            Number[] points = new Number[row.length];
+//            for (int y = 0; y < dataset.getDataWidth(); y++) {
+//                points[y] = row[y];
+//            }
+//
+//            memberMaps.put(x, points);
+//
+//        }
+//
+//        return memberMaps;
+//    }
 
     public String[] initGeneNamesArr(Map<Integer, String> geneIndexName) {
         String[] geneNameArr = new String[geneIndexName.size()];
@@ -107,6 +108,7 @@ public class DivaUtil {
                     color = "#000000";
                 } else if (g.getGeneList().contains(geneNameArr[x]) && g.isActive()) {
                     color = g.getHashColor();
+                    System.out.println("color is "+color);
                 }
                 colorArr[x] = color;
             }

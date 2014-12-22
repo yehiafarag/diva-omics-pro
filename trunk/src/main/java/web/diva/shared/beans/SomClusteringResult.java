@@ -28,6 +28,11 @@ public class SomClusteringResult implements IsSerializable{
     private  String[] rowNames;
     private  String[] colNames;
     
+    private int topTreeWidth;
+    private int sideTreeWidth;
+    private int topTreeHeight;
+    private int sideTreeHeight;
+    
 
     public String getSideTreeImgUrl() {
         return sideTreeImgUrl;
@@ -115,6 +120,38 @@ public class SomClusteringResult implements IsSerializable{
 
     public void setValues(double[][] values) {
         this.values = values;
+    }
+
+    public int getTopTreeWidth() {
+        return topTreeWidth;
+    }
+
+    public void setTopTreeWidth(int topTreeWidth) {
+        this.topTreeWidth = topTreeWidth;
+    }
+
+    public int getSideTreeWidth() {
+        return sideTreeWidth;
+    }
+
+    public void setSideTreeWidth(int sideTreeWidth) {
+        this.sideTreeWidth = sideTreeWidth;
+    }
+
+    public int getTopTreeHeight() {
+        return topTreeHeight;
+    }
+
+    public void setTopTreeHeight(int topTreeHeight) {
+        this.topTreeHeight = topTreeHeight;
+    }
+
+    public int getSideTreeHeight() {
+        return sideTreeHeight;
+    }
+
+    public void setSideTreeHeight(int sideTreeHeight) {
+        this.sideTreeHeight = sideTreeHeight;
     }
     
 }

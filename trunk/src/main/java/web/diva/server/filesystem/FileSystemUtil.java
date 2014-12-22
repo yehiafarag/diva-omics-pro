@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,13 +21,12 @@ import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAResults;
 import web.diva.shared.beans.RankResult;
-import web.diva.shared.unused.SomClusteringResult;
 
 /**
  *
  * @author Yehia Farag
  */
-public class FileSystemUtil {
+public class FileSystemUtil implements Serializable{
 
     private final DatasetFileReader reader = new DatasetFileReader();
 
