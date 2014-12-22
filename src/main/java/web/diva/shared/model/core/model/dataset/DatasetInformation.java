@@ -4,15 +4,16 @@
 package web.diva.shared.model.core.model.dataset;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
-import web.diva.shared.beans.ColumnGroup;
+import web.diva.shared.beans.DivaGroup;
 
 /**
  *
  * @author Yehia Farag
  */
-public class DatasetInformation implements IsSerializable {
+public class DatasetInformation implements IsSerializable,Serializable {
 
     private int rowsNumb;
     private int colNumb;
@@ -20,14 +21,14 @@ public class DatasetInformation implements IsSerializable {
     private int colGroupsNumb;
     private int id;
     private String datasetInfo;
-    private String[][] rowGroupsNames;
-    private String[][] omicsTabelData;    
-    private String[] pcaColNames;
-    
-    private List<ColumnGroup> colGroupsList;
+//    private String[][] rowGroupsNames;
+    private String[][] omicsTabelData;
+//    private String[] pcaColNames;
+
+    private List<DivaGroup> colGroupsList, rowGroupList;
 
     private LinkedHashMap<String, String> colNamesMap;
-    private LinkedHashMap<String,String> colGroupsNamesMap;
+    private LinkedHashMap<String, String> colGroupsNamesMap;
 
     public String[][] getOmicsTabelData() {
         return omicsTabelData;
@@ -85,14 +86,13 @@ public class DatasetInformation implements IsSerializable {
         this.datasetInfo = datasetInfo;
     }
 
-    public String[][] getRowGroupsNames() {
-        return rowGroupsNames;
-    }
-
-    public void setRowGroupsNames(String[][] rowGroupsNames) {
-        this.rowGroupsNames = rowGroupsNames;
-    }
-
+//    public String[][] getRowGroupsNames() {
+//        return rowGroupsNames;
+//    }
+//
+//    public void setRowGroupsNames(String[][] rowGroupsNames) {
+//        this.rowGroupsNames = rowGroupsNames;
+//    }
     public LinkedHashMap<String, String> getColNamesMap() {
         return colNamesMap;
     }
@@ -101,27 +101,33 @@ public class DatasetInformation implements IsSerializable {
         this.colNamesMap = colNamesMap;
     }
 
-    public String[] getPcaColNames() {
-        return pcaColNames;
-    }
-
-    public void setPcaColNames(String[] pcaColNames) {
-        this.pcaColNames = pcaColNames;
-    }
-
-    public LinkedHashMap<String,String> getColGroupsNamesMap() {
+//    public String[] getPcaColNames() {
+//        return pcaColNames;
+//    }
+//    public void setPcaColNames(String[] pcaColNames) {
+//        this.pcaColNames = pcaColNames;
+//    }
+    public LinkedHashMap<String, String> getColGroupsNamesMap() {
         return colGroupsNamesMap;
     }
 
-    public void setColGroupsNamesMap(LinkedHashMap<String,String> colGroupsNamesMap) {
+    public void setColGroupsNamesMap(LinkedHashMap<String, String> colGroupsNamesMap) {
         this.colGroupsNamesMap = colGroupsNamesMap;
     }
 
-    public List<ColumnGroup> getColGroupsList() {
+    public List<DivaGroup> getColGroupsList() {
         return colGroupsList;
     }
 
-    public void setColGroupsList(List<ColumnGroup> colGroupsList) {
+    public void setColGroupsList(List<DivaGroup> colGroupsList) {
         this.colGroupsList = colGroupsList;
+    }
+
+    public List<DivaGroup> getRowGroupList() {
+        return rowGroupList;
+    }
+
+    public void setRowGroupList(List<DivaGroup> rowGroupList) {
+        this.rowGroupList = rowGroupList;
     }
 }

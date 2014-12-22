@@ -1,18 +1,25 @@
 package web.diva.server;
 
+import com.google.gwt.user.client.rpc.SerializationException;
 import web.diva.client.GreetingService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.gwt.user.server.rpc.SerializationPolicy;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import web.diva.server.model.Computing;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 import web.diva.server.model.beans.DivaDataset;
+import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 import web.diva.shared.beans.SomClusteringResult;
@@ -24,6 +31,28 @@ import web.diva.shared.beans.SomClusteringResult;
  */
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
+
+    @Override
+    public String processCall(String payload) throws SerializationException {
+        System.out.println("process a call"+payload);
+        return super.processCall(payload); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    protected SerializationPolicy doGetSerializationPolicy(HttpServletRequest request, String moduleBaseURL, String strongName) {
+         System.out.println("mod doget is called "+moduleBaseURL+"  name "+strongName);
+         request.getSession();
+        return super.doGetSerializationPolicy(request, moduleBaseURL, strongName); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("do get is called");
+        super.doGet(req, resp); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
 
     @Override
     public String pcaShowAll(boolean showAll,int[] selection) {
@@ -82,22 +111,43 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 //    private HashSet<String> computingDataList;
 
     private  Computing compute ;
+    
+    private  int userTabId = -1;
 
     @Override
-    public TreeMap<Integer, String> getAvailableDatasets() {
-
-         
+    public TreeMap<Integer, String> getAvailableDatasets(int userTabId) {
         if (initSession) {
-             HttpSession httpSession = getThreadLocalRequest().getSession();
-        compute =(Computing) httpSession.getAttribute("computing");
-        initSession = false;
+            HttpSession httpSession = getThreadLocalRequest().getSession();
+            compute = (Computing) httpSession.getAttribute("computing");
+            initSession = false;
+            path = compute.getPath();
         }
+//        if (this.userTabId == -1) {
+//            this.userTabId = userTabId;
+//        }
+//
+//        if (getThreadLocalRequest().getRequestedSessionId() == null) //same user another browser
+//        {
+//            return null;
+//        } else if (this.userTabId != userTabId) //same user another tab in the same browser
+//        {
+//            compute = null;
+//            getThreadLocalRequest().getSession().invalidate();
+//            getThreadLocalRequest().getSession(true);
+//            compute = new Computing(path);
+//            
+//            
+//
+//        }
+
         TreeMap<Integer, String> datasetsMap = compute.getAvailableDatasetsMap();
         return datasetsMap;
     }
 
     @Override
     public DatasetInformation setMainDataset(int datasetId) {
+        
+      
         return compute.setMainDataset(datasetId);
     }
 
@@ -106,8 +156,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         return compute.getDatasetInformation();
     }
     @Override
-    public SomClusteringResult computeSomClustering(int linkage, int distanceMeasure) throws IllegalArgumentException {
-  return compute.computeSomClustering(linkage, distanceMeasure);
+    public SomClusteringResult computeSomClustering(int linkage, int distanceMeasure,boolean clusterColumns) throws IllegalArgumentException {
+  return compute.computeSomClustering(linkage, distanceMeasure,clusterColumns);
         
     }
      @Override
@@ -120,8 +170,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public DatasetInformation activateGroups(String[] rowGroups, String[] colGroups) {
-     return compute.activateGroups(rowGroups, colGroups);//datasetInfo;
+    public DatasetInformation activateGroups(String[] rowGroups) {
+     return compute.activateGroups(rowGroups);//datasetInfo;
     }
 
 //    @Override
@@ -155,23 +205,22 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public Boolean createRowGroup(String name, String color, String type, int[] selection) {
+    public DatasetInformation createRowGroup(String name, String color, String type, int[] selection) {
         
-        divaDataset = compute.createRowGroup(name, color, type, selection, divaDataset);
-        return true;
+        DatasetInformation datasetinfo = compute.createRowGroup(name, color, type, selection);
+        return datasetinfo;
     }
 
     @Override
-    public Boolean createColGroup(String name, String color, String type, String[] strSelection) {
+    public DatasetInformation createColGroup(String name, String color, String type, int[] selection) {
        
-        divaDataset = compute.createColGroup(name, color, type, strSelection, divaDataset);      
-        return true;
+       return compute.createColGroup(name, color, type, selection);      
+        
     }
 
     @Override
-    public Integer createSubDataset(String name, int[] selection) {
-        String newDsName = "SUB - " + divaDataset.getName() + " - " + name + " - " + dateFormat.format(cal.getTime()).replace(":", " ");
-        int id = compute.createSubDataset(name, selection, path, divaDataset, newDsName);
+    public Integer createSubDataset(String name,String type, int[] selection) {      
+        int id = compute.createSubDataset(name,type, selection);
         return id;
 
     }
@@ -192,8 +241,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     @Override
     public Integer saveDataset(String newName) {
 
-        newName = (divaDataset.getName() + " - " + newName + " - " + dateFormat.format(cal.getTime())).replace(":", " ");
-        int id = compute.saveDataset(newName, divaDataset, path);
+        int id = compute.saveDataset(newName);
         return id;
     }
 
@@ -221,7 +269,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     public String exportData(String rowGroup) {
         String appPath = this.getServletContext().getRealPath("/");
         String url = this.getThreadLocalRequest().getRequestURL().toString();
-        return compute.exportDataTotext(divaDataset, rowGroup, appPath, url.substring(0, (url.length() - 10)), textFile);
+        return compute.exportDataTotext(rowGroup, appPath, url.substring(0, (url.length() - 10)), textFile);
     }
 
+    @Override
+    public List<DivaGroup> getColGroups() {
+        return compute.getColGroups();
+    }
+
+    
 }

@@ -64,7 +64,7 @@ public class PCAGenerator {
             for (int key : points.keySet()) {
                 PCAPoint point = points.get(key);
                 if (seriesList.containsKey(point.getColor())) {
-                    seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
+//                    seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
                 } else {
                     seriesList.get("unGrouped").add(point.getX(), point.getY());
                 }
@@ -81,7 +81,7 @@ public class PCAGenerator {
                 PCAPoint point = points.get(x);
                 if (selectionSet.contains(point.getGeneIndex())) {
                     if (seriesList.containsKey(point.getColor())) {
-                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
+//                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
 
                     } else {
 
@@ -98,23 +98,23 @@ public class PCAGenerator {
             for (int i : selection) {
                 selectionSet.add(i);
             }
-            for (int key : subSelectionData) {
-                PCAPoint point = points.get(key);
-                if (selectionSet.contains(point.getGeneIndex())) {
-                    if (seriesList.containsKey(divaDataset.getGeneColorArr()[point.getGeneIndex()])) {
-                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
-
-                    } else {
-
-                        seriesList.get("#000000").add(point.getX(), point.getY());
-                    }
-
-                } else {
-
-                    seriesList.get("unGrouped").add(point.getX(), point.getY());
-                }
-
-            }
+//            for (int key : subSelectionData) {
+//                PCAPoint point = points.get(key);
+//                if (selectionSet.contains(point.getGeneIndex())) {
+//                    if (seriesList.containsKey(divaDataset.getGeneColorArr()[point.getGeneIndex()])) {
+//                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
+//
+//                    } else {
+//
+//                        seriesList.get("#000000").add(point.getX(), point.getY());
+//                    }
+//
+//                } else {
+//
+//                    seriesList.get("unGrouped").add(point.getX(), point.getY());
+//                }
+//
+//            }
 
         } else //selection without zoom
         {
@@ -122,24 +122,24 @@ public class PCAGenerator {
             for (int i : selection) {
                 selectionSet.add(i);
             }
-            for (int key : points.keySet()) {
-                PCAPoint point = points.get(key);
-
-                if (selectionSet.contains(point.getGeneIndex())) {
-                    if (seriesList.containsKey(divaDataset.getGeneColorArr()[point.getGeneIndex()])) {
-                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
-
-                    } else {
-
-                        seriesList.get("#000000").add(point.getX(), point.getY());
-                    }
-
-                } else {
-
-                    seriesList.get("unGrouped").add(point.getX(), point.getY());
-                }
-
-            }
+//            for (int key : points.keySet()) {
+//                PCAPoint point = points.get(key);
+//
+//                if (selectionSet.contains(point.getGeneIndex())) {
+//                    if (seriesList.containsKey(divaDataset.getGeneColorArr()[point.getGeneIndex()])) {
+//                        seriesList.get(divaDataset.getGeneColorArr()[point.getGeneIndex()]).add(point.getX(), point.getY());
+//
+//                    } else {
+//
+//                        seriesList.get("#000000").add(point.getX(), point.getY());
+//                    }
+//
+//                } else {
+//
+//                    seriesList.get("unGrouped").add(point.getX(), point.getY());
+//                }
+//
+//            }
 
         }
         for (XYSeries ser : seriesList.values()) {

@@ -8,7 +8,9 @@ package web.diva.client.selectionmanager;
 
 import java.util.ArrayList;
 import java.util.List;
+import web.diva.client.DivaMain;
 import web.diva.client.view.core.BusyTaskIndicator;
+import web.diva.shared.model.core.model.dataset.DatasetInformation;
 //import java.util.HashMap;
 
 /**
@@ -31,16 +33,18 @@ public class SelectionManager {
     //private final HashMap<Integer, List<SelectionChangeListener>> selectionChangeListeners;
      private final  List<SelectionChangeListener> selectionChangeListeners;
    
-    private static final SelectionManager selection_Mananger = new SelectionManager();
+//    private static final SelectionManager selection_Mananger = new SelectionManager();
 
-    private SelectionManager() {        
+    public SelectionManager() {        
         selectionChangeListeners = new ArrayList<SelectionChangeListener>();
     }
     
-    public static SelectionManager getInstance(){
+//    public  SelectionManager getInstance(){
+//    
+//        return selection_Mananger;
+//    }
     
-        return selection_Mananger;
-    }
+    private DivaMain mainAppController;
 
 //    /**
 //     *
@@ -168,15 +172,18 @@ public class SelectionManager {
 //            selectionChangeListeners.clear();
 //            selectionChangeListeners.put(datasetId, new ArrayList<SelectionChangeListener>());
 //        }
-//        List<SelectionChangeListener> listeners = selectionChangeListeners.get(datasetId);
-//        for (SelectionChangeListener l : listeners) {
+//        List<SelectionChangeListener> listeners = new ArrayList<SelectionChangeListener>();
+//        listeners.addAll(selectionChangeListeners);
+//        for (SelectionChangeListener l : selectionChangeListeners) {
 //            if (l.toString().equals(listener.toString())) {
 //                l.remove();
 //                listeners.remove(l);
 //                break;
 //            }
 //        }
-//        if (!listeners.contains(listener)) {
+//        selectionChangeListeners.clear();
+//        selectionChangeListeners.addAll(listeners);
+////        if (!listeners.contains(listener)) {
 //            listeners.add(listener);
 //        }
         for(int x = 0;x<selectionChangeListeners.size();x++){
@@ -214,8 +221,21 @@ public class SelectionManager {
     }
     
     private final BusyTaskIndicator busyIndicator = new BusyTaskIndicator();
-    public void busyTask(boolean busy) {
-        busyIndicator.busyTask(busy); 
+    public void busyTask(boolean busy,boolean slow) {
+        busyIndicator.busyTask(busy,slow); 
 
+    }
+
+    public void updateAllModules(DatasetInformation datasetInfo) {
+         mainAppController.updateApp(datasetInfo);
+    }
+    public void loadDataset(int datasetId){
+        mainAppController.changeDSSelection(datasetId);
+    
+    
+    }
+
+    public void setMainAppController(DivaMain mainAppController) {
+        this.mainAppController = mainAppController;
     }
 }

@@ -15,12 +15,7 @@ import web.diva.shared.beans.RankResult;
 public class RankUtil {
 
     public RankResult handelRankTable(ArrayList<RPResult> jResults) {
-
-//        RankResult results = new RankResult();
-//        results = this.initResults(results, jResults.get(0), 0);
-//        results = this.initResults(results, jResults.get(1), 1);
-        RankResult results = initFull(jResults);
-        
+        RankResult results = initFull(jResults);        
         return results;
     }
 
@@ -114,7 +109,9 @@ public class RankUtil {
             headers[index++] = jResults.get(1).getColumnName(x);
         }
         headers[0] = "Pos " + headers[0];
-        headers[6] = "Neg " + headers[6];
+        for(int x = 6;x<headersCount;x++){
+        headers[x] = "Neg " + headers[x];
+        }
         index=0;              
         for (int rowIndex = 0; rowIndex < jResults.get(0).getRowCount(); rowIndex++) {   
             int dataColumnReindex =0;
@@ -152,16 +149,16 @@ public class RankUtil {
 
             }
         }
-         for(String str:headers)
-            System.out.print(str+"  --  ");
-         System.out.println();
-         System.out.println(posRank[0]+"        --  "+rowIds[0]+"  --  "+tableData[0][0]+"  --  "+tableData[1][0]+"  --  "+tableData[2][0]+"  --  "+tableData[3][0]+"  --  "          
-         +negRank[0]+"  --  "+tableData[4][0]+"  --  "+tableData[5][0]+"  --  "+tableData[6][0]+"  --  ");
-           System.out.println(posRank[1]+"        --  "+rowIds[1]+"  --  "+tableData[0][1]+"  --  "+tableData[1][1]+"  --  "+tableData[2][1]+"  --  "+tableData[3][1]+"  --  "          
-         +negRank[1]+"  --  "+tableData[4][1]+"  --  "+tableData[5][1]+"  --  "+tableData[6][1]+"  --  ");
-
-        
-        
+//         for(String str:headers)
+//            System.out.print(str+"  --  ");
+//         System.out.println();
+//         System.out.println(posRank[0]+"        --  "+rowIds[0]+"  --  "+tableData[0][0]+"  --  "+tableData[1][0]+"  --  "+tableData[2][0]+"  --  "+tableData[3][0]+"  --  "          
+//         +negRank[0]+"  --  "+tableData[4][0]+"  --  "+tableData[5][0]+"  --  "+tableData[6][0]+"  --  ");
+//           System.out.println(posRank[1]+"        --  "+rowIds[1]+"  --  "+tableData[0][1]+"  --  "+tableData[1][1]+"  --  "+tableData[2][1]+"  --  "+tableData[3][1]+"  --  "          
+//         +negRank[1]+"  --  "+tableData[4][1]+"  --  "+tableData[5][1]+"  --  "+tableData[6][1]+"  --  ");
+//
+//        
+//        
         
         
 //        index=0;

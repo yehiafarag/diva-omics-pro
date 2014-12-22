@@ -24,8 +24,6 @@ import web.diva.client.rank.view.RankTablesComponent;
 import web.diva.client.somclust.view.SomClustPanel;
 import web.diva.client.somclust.view.SomClustView;
 import web.diva.client.view.core.ActivateGroupPanel;
-import web.diva.client.view.core.DatasetPanel;
-import web.diva.client.view.core.SaveDatasetDialog;
 import web.diva.shared.beans.HeatMapImageResult;
 import web.diva.shared.unused.LineChartResult;
 import web.diva.shared.beans.RankResult;
@@ -95,7 +93,7 @@ public class DivaMain1 {//implements EntryPoint {
 
 //    @Override
     public void onModuleLoad() {
-        selectionManager = SelectionManager.getInstance();
+//        selectionManager = SelectionManager.getInstance();
         this.initLayout();
     }
 
@@ -305,7 +303,7 @@ public class DivaMain1 {//implements EntryPoint {
      */
     private void getDatasetsList() {
 //        RootPanel.get("loaderImage").setVisible(true);
-        GWTClientService.getAvailableDatasets(new AsyncCallback<TreeMap<Integer, String>>() {
+        GWTClientService.getAvailableDatasets(1,new AsyncCallback<TreeMap<Integer, String>>() {
             @Override
             public void onFailure(Throwable caught) {
                 errorLabel.setText(SERVER_ERROR);
@@ -375,7 +373,7 @@ public class DivaMain1 {//implements EntryPoint {
      */
     private void runSomClustering(int datasetId, int linkage, int distanceMeasure) {
         busyTask(true);
-        GWTClientService.computeSomClustering(linkage, distanceMeasure,
+        GWTClientService.computeSomClustering(linkage, distanceMeasure,true,
                 new AsyncCallback<SomClusteringResult>() {
                     @Override
                     public void onFailure(Throwable caught) {
@@ -388,7 +386,7 @@ public class DivaMain1 {//implements EntryPoint {
                     public void onSuccess(SomClusteringResult result) {
 //                        RootPanel.get("datasetInformation").setVisible(true);
                         errorLabel.setText("");
-                        hierarchicalClustering = new SomClustView(result, selectionManager,GWTClientService,10,10);
+                        hierarchicalClustering = new SomClustView(result, selectionManager,GWTClientService,10,10,true);
 //                        RootPanel.get("SomClusteringResults").clear();
 //                        RootPanel.get("SomClusteringResults").add(hierarchicalClustering.componentView());
 //                        generateHeatMap(hierarchicalClustering.getIndexer(), hierarchicalClustering.getColIndexer());
@@ -711,21 +709,21 @@ public class DivaMain1 {//implements EntryPoint {
      */
     private void createSubDataset(String name, int[] selectedRows) {
         busyTask(true);
-        GWTClientService.createSubDataset(name, selectedRows,
-                new AsyncCallback<Integer>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        RootPanel.get("datasetInformation").setVisible(false);
-                        errorLabel.setText(SERVER_ERROR);
-                        busyTask(false);
-                    }
-
-                    @Override
-                    public void onSuccess(Integer datasetId) {
-                        RootPanel.get("datasetInformation").setVisible(true);
-                        Window.Location.reload();
-                    }
-                });
+//        GWTClientService.createSubDataset(name, selectedRows,
+//                new AsyncCallback<Integer>() {
+//                    @Override
+//                    public void onFailure(Throwable caught) {
+//                        RootPanel.get("datasetInformation").setVisible(false);
+//                        errorLabel.setText(SERVER_ERROR);
+//                        busyTask(false);
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(Integer datasetId) {
+//                        RootPanel.get("datasetInformation").setVisible(true);
+//                        Window.Location.reload();
+//                    }
+//                });
 
     }
 

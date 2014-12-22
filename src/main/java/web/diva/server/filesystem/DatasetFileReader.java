@@ -43,10 +43,13 @@ public class DatasetFileReader implements Serializable{
             if (g.getName().equalsIgnoreCase("ALL")) {
                 g.setActive(true);
                 g.setColor(Color.BLACK);
-                updatedColActiveGroupList.add(g);
+                g.setHashColor("#000000");
+                
+                System.out.println("in init col groups"+ dataset.getColumnGroups().size()) ;
                 for(int x=0;x<dataset.getColumnIds().length;x++){
                     g.addMember(x);
                 }
+                updatedColActiveGroupList.add(g);
                 break;
             }
         }

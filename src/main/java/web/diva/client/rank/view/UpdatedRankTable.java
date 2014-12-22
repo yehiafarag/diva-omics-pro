@@ -149,10 +149,13 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
         setShowRecordComponentsByCell(true);
         setCanRemoveRecords(false);
         setShowHeaderContextMenu(false);
-        setHeight("100%");
+        setShowEdges(false);
+        setStyleName("borderless");
+//        setHeight("100%");
         setShowAllRecords(false);
         setCanSort(Boolean.TRUE);
-      
+       
+
         ListGridField[] fields = new ListGridField[headers.length + 1];
         ListGridField index = (ListGridField) new ListGridField("index", "index".toUpperCase());
         index.setType(ListGridFieldType.INTEGER);
@@ -163,7 +166,7 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
             ListGridField l = (ListGridField) new ListGridField(headers[z - 1],headers[z - 1].toUpperCase());
             if (z == 1 || z==7) {
                 l.setWidth("72px");
-                l.setTitle("<strong>"+ headers[z - 1].toUpperCase()+"</strong>");
+                l.setTitle(""+ headers[z - 1].toUpperCase()+"");
                 l.setType(ListGridFieldType.INTEGER);                
                 l.setCanSort(true);
             }
@@ -176,6 +179,7 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
             else{
 //            l.setCanSort(false);
             l.setType(ListGridFieldType.FLOAT);
+            l.setFormat("0.0000");
             }
                 
             fields[z] = l;

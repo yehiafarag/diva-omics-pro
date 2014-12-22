@@ -5,7 +5,7 @@
  */
 package web.diva.server.filesystem;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
+import java.awt.Color;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
+import no.uib.jexpress_modularized.core.dataset.Group;
+import no.uib.jexpress_modularized.core.model.Selection;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
@@ -29,7 +31,7 @@ import web.diva.shared.beans.RankResult;
  * @author Yehia Farag
  * this class represents the main file system class in DIVA
  */
-public class DB implements IsSerializable{
+public class DB implements Serializable{
 
     private final FileSystemUtil databaseUtil = new FileSystemUtil();
     private Map<Integer, String> datasetsNameMap;
@@ -48,7 +50,7 @@ public class DB implements IsSerializable{
         for (File datasetFile : appFolder.listFiles()) {
             if (datasetFile.getName().endsWith(".txt")) {
                 DivaDataset divaDs = this.getDataset(0, datasetFile.getName());
-                this.setDataset(divaDs, 0);
+                this.setDataset(divaDs);
 
             }
         }
@@ -100,11 +102,14 @@ public class DB implements IsSerializable{
         newDS.addRowAnnotationNameInUse(jDataset.getInfoHeaders()[0]);
         newDS.getColumnGroups().addAll(jDataset.getColumnGroups());
         newDS.getRowGroups().clear();
+//        Group g = new Group("t all", Color.yellow, new Selection(Selection.TYPE.OF_ROWS,new int[]{}));
+//        jDataset.addRowGroup(g);
         newDS.getRowGroups().addAll(jDataset.getRowGroups());
         newDS.setName(jDataset.getName());
         newDS = util.initDivaDs(newDS, datasetId);
         String[] geneNamesArr = util.initGeneNamesArr(newDS.getGeneIndexNameMap());
         newDS.setGeneNamesArr(geneNamesArr);
+       
 
         return newDS;
     }
@@ -124,9 +129,8 @@ public class DB implements IsSerializable{
     /**
      * This method is responsible for storing DIVA dataset
      * @param ds - divaDataset to store
-     * @param id  - dataset id
      */
-    public void setDataset(DivaDataset ds, int id) {
+    public void setDataset(DivaDataset ds) {
         try {
             File dbFile = new File(path, ds.getName() + ".ser");
             if (!dbFile.exists()) {
@@ -144,9 +148,9 @@ public class DB implements IsSerializable{
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }
-        if (datasetsNameMap != null) {
-            datasetsNameMap.put(id, ds.getName() + ".ser");
-        }
+//        if (datasetsNameMap != null) {
+//            datasetsNameMap.put(id, ds.getName() + ".ser");
+//        }
 
     }
 

@@ -102,9 +102,9 @@
             <version>1.0.23</version>
         </dependency>
         <dependency>
-            <groupId>com.isomorphic.smartgwt.lgpl</groupId>
-            <artifactId>smartgwt-lgpl</artifactId>
-            <version>4.1-d20140115</version>
+            <groupId>diva</groupId>
+            <artifactId>smartgwtl</artifactId>
+            <version>5</version>
         </dependency>
         
         

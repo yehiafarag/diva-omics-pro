@@ -5,53 +5,49 @@
  */
 package web.diva.client.view.core;
 
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import org.jfree.ui.HorizontalAlignment;
 
 /**
  *
  * @author Yehia Farag
  */
 public class BusyTaskIndicator {
-    
-    private final PopupPanel imagePopup;
-    public BusyTaskIndicator(){
-        
-        VerticalPanel vp = new VerticalPanel();
-        vp.setStyleName("indicator");
-        Image image = new Image("images/progress.gif");   
-        vp.add(image);
-        
-//         imagePopup = new PopupPanel(true, true);
-//        imagePopup.setAnimationEnabled(true);
-//        imagePopup.ensureDebugId("cwBasicPopup-imagePopup");
-//        imagePopup.setWidget(vp);     
-        
-         VerticalPanel chartLayout = new VerticalPanel();
-        VerticalPanel chartImgLayout = new VerticalPanel();
 
-        imagePopup = new PopupPanel(false, true);
-        imagePopup.setAnimationEnabled(true);
-        imagePopup.ensureDebugId("cwBasicPopup-imagePopup");
-        imagePopup.setWidget(chartLayout);
+    private final PopupPanel progressPanel;
 
-        chartImgLayout.add(image);
-        chartImgLayout.setBorderWidth(1);
-        chartLayout.add(chartImgLayout);
-        
+    public BusyTaskIndicator() {
+        progressPanel = new PopupPanel(false, true);
+        progressPanel.ensureDebugId("cwBasicPopup-imagePopup");
+
+        VerticalPanel mainProgressPopupBodyLayout = new VerticalPanel();
+        mainProgressPopupBodyLayout.setWidth(337 + "px");
+        mainProgressPopupBodyLayout.setHeight(80 + "px");
+        mainProgressPopupBodyLayout.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+        mainProgressPopupBodyLayout.setVerticalAlignment(VerticalPanel.ALIGN_MIDDLE);
+
+        VerticalPanel progressImgLayout = new VerticalPanel();
+        Image progressImage = new Image("images/progress.gif");
+        progressImgLayout.add(progressImage);
+
+//        progressImgLayout.setBorderWidth(1);
+        mainProgressPopupBodyLayout.add(progressImgLayout);
+
+        progressPanel.setWidget(mainProgressPopupBodyLayout);
+        mainProgressPopupBodyLayout.setStyleName("progress");
+
     }
-    
-    public void busyTask(boolean busy){
-        if(busy){
-                imagePopup.center();
-                imagePopup.show(); //To change body of generated methods, choose Tools | Templates.
-            }
-        else{
-                imagePopup.hide();
-            }
+
+    public void busyTask(boolean busy,boolean slow) {
+        if (busy) {
+            
+        progressPanel.setAnimationEnabled(slow);
+            progressPanel.center();
+            progressPanel.show(); //To change body of generated methods, choose Tools | Templates.
+        } else {
+            progressPanel.hide();
+        }
     }
-    
+
 }

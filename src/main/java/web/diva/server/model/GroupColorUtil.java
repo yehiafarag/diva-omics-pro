@@ -29,17 +29,18 @@ public class GroupColorUtil implements Serializable{
             graphics.setBackground(color);
             graphics.setColor(color);
             graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
-            
-            
-        byte[] imageData = null;
-        try{
-        imageData = ChartUtilities.encodeAsPNG(image);
-        }catch(Exception e){e.printStackTrace();}
-        String base64 = Base64.encodeBase64String(imageData);
-        base64 = "data:image/png;base64," + base64;
-        
-        return base64;
-            
+
+            byte[] imageData = null;
+            try {
+                imageData = ChartUtilities.encodeAsPNG(image);
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+            String base64 = Base64.encodeBase64String(imageData);
+            base64 = "data:image/png;base64," + base64;
+
+            return base64;
+
 //            
 //            File f = new File(path, colName + ".png");
 //            if (!f.exists()) {

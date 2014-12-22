@@ -12,7 +12,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.Stack;
 import java.util.Vector;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
@@ -40,7 +39,17 @@ public class SomClustImgGenerator {
     private final int squareL = 2;
     private final int LeftTreeWidth = 200;
     private final int TopTreeHeight = 70;
+    private int LeftTreeHeight,TopTreeWidth;
 
+    public int getLeftTreeHeight() {
+        return LeftTreeHeight;
+    }
+
+    public int getTopTreeWidth() {
+        return TopTreeWidth;
+    }
+
+    
     private final boolean ValueDistances = true;
     private HeatmapColorFactory colorFactory;
     private ColorFactory colors;
@@ -66,7 +75,7 @@ public class SomClustImgGenerator {
     public String generateSideTree(Node root) {
         int verticalItems = countgenes(root);
         root.mark = true;
-        sideTree = new TreeView(root, verticalItems, Color.decode("#e3e3e3"), Color.black);
+        sideTree = new TreeView(root, verticalItems, Color.WHITE, Color.black);//"#e3e3e3"Color.decode("#e3e3e3")
         sideTree.leafdist = squareL;
         sideTree.actualLength = verticalItems;
         sideTree.leftmargin = (int) Math.round(squareL / 2);
@@ -79,6 +88,7 @@ public class SomClustImgGenerator {
         sideTree.treewidth = LeftTreeWidth;
         sideTree.generatecoords();
         tooltipsSideNode = initToolTips(root, null);
+        LeftTreeHeight = sideTree.getHeight();
         return this.generateEncodedImg(sideTree.getImage());
 
     }
@@ -86,7 +96,7 @@ public class SomClustImgGenerator {
     public String generateTopTree(Node toproot) {
         int horizontalItems = countgenes(toproot);
         toproot.mark = true;
-        upperTree = new TreeView(toproot, horizontalItems, Color.decode("#e3e3e3"), Color.black);
+        upperTree = new TreeView(toproot, horizontalItems,  Color.WHITE, Color.black);//Color.decode("#e3e3e3")
         upperTree.leafdist = squareW;
         upperTree.actualLength = horizontalItems;
         upperTree.horizontal = false;
@@ -99,6 +109,7 @@ public class SomClustImgGenerator {
         upperTree.rightmargin = 0;
         upperTree.treewidth = TopTreeHeight;
         upperTree.generatecoords();
+        TopTreeWidth = upperTree.getWidth();
         tooltipsUpperNode = initToolTips(toproot, null);
 
         return this.generateEncodedImg(upperTree.getImage());
@@ -107,23 +118,35 @@ public class SomClustImgGenerator {
     private ClientClusterNode tooltipsUpperNode;
     private ClientClusterNode tooltipsSideNode;
 
-    public String generateHeatMap(Dataset dataset) {
+    public String generateHeatMap(Dataset dataset,boolean clustColumn) {
 
         colorFactory = new HeatmapColorFactory();
-        BufferedImage nfo = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage nfo = null;
+        if (clustColumn) {
+            nfo = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+        }else{
+            nfo = new BufferedImage((dataset.getColumnIds().length*12 + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+            TopTreeWidth = dataset.getColumnIds().length*12 + 12;
+        
+        }
         Graphics g = nfo.getGraphics();
         g.setFont(getTableFont(12));
-        drawSquares(g, new Point(0, 0), null, dataset);
+        drawSquares(g, new Point(0, 0), null, dataset,clustColumn);
         return this.generateEncodedImg(nfo);
     }
 
-    public String generateScale(Dataset dataset) {
-        int W = (Math.min((upperTree.getWidth() + 21), 250));
-        BufferedImage nfo = new BufferedImage(W, 50, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = nfo.getGraphics();
-        g.setFont(getTableFont(9));
-        drawScale(g, new Point(0, 0), W, 50);
-        return this.generateEncodedImg(nfo);
+    public String generateScale(Dataset dataset,boolean clustColumn) {
+         int W = 0;
+         if (clustColumn) {
+              W = (Math.min((upperTree.getWidth() + 21), 250));
+         }else{
+             W = (Math.min((dataset.getColumnIds().length*12 + 21), 250));
+         }
+             BufferedImage nfo = new BufferedImage(W, 50, BufferedImage.TYPE_INT_ARGB);
+             Graphics g = nfo.getGraphics();
+             g.setFont(getTableFont(9));
+             drawScale(g, new Point(0, 0), W, 50);
+             return this.generateEncodedImg(nfo);
 
     }
 
@@ -156,7 +179,7 @@ public class SomClustImgGenerator {
         scale.translate(-st.x, -st.y);
     }
 
-    private void drawSquares(Graphics squares, Point start, Rectangle bounds, Dataset dataset) {
+    private void drawSquares(Graphics squares, Point start, Rectangle bounds, Dataset dataset,boolean clusterColumns) {
 //        ColorFactory colors = ColorFactoryList.getInstance().getActiveColorFactory(dataset);
         colors = colorFactory.getActiveColorFactory(dataset);
         Rectangle view = getSquaresBounds(dataset);
@@ -165,7 +188,13 @@ public class SomClustImgGenerator {
         int counter = 0;
         double[] gengenscalevals = null;
         int[] upperArrangement = null;
-        upperArrangement = upperTree.arrangement;
+        if (clusterColumns) {
+            upperArrangement = upperTree.arrangement;
+        } else {
+            upperArrangement = new int[dataset.getColumnIds().length];
+            for (int x=0;x<dataset.getColumnIds().length;x++)
+                upperArrangement[x]=x;
+        }
         double[][] dat = null;
         dat = dataset.getData();
         if (sideTree == null) {
@@ -397,5 +426,13 @@ public class SomClustImgGenerator {
 
     public ClientClusterNode getTooltipsSideNode() {
         return tooltipsSideNode;
+    }
+
+    public int getLeftTreeWidth() {
+        return LeftTreeWidth;
+    }
+
+    public int getTopTreeHeight() {
+        return TopTreeHeight;
     }
 }
