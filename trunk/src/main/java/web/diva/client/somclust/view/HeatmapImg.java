@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  *
@@ -21,10 +20,18 @@ public class HeatmapImg extends Image implements MouseMoveHandler, MouseOutHandl
 
     @Override
     public void onMouseMove(MouseMoveEvent event) {
-        int x = event.getX() / 12;
-        int y = event.getY() / 2;
+        int x = 0;
+        int y = 0;
+        if (type == 1) {
+            x = event.getX() / 12;
+            y = event.getY() / 2;
+        }else{
+         y = event.getX() / 2;
+            x = event.getY() / 12;
+        }
+        
         if (rowNames[y] != null && colNames[x] != null) {
-            toolTip.setHTML("<p style='font-weight: bold; color:white;font-size: 12px;background: #819FF7; border-style:double;'>" + colNames[x] + "<br/>" + rowNames[y] + "<br/> Value:" + values[y][x]+"</p>");
+            toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">"+ colNames[x] + " - " + rowNames[y] + " - Value:" + values[y][x]+"</textarea>");
             toolTip.setVisible(true);
         } else {
             toolTip.setVisible(false);
@@ -37,22 +44,28 @@ public class HeatmapImg extends Image implements MouseMoveHandler, MouseOutHandl
         toolTip.setVisible(false);
     }
     
-    private final String[] colNames;
-    private final String[] rowNames;
-    private final double[][] values;
+    private  String[] colNames;
+    private  String[] rowNames;
+    private  double[][] values;
     private final HTML toolTip;
+    private final int type;
    
     
-     @SuppressWarnings("LeakingThisInConstructor")
-    public HeatmapImg(String url, String[] rowNames, String[] colNames,double[][] values) {
+    public HeatmapImg(String url, String[] rowNames, String[] colNames,double[][] values,HTML toolTip,int type) {
         super(url);
-        this.addMouseMoveHandler(this);
-        this.addMouseOutHandler(this);
+        this.addMouseMoveHandler(HeatmapImg.this);
+        this.addMouseOutHandler(HeatmapImg.this);
         this.colNames = colNames;
         this.rowNames = rowNames;
         this.values = values;
-        toolTip = new HTML();
+        this.toolTip = toolTip;
         toolTip.setVisible(false);
-        RootPanel.get("tooltip").add(toolTip);
+        this.type= type;
+    }
+    public void updateTooltips(String[] rowNames, String[] colNames,double[][] values){
+     this.colNames = colNames;
+        this.rowNames = rowNames;
+        this.values = values;
+    
     }
 }

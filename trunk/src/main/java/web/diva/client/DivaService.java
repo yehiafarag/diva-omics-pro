@@ -18,7 +18,7 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
  * @author Yehia Farag
  */
 @RemoteServiceRelativePath("greet")
-public interface GreetingService extends RemoteService {
+public interface DivaService extends RemoteService {
 
     //load dataset information
     TreeMap<Integer, String> getAvailableDatasets(int userBrowserId);

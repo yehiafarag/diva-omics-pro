@@ -14,6 +14,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SomClustTreeSelectionUpdate implements IsSerializable{
     
     private String treeImgUrl;
+    private String rotatedTreeImgUrl;
     private int[] selectedIndices;
 
     public String getTreeImgUrl() {
@@ -30,6 +31,14 @@ public class SomClustTreeSelectionUpdate implements IsSerializable{
 
     public void setSelectedIndices(int[] selectedIndices) {
         this.selectedIndices = selectedIndices;
+    }
+
+    public String getRotatedTreeImgUrl() {
+        return rotatedTreeImgUrl;
+    }
+
+    public void setRotatedTreeImgUrl(String rotatedTreeImgUrl) {
+        this.rotatedTreeImgUrl = rotatedTreeImgUrl;
     }
 
     

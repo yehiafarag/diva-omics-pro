@@ -28,16 +28,19 @@ public class RankBtn extends Label{
 
             @Override
             public void onClick(ClickEvent event) {
-                rankPanel.show();
+                rankPanel.getPopupPanel().center();
+                rankPanel.getPopupPanel().show();
             }
         });
 
     }
     public void hidePanel(){
-    rankPanel.hide();
+    rankPanel.getPopupPanel().hide();
     }
       public void showPanel(){
-    rankPanel.show();
+          
+                rankPanel.getPopupPanel().center();
+    rankPanel.getPopupPanel().show();
     }
       
       public void setClickListener(com.smartgwt.client.widgets.events.ClickHandler handler){

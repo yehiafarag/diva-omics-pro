@@ -3,6 +3,8 @@
     <head>
         <title>DIVA omics</title>
 
+        
+
         <meta http-equiv="cache-control" content="max-age=0" />
         <meta http-equiv="cache-control" content="no-cache" />
         <meta http-equiv="expires" content="0" />
@@ -10,17 +12,18 @@
         <meta http-equiv="pragma" content="no-cache" />
 
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <meta name="keywords" content="diva omics pro " />
-        <link href="templatemo_style.css" rel="stylesheet" type="text/css" />
-        <link href="fullsize/fullsize.css" media="screen" rel="stylesheet" type="text/css" />
+        <meta name="keywords" content="diva omics " />
+
+        <link href="divaStyle.css" rel="stylesheet" type="text/css" />
+
+        <script>var isomorphicDir="diva/sc/";</script>
+
+
         <script type="text/javascript"  src="diva/diva.nocache.js"></script> 
+
         <script type="text/javascript"  src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-        <link rel="icon" type="image/ico" href="../images/favicon.ico"/>
-
-
-
     </head>
-    <body style="margin:0;padding:0;width: 100%;height: 100%;display: table;background: #ffffff;   ">
+    <body>
         <noscript>
             <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
                 Your web browser must have JavaScript enabled
@@ -28,72 +31,53 @@
             </div>
         </noscript>
 
-        <div align="left" id="tooltip" style="left: 35%;top:1%; height:70px;overflow: auto;width: 15%; margin: 0;  position: absolute; z-index:2;"></div>  
+        <div align="left" id="tooltip" ></div>  
 
-        <div style="top: 517px; left: 513.333px; display: none;" class="fullsize-icon"></div><div style="top: 517px; left: 628.333px; display: none;" class="fullsize-icon"></div><div style="top: 517px; left: 743.333px; display: none;" class="fullsize-icon"></div>
-        <div id="templatemo_container">
+        <div id="diva_container">
             <div id="content_header">
                 <div id="content_header_logo">
                     <div id="content_header_slogan">
                         <a href="" >
-                        D<font color="red">i</font>VA <font color="red" size="4">omics </font>
+                            D<font color="red">i</font>VA <font color="red" size="4">omics </font>
                         </a>
                     </div>
-                    
+
                     <div id="dataset_main_title">
-                       
+
                     </div>
-                    <div id="templatemo_search">
-                        <div id="headerLayout"></div>                       
+                    <div id="diva_selectds_latout">
+                        <div id="dropdown_select"></div>                       
                     </div>
                 </div>
-               
+
             </div>
-            <div id="templatemo_content_area" >
-                <div id="templatemo_left">
-                    <div id="omicsTable"></div>
+            <div id="diva_content_area" >
+                <div id="diva_left">
+                    <div id="leftpanel"></div>
                     <div class="cleaner"></div>
 
                 </div>
 
-                <div class="templatmo_v_line"></div>
+                <div class="diva_v_line"></div>
 
 
-                <div id="templatemo_mid">
+                <div id="diva_mid_panel">
                     <div class="cleaner"></div>
 
 
 
-                </div><div class="templatmo_v_line"></div>
+                </div><div class="diva_v_line"></div>
                 <div id="templatemo_right">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    <div  id="SomClusteringResults">                        
+                    <div align="center" id="SomClusteringResults" style="overflow: hidden">                        
                     </div>                                        
 
+                    <div class="cleaner"></div>
+                </div>
                 <div class="cleaner"></div>
+
             </div>
-            <div class="cleaner"></div>
- 
-        </div>
-     
-        <div align="center"></div>
+
         </div>
     </body>
 </html>

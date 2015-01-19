@@ -5,7 +5,6 @@
  */
 package web.diva.client.omicstables.view;
 
-import com.google.gwt.user.client.Window;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.SelectionStyle;
@@ -123,11 +122,13 @@ public class GroupTable extends ListGrid {
     }
      
       private void updateSelectionManagerOnTableSelection(ListGridRecord[] selectionRecord) {
-        if (selectionRecord.length > 0) {
+       selectionManager.busyTask(true,false);
+       if (selectionRecord.length > 0) {
             Set<Integer> members = new HashSet<Integer>();
+            
             for(ListGridRecord record:selectionRecord){
                 String groupName = record.getAttribute("groupName");
-                selectionManager.busyTask(true,false);
+                
                 for(DivaGroup group :rowGroupsList){
                     if(group.getName().equalsIgnoreCase(groupName))
                     {
@@ -149,8 +150,7 @@ public class GroupTable extends ListGrid {
             for(int z: members){
                 selectedIndices[x]= z;
                 x++;
-            }
-                selectionManager.busyTask(false,false);
+            }                
             updateSelectionManager(selectedIndices);
         }
 
@@ -158,6 +158,7 @@ public class GroupTable extends ListGrid {
  private void updateSelectionManager(int[] selectedIndices) {
         Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
         selectionManager.setSelectedRows(selection);
+        selectionManager.busyTask(false,false);
     }
      
 }

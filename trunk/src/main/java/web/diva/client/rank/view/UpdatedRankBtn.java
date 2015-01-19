@@ -11,7 +11,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import java.util.List;
-import web.diva.client.GreetingServiceAsync;
+import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.shared.beans.DivaGroup;
 
@@ -22,9 +22,9 @@ import web.diva.shared.beans.DivaGroup;
 public class UpdatedRankBtn extends Label{
     
     private final RankPanel rankPanel;
-     private final GreetingServiceAsync GWTClientService;
+     private final DivaServiceAsync GWTClientService;
  private final  SelectionManager selectionManager;
-    public  UpdatedRankBtn(SelectionManager selectionManager,GreetingServiceAsync GWTClientService){
+    public  UpdatedRankBtn(SelectionManager selectionManager,DivaServiceAsync GWTClientService){
         this.selectionManager = selectionManager;
         this.GWTClientService=GWTClientService;
         
@@ -42,11 +42,11 @@ public class UpdatedRankBtn extends Label{
 
     }
     public void hidePanel(){
-    rankPanel.hide();
+    rankPanel.getPopupPanel().hide();
     }
       public void showPanel(){
-          rankPanel.center();
-    rankPanel.show();
+          rankPanel.getPopupPanel().center();
+    rankPanel.getPopupPanel().show();
     }
       
       public void setClickListener(com.smartgwt.client.widgets.events.ClickHandler handler){
@@ -90,8 +90,8 @@ public class UpdatedRankBtn extends Label{
             public void onSuccess(List<DivaGroup> result) {
 
                 getRankPanel().updateData(result);
-                 getRankPanel().show();
-                getRankPanel().center();
+                 getRankPanel().getPopupPanel().show();
+                getRankPanel().getPopupPanel().center();
                  selectionManager.busyTask(false,true);
 
             }

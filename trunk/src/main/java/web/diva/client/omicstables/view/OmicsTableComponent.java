@@ -20,7 +20,9 @@ import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitEvent;
 import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
@@ -254,18 +256,43 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
 
     @Override
     public void onFilterEditorSubmit(FilterEditorSubmitEvent event) {
-        event.cancel();
-        String keyword = event.getCriteria().getValues().get("gene").toString();
-        if (infoSearchingMap.containsKey(keyword.toUpperCase())) {
-            omicsIdTable.selectRecord(infoSearchingMap.get(keyword.toUpperCase()));
-            int index = infoSearchingMap.get(keyword.toUpperCase()).getAttributeAsInt("index");
-            int[] sel = new int[0];
-            sel[0] = index;
+        event.cancel(); 
+        selectionManager.busyTask(true, false);
+        String keyword = event.getCriteria().getValues().get("gene").toString().toUpperCase();
+        List<Integer> selectionIndex = new ArrayList<Integer>();
+        List<ListGridRecord> selectionRecord = new ArrayList<ListGridRecord>();
+     
+        for (String key : infoSearchingMap.keySet()) {
+            if (key.contains(keyword)) {
+                int index = infoSearchingMap.get(key).getAttributeAsInt("index");
+                selectionIndex.add(index);
+                selectionRecord.add(infoSearchingMap.get(key));
+            }
+
+        }
+
+        int[] sel = new int[selectionIndex.size()];
+        ListGridRecord[] selRecord = new ListGridRecord[selectionIndex.size()];
+        for (int x = 0; x < selectionIndex.size(); x++) {
+            sel[x] = selectionIndex.get(x);
+            selRecord[x] = selectionRecord.get(x);
+        }
+        if (sel.length > 0) {
+            omicsIdTable.selectRecords(selRecord);
             Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
             selectionManager.setSelectedRows(selection);
-        } else {
+        } //        if (infoSearchingMap.containsKey(keyword.toUpperCase())) {
+        //            omicsIdTable.selectRecord(infoSearchingMap.get(keyword.toUpperCase()));
+        //            int index = infoSearchingMap.get(keyword.toUpperCase()).getAttributeAsInt("index");
+        //            int[] sel = new int[0];
+        //            sel[0] = index;
+        //            Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
+        //            selectionManager.setSelectedRows(selection);
+        //        } 
+        else {
             Notification.notifi(keyword.toUpperCase() + " Not Available");
         }
+        selectionManager.busyTask(false, false);
     }
 
 }

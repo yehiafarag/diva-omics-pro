@@ -1,7 +1,7 @@
 /*
  * this class represents the som clustering button layout
  */
-package web.diva.client.somclust.view;
+package web.diva.client.unused;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.event.dom.client.ClickEvent;

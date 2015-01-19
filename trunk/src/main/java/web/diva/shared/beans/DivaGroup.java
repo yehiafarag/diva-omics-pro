@@ -17,6 +17,7 @@ public class DivaGroup implements IsSerializable{
     private int count;
     private int[] members;
     private boolean active;
+    private boolean defaultGroup;
 
     public boolean isActive() {
         return active;
@@ -56,6 +57,14 @@ public class DivaGroup implements IsSerializable{
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public boolean isDefaultGroup() {
+        return defaultGroup;
+    }
+
+    public void setDefaultGroup(boolean defaultGroup) {
+        this.defaultGroup = defaultGroup;
     }
     
     

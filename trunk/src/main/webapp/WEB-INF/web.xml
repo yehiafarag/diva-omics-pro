@@ -4,36 +4,34 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-    <context-param>
-       
-        <param-name>fileFolder</param-name>
-       
-        <param-value>/home/probe/user/divaFiles</param-value>
+    <context-param>       
+        <param-name>fileFolder</param-name>       
+        <param-value>C:\divaFiles</param-value>
     </context-param>
     <listener>
         <listener-class>web.diva.server.listeners.ContexListener</listener-class>        
     </listener>
-     <listener>
+    <listener>
         <listener-class>web.diva.server.listeners.DivaSessionListener</listener-class>        
     </listener>
     <session-config>
         <session-timeout>15</session-timeout>
     </session-config>
   
-  <!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>web.diva.server.GreetingServiceImpl</servlet-class>
-  </servlet>
+    <!-- Servlets -->
+    <servlet>
+        <servlet-name>greetServlet</servlet-name>
+        <servlet-class>web.diva.server.GreetingServiceImpl</servlet-class>
+    </servlet>
   
-  <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/diva/greet</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>greetServlet</servlet-name>
+        <url-pattern>/diva/greet</url-pattern>
+    </servlet-mapping>
   
-  <!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-  </welcome-file-list>
+    <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
 
 </web-app>
