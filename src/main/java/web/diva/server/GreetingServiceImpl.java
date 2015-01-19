@@ -1,13 +1,14 @@
 package web.diva.server;
 
 import com.google.gwt.user.client.rpc.SerializationException;
-import web.diva.client.GreetingService;
+import web.diva.client.DivaService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -30,7 +31,8 @@ import web.diva.shared.beans.SomClusteringResult;
  * main GWT Servlet
  */
 @SuppressWarnings("serial")
-public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService {
+public class GreetingServiceImpl extends RemoteServiceServlet implements DivaService {
+    private HashMap<String,Computing> usersMap = new HashMap<String, Computing>();
 
     @Override
     public String processCall(String payload) throws SerializationException {
@@ -40,8 +42,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 
     @Override
     protected SerializationPolicy doGetSerializationPolicy(HttpServletRequest request, String moduleBaseURL, String strongName) {
-         System.out.println("mod doget is called "+moduleBaseURL+"  name "+strongName);
-         request.getSession();
+         
+         HttpSession session = request.getSession(true);
+         System.out.println("start session  "+session.getId()+"  is new  "+session.isNew());
         return super.doGetSerializationPolicy(request, moduleBaseURL, strongName); //To change body of generated methods, choose Tools | Templates.
     }
     

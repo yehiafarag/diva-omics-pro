@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.List;
-import web.diva.client.GreetingServiceAsync;
+import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
@@ -57,9 +57,9 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
     private final Label maxBtn;
     private final Label minBtn;
     private final UpdatedRankBtn minSettingBtn,maxSettingsBtn;
-    private final GreetingServiceAsync GWTClientService;
+    private final DivaServiceAsync GWTClientService;
  private final  SelectionManager selectionManager;
-    public RankTablesComponent(GreetingServiceAsync greetingService, final SelectionManager selectionManager, final RankResult results,List<DivaGroup> colGroupsList) {
+    public RankTablesComponent(DivaServiceAsync greetingService, final SelectionManager selectionManager, final RankResult results,List<DivaGroup> colGroupsList) {
         this.classtype = 5;
         this.components.add(RankTablesComponent.this);
         this.GWTClientService = greetingService;
@@ -67,11 +67,11 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
         selectionManager.addSelectionChangeListener(RankTablesComponent.this);
 
         mainRankLayout = new VLayout();
-        mainRankLayout.setHeight("40.5%");
+        mainRankLayout.setHeight("40%");
         mainRankLayout.setWidth("50%");
         mainRankLayout.setStyleName("rank");
-        mainRankLayout.setMargin(2);
-        mainRankLayout.setMembersMargin(2);
+        mainRankLayout.setMargin(0);
+//        mainRankLayout.setMembersMargin(2);
 
 //        mainRankLayout = new VLayout();
 //        mainRankLayout.setSpacing(1);
@@ -178,8 +178,8 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
         
         minRankTable = new UpdatedRankTable(selectionManager, results.getDatasetId(), results);
         mainRankLayout.addMember(minRankTable);
-        minRankTable.setWidth("100%");
-        minRankTable.setHeight("*");
+//        minRankTable.setWidth("100%");
+//        minRankTable.setHeight("30%");
 
         tablePopup = new PopupPanel(false, true);
         tablePopup.setAnimationEnabled(true);
@@ -240,7 +240,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
 
     @Override
     public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
-        if (maxSettingsBtn.getRankPanel().isShowing()) {
+        if (maxSettingsBtn.getRankPanel().getPopupPanel().isShowing()) {
             maxSettingsBtn.setErrorlablVisible(false);
             maxSettingsBtn.setErrorlablVisible(false);
 
@@ -256,7 +256,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
                 viewRankTables(perm, seed, groups, log2);
                 maxSettingsBtn.hidePanel();
             }
-        } else if (minSettingBtn.getRankPanel().isShowing()) {
+        } else if (minSettingBtn.getRankPanel().getPopupPanel().isShowing()) {
             minSettingBtn.setErrorlablVisible(false);
             minSettingBtn.setErrorlablVisible(false);
 

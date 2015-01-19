@@ -17,7 +17,7 @@ import web.diva.shared.model.core.model.dataset.DatasetInformation;
  * @author Yehia Farag
  *
  */
-public interface GreetingServiceAsync {
+public interface DivaServiceAsync {
 
     public void getAvailableDatasets(int userTabId,AsyncCallback<TreeMap<Integer, String>> datasetResults);
 

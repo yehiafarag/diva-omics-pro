@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.widgets.IButton;
-import web.diva.client.GreetingServiceAsync;
+import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
@@ -43,7 +43,7 @@ public class PCAPlot extends ModularizedListener {
     private SelectionManager selectionManager;
     private boolean zoom = false;
     private boolean selectAll = false;
-    private GreetingServiceAsync greetingService;
+    private DivaServiceAsync greetingService;
     private IButton resetPlotBtn;
     private boolean enable = true;
 //    private int[] currentDataSet;
@@ -91,7 +91,7 @@ public class PCAPlot extends ModularizedListener {
         }
     }
 
-    public PCAPlot(final PCAImageResult results, SelectionManager selectionManager, GreetingServiceAsync greetingService,int height) {
+    public PCAPlot(final PCAImageResult results, SelectionManager selectionManager, DivaServiceAsync greetingService,int height) {
 
         this.greetingService = greetingService;
         this.classtype = 4;

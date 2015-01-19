@@ -3,24 +3,28 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package web.diva.server.model;
+package web.diva.server.model.SomClustering;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Stack;
 import java.util.Vector;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
-import no.uib.jexpress_modularized.core.visualization.TreeView;
 import no.uib.jexpress_modularized.core.visualization.colors.colorcomponents.ColorFactory;
 import no.uib.jexpress_modularized.core.visualization.colors.ui.ScaleAndAxis;
 import no.uib.jexpress_modularized.somclust.model.Node;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtilities;
+import web.diva.server.model.HeatmapColorFactory;
 import web.diva.shared.beans.ClientClusterNode;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 
@@ -30,7 +34,7 @@ import web.diva.shared.beans.SomClustTreeSelectionUpdate;
  */
 public class SomClustImgGenerator {
 
-    private TreeView upperTree, sideTree;
+    private TreeView upperTree, sideTree,maxmizeUpperTree, maxmizeSideTree;
     private final Node rowNode, colNode;
     private final boolean gengenscale = false;
     private final Color GridCol = Color.DARK_GRAY;
@@ -40,6 +44,10 @@ public class SomClustImgGenerator {
     private final int LeftTreeWidth = 200;
     private final int TopTreeHeight = 70;
     private int LeftTreeHeight,TopTreeWidth;
+    
+    
+    private String rotatedTopTreeImgUrl,rotatedSideTreeImgUrl,rotatedHeatMapImgUrl,rotatedInteractiveRowImgUrl;
+    
 
     public int getLeftTreeHeight() {
         return LeftTreeHeight;
@@ -89,6 +97,27 @@ public class SomClustImgGenerator {
         sideTree.generatecoords();
         tooltipsSideNode = initToolTips(root, null);
         LeftTreeHeight = sideTree.getHeight();
+
+        maxmizeSideTree = new TreeView(root, verticalItems, Color.WHITE, Color.black);//"#e3e3e3"Color.decode("#e3e3e3")
+        maxmizeSideTree.leafdist = squareL;
+        maxmizeSideTree.setHorizontal(false);
+        maxmizeSideTree.actualLength = verticalItems;
+        maxmizeSideTree.leftmargin = (int) Math.round(squareL / 2);
+        maxmizeSideTree.drawframe = false;
+        maxmizeSideTree.valuedistances = true;
+        maxmizeSideTree.rightmargin = 0;
+        maxmizeSideTree.drawrects = false;
+        maxmizeSideTree.bottommargin = 0;
+        //if(result!=null)
+        maxmizeSideTree.treewidth = LeftTreeWidth;
+        maxmizeSideTree.generatecoords();
+        
+        rotatedSideTreeImgUrl = this.generateEncodedImg(maxmizeSideTree.getImage());
+        
+        
+        
+        
+        
         return this.generateEncodedImg(sideTree.getImage());
 
     }
@@ -99,7 +128,7 @@ public class SomClustImgGenerator {
         upperTree = new TreeView(toproot, horizontalItems,  Color.WHITE, Color.black);//Color.decode("#e3e3e3")
         upperTree.leafdist = squareW;
         upperTree.actualLength = horizontalItems;
-        upperTree.horizontal = false;
+        upperTree.setHorizontal(false);
         upperTree.leftmargin = (int) Math.round(squareW / 2);
         upperTree.drawframe = false;
         upperTree.valuedistances = ValueDistances;
@@ -111,28 +140,123 @@ public class SomClustImgGenerator {
         upperTree.generatecoords();
         TopTreeWidth = upperTree.getWidth();
         tooltipsUpperNode = initToolTips(toproot, null);
+        
+       
+        maxmizeUpperTree = new TreeView(toproot, horizontalItems,  Color.WHITE, Color.black);//Color.decode("#e3e3e3")
+        maxmizeUpperTree.leafdist = squareW;
+        maxmizeUpperTree.actualLength = horizontalItems;
+        maxmizeUpperTree.setHorizontal(true);
+        maxmizeUpperTree.leftmargin = (int) Math.round(squareW / 2);
+        maxmizeUpperTree.drawframe = false;
+        maxmizeUpperTree.valuedistances = ValueDistances;
+        maxmizeUpperTree.topmargin = 0;
+        maxmizeUpperTree.drawrects = false;
+        maxmizeUpperTree.bottommargin = 0;
+        maxmizeUpperTree.rightmargin = 0;
+        maxmizeUpperTree.treewidth = TopTreeHeight;
+        maxmizeUpperTree.generatecoords();        
+        rotatedTopTreeImgUrl = this.generateEncodedImg(maxmizeUpperTree.getImage());
+        
+        
+        
+        
 
         return this.generateEncodedImg(upperTree.getImage());
 
     }
+
+    public String getRotatedTopTreeImgUrl() {
+        return rotatedTopTreeImgUrl;
+    }
+
+    public void setRotatedTopTreeImgUrl(String rotatedTopTreeImgUrl) {
+        this.rotatedTopTreeImgUrl = rotatedTopTreeImgUrl;
+    }
+
+    public String getRotatedSideTreeImgUrl() {
+        return rotatedSideTreeImgUrl;
+    }
+
+    public void setRotatedSideTreeImgUrl(String rotatedSideTreeImgUrl) {
+        this.rotatedSideTreeImgUrl = rotatedSideTreeImgUrl;
+    }
+
+    public String getRotatedHeatMapImgUrl() {
+        return rotatedHeatMapImgUrl;
+    }
+
+    public void setRotatedHeatMapImgUrl(String rotatedHeatMapImgUrl) {
+        this.rotatedHeatMapImgUrl = rotatedHeatMapImgUrl;
+    }
+
+    public String getRotatedInteractiveRowImgUrl() {
+        return rotatedInteractiveRowImgUrl;
+    }
+
+    public void setRotatedInteractiveRowImgUrl(String rotatedInteractiveRowImgUrl) {
+        this.rotatedInteractiveRowImgUrl = rotatedInteractiveRowImgUrl;
+    }
     private ClientClusterNode tooltipsUpperNode;
     private ClientClusterNode tooltipsSideNode;
 
-    public String generateHeatMap(Dataset dataset,boolean clustColumn) {
+    public String generateHeatMap(Dataset dataset, boolean clustColumn) {
 
         colorFactory = new HeatmapColorFactory();
-        BufferedImage nfo = null;
+        BufferedImage heatMapImg = null;
+        BufferedImage rotatedHeatmapImg = null;
         if (clustColumn) {
-            nfo = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
-        }else{
-            nfo = new BufferedImage((dataset.getColumnIds().length*12 + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
-            TopTreeWidth = dataset.getColumnIds().length*12 + 12;
-        
+            heatMapImg = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+            rotatedHeatmapImg = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+        } else {
+            heatMapImg = new BufferedImage((dataset.getColumnIds().length * 12 + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+              rotatedHeatmapImg = new BufferedImage((dataset.getColumnIds().length * 12 + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+            TopTreeWidth = dataset.getColumnIds().length * 12 + 12;
+
         }
-        Graphics g = nfo.getGraphics();
+        Graphics g = heatMapImg.getGraphics();
         g.setFont(getTableFont(12));
-        drawSquares(g, new Point(0, 0), null, dataset,clustColumn);
-        return this.generateEncodedImg(nfo);
+
+        drawSquares(g, new Point(0, 0), null, dataset, clustColumn);
+
+        String defaultHeatMap = this.generateEncodedImg(heatMapImg);
+       
+        
+        
+          
+  
+        int         width  = heatMapImg.getWidth();  
+        int         height = heatMapImg.getHeight();  
+           rotatedHeatmapImg = new BufferedImage( height, width, heatMapImg.getType() );  
+  
+        for( int i=0 ; i < width ; i++ )  
+            for( int j=0 ; j < height ; j++ )  
+                rotatedHeatmapImg.setRGB( height-1-j, i, heatMapImg.getRGB(i,j) );   
+   
+        
+//        AffineTransform xform = new AffineTransform();//.getScaleInstance(0,0);
+//         
+//
+//        xform.translate(0.5 * heatMapImg.getHeight(null),0.5 * heatMapImg.getWidth(null));
+//        double theta = Math.PI / 2;        
+//        xform.rotate(theta);
+//        
+//        xform.translate(-0.5 * heatMapImg.getWidth(null), -0.5 * heatMapImg.getHeight(null));
+//       
+//        AffineTransformOp op = new AffineTransformOp(xform,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//        rotatedHeatmapImg = op.filter(heatMapImg, null);
+//        
+//         AffineTransform tx = AffineTransform.getScaleInstance(-1, -1);
+//        tx.translate(-rotatedHeatmapImg.getWidth(), -rotatedHeatmapImg.getHeight());
+//        AffineTransformOp op1 = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//        rotatedHeatmapImg = op1.filter(rotatedHeatmapImg, null);
+//
+////      
+//
+//    
+    
+        rotatedHeatMapImgUrl = this.generateEncodedImg(rotatedHeatmapImg);
+
+        return defaultHeatMap;
     }
 
     public String generateScale(Dataset dataset,boolean clustColumn) {
@@ -145,7 +269,7 @@ public class SomClustImgGenerator {
              BufferedImage nfo = new BufferedImage(W, 50, BufferedImage.TYPE_INT_ARGB);
              Graphics g = nfo.getGraphics();
              g.setFont(getTableFont(9));
-             drawScale(g, new Point(0, 0), W, 50);
+             drawScale(g, new Point(0, 0), W, 30);
              return this.generateEncodedImg(nfo);
 
     }
@@ -340,10 +464,13 @@ public class SomClustImgGenerator {
 
     public SomClustTreeSelectionUpdate updateSideTreeSelection(int x, int y, double w, double h) {
         BufferedImage bImage = sideTree.getImage();
+        BufferedImage rbImage = maxmizeSideTree.getImage();
         SomClustTreeSelectionUpdate result = new SomClustTreeSelectionUpdate();
         Node n = this.getNodeAt(x, y, rowNode);
+        
         if (n != null) {
             sideTree.painttree(n, bImage.getGraphics(), Color.red);
+             maxmizeSideTree.painttree(n, rbImage.getGraphics(), Color.red);
             Stack st = new Stack();
             Vector v = new Vector();
             n.fillMembers(v, st);
@@ -358,7 +485,12 @@ public class SomClustImgGenerator {
             String base64 = Base64.encodeBase64String(imageData);
             base64 = "data:image/png;base64," + base64;
             result.setTreeImgUrl(base64);
-
+            
+            
+            byte[] rImageData = ChartUtilities.encodeAsPNG(rbImage);
+            String rbase64 = Base64.encodeBase64String(rImageData);
+            rbase64 = "data:image/png;base64," + rbase64;
+            result.setRotatedTreeImgUrl(rbase64);
             return result;
 
         } catch (IOException e) {
@@ -370,10 +502,13 @@ public class SomClustImgGenerator {
 
     public SomClustTreeSelectionUpdate updateUpperTreeSelection(int x, int y, double w, double h) {
         BufferedImage bImage = upperTree.getImage();
+         BufferedImage rbImage = maxmizeUpperTree.getImage();
         Node n = this.getNodeAt(y, x, colNode);
         SomClustTreeSelectionUpdate result = new SomClustTreeSelectionUpdate();
         if (n != null) {
             upperTree.painttree(n, bImage.getGraphics(), Color.red);
+            maxmizeUpperTree.painttree(n, rbImage.getGraphics(), Color.red);
+            
             Stack st = new Stack();
             Vector v = new Vector();
             n.fillMembers(v, st);
@@ -388,6 +523,15 @@ public class SomClustImgGenerator {
             String base64 = Base64.encodeBase64String(imageData);
             base64 = "data:image/png;base64," + base64;
             result.setTreeImgUrl(base64);
+            
+            byte[] rImageData = ChartUtilities.encodeAsPNG(rbImage);
+            String rbase64 = Base64.encodeBase64String(rImageData);
+            rbase64 = "data:image/png;base64," + rbase64;
+            result.setRotatedTreeImgUrl(rbase64);
+            
+            
+            
+            
             return result;
         } catch (IOException e) {
             System.err.println(e.getLocalizedMessage());
@@ -434,5 +578,18 @@ public class SomClustImgGenerator {
 
     public int getTopTreeHeight() {
         return TopTreeHeight;
+    }
+
+    public Image rotatImg(BufferedImage upperTreeBImage) {
+        Image image=null;
+        AffineTransform identity = new AffineTransform();
+
+        Graphics2D g2d = (Graphics2D) upperTreeBImage.getGraphics();
+        AffineTransform trans = new AffineTransform();
+        trans.setTransform(identity);
+        trans.rotate(Math.toRadians(45));
+        g2d.drawImage(image, trans, null);
+        return image;
+
     }
 }

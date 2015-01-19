@@ -5,6 +5,7 @@
  */
 package web.diva.server.model;
 
+import web.diva.server.model.SomClustering.SomClustImgGenerator;
 import web.diva.server.model.profileplot.ProfilePlotImgeGenerator;
 import web.diva.server.model.pca.PCAImageGenerator;
 import java.awt.Color;
@@ -206,7 +207,6 @@ public class Computing implements Serializable {
 
     public SomClusteringResult computeSomClustering(int linkage, int distanceMeasure, boolean clusterColumns) throws IllegalArgumentException {
 
-        System.out.println("clust colo is " + clusterColumns);
         String linkageStr = "WPGMA";
         String distanceMeasureStr = "";
         ClusterParameters.LINKAGE link = null;
@@ -286,7 +286,9 @@ public class Computing implements Serializable {
         if (clusterColumns) {
             somClustImgGenerator = new SomClustImgGenerator(results.getRowDendrogramRootNode(), results.getColumnDendrogramRootNode());
             String upperTreeBase64 = somClustImgGenerator.generateTopTree(results.getColumnDendrogramRootNode());
+             String rotetedUpperTreeBase64 = somClustImgGenerator.getRotatedTopTreeImgUrl();
             res.setUpperTreeImgUrl(upperTreeBase64);
+            res.setRotetedUpperTreeImgUrl(rotetedUpperTreeBase64);
             res.setColNode(somClustImgGenerator.getTooltipsUpperNode());
 
             for (int x = 0; x < somClustImgGenerator.getUpperTree().arrangement.length; x++) {
@@ -305,7 +307,7 @@ public class Computing implements Serializable {
         res.setColNames(colNames);
         String sideTreeBase64 = somClustImgGenerator.generateSideTree(results.getRowDendrogramRootNode());
        
-
+         String rotatedSideTreeBase64 = somClustImgGenerator.getRotatedSideTreeImgUrl();
         final java.text.NumberFormat numformat;
         numformat = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
         numformat.setMaximumFractionDigits(3);
@@ -330,8 +332,11 @@ public class Computing implements Serializable {
         String scaleUrl = somClustImgGenerator.generateScale(divaDataset, clusterColumns);
 
         res.setSideTreeImgUrl(sideTreeBase64);
+        res.setRotetedSideTreeImgUrl(rotatedSideTreeBase64);
+        
 
         res.setHeatMapImgUrl(heatmapUrl);
+        res.setRotetedHeatMapImgUrl(somClustImgGenerator.getRotatedHeatMapImgUrl());
         res.setScaleImgUrl(scaleUrl);
         res.setDistanceMeasure(distanceMeasureStr);
         res.setLinkage(linkageStr);

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import web.diva.client.DivaMain;
 import web.diva.client.view.core.BusyTaskIndicator;
+import web.diva.shared.beans.SomClusteringResult;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 //import java.util.HashMap;
 
@@ -230,9 +231,10 @@ public class SelectionManager {
          mainAppController.updateApp(datasetInfo);
     }
     public void loadDataset(int datasetId){
-        mainAppController.changeDSSelection(datasetId);
-    
-    
+        mainAppController.changeDSSelection(datasetId);   
+    }
+    public void updateClusteringPanel(SomClusteringResult result,boolean clusterColumn){
+        mainAppController.updateClusteringPanel(result,clusterColumn);   
     }
 
     public void setMainAppController(DivaMain mainAppController) {

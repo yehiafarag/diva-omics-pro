@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-//import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Cursor;
 import com.smartgwt.client.types.KnobType;
@@ -25,7 +24,7 @@ import com.smartgwt.client.widgets.drawing.DrawPane;
 import com.smartgwt.client.widgets.events.DrawEvent;
 import com.smartgwt.client.widgets.events.DrawHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
-import web.diva.client.GreetingServiceAsync;
+import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
@@ -41,25 +40,10 @@ public class UpdatedPCAPlot extends ModularizedListener {
     private SelectionManager selectionManager;
     private boolean zoom = false;
     private boolean selectAll = false;
-    private GreetingServiceAsync GWTClientService;
+    private DivaServiceAsync GWTClientService;
     private IconButton zoomoutBtn;
     private boolean enable = true;
     private int[] selectedRows;
-//    private MouseMoveHandler mouseMoveHandler;
-//    private MouseOverHandler mouseOverHandler;
-//    private MouseOutHandler mouseOutHandler;
-//    private MouseUpHandler mouseUpHandler;
-//    private com.google.gwt.event.dom.client.MouseDownHandler mouseDownHandler;
-//    private HandlerRegistration moveRegHandler;
-//    private HandlerRegistration outRegHandler;
-//    private HandlerRegistration upRegHandler;
-//    private HandlerRegistration downRegHandler;
-//    private int startX;
-//    private int endX;
-//    private int startY;
-//    private int endY;
-//    private boolean clicked = false;
-//    private int absStartX, absStartY;
     private UpdatedTooltip tooltipInformationData;
     private VLayout mainThumbPCALayout;
     private final HTML tooltipLabel = new HTML();
@@ -89,7 +73,7 @@ public class UpdatedPCAPlot extends ModularizedListener {
     private final String datasetInfo;
     private DrawPane pcaImageDrawPan = null;
 
-    public UpdatedPCAPlot(final PCAImageResult results, SelectionManager selectionManager, GreetingServiceAsync greetingService, final int colNumber, String datasetInfo) {
+    public UpdatedPCAPlot(final PCAImageResult results, SelectionManager selectionManager, DivaServiceAsync greetingService, final int colNumber, String datasetInfo) {
 
         this.GWTClientService = greetingService;
         this.classtype = 4;
@@ -100,7 +84,6 @@ public class UpdatedPCAPlot extends ModularizedListener {
         this.datasetInfo = datasetInfo;
 
         mainThumbPCALayout = new VLayout();
-//        mainThumbPCALayout.setBorder("1px solid #E6E6E6");
         mainThumbPCALayout.setStyleName("pca");
         mainThumbPCALayout.setHeight("46%");
         mainThumbPCALayout.setWidth("25%");
@@ -134,9 +117,7 @@ public class UpdatedPCAPlot extends ModularizedListener {
         final VLayout mainPcaPopupBodyLayout = new VLayout();
         mainPcaPopupBodyLayout.setWidth(900 + "px");
         mainPcaPopupBodyLayout.setHeight(770+"px");
-//        mainPcaPopupBodyLayout.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
-//        mainPcaPopupBodyLayout.setVerticalAlignment(VerticalPanel.ALIGN_MIDDLE);
-
+        
         HorizontalPanel maxTopLayout = new HorizontalPanel();
         mainPcaPopupBodyLayout.addMember(maxTopLayout);
         maxTopLayout.setWidth(900 + "px");
@@ -247,27 +228,11 @@ public class UpdatedPCAPlot extends ModularizedListener {
             }
         });
 
-        //old v
-//        maxmizePlotImgLayout = new VerticalPanel();
-//        this.maxmizePlotImage = new Image();
-////
-//        maxmizePlotImgLayout.add(maxmizePlotImage);
-//        mainPcaPopupBodyLayout.add(maxmizePlotImgLayout);
-
-        //end of old
-        //new v
-//        VLayout updatedMmaxmizePlotImgLayout = new VLayout();
-//        updatedMmaxmizePlotImgLayout.setHeight(700);
-//        updatedMmaxmizePlotImgLayout.setWidth(900);
-//        updatedMmaxmizePlotImgLayout.setBorder("1px solid #E6E6E6");
-//
-//        updatedMmaxmizePlotImgLayout.addMember(this.createDrawPane(""));
-//        mainPcaPopupBodyLayout.addMember(updatedMmaxmizePlotImgLayout);
-        //end of new
+      
         final VLayout updatedMmaxmizePlotImgLayout = new VLayout();
         updatedMmaxmizePlotImgLayout.setHeight(700);
         updatedMmaxmizePlotImgLayout.setWidth(900);
-//                updatedMmaxmizePlotImgLayout.setBorder("1px solid #E6E6E6");
+        
         mainPcaPopupBodyLayout.addMember(updatedMmaxmizePlotImgLayout);
 
         tooltipViewPortLayout = new HorizontalPanel();

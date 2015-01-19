@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 
-import web.diva.client.GreetingServiceAsync;
+import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
@@ -34,7 +34,7 @@ public class ProfilePlotComponent extends ModularizedListener {
     private VLayout thumbLayout;
     private final Image profilePlotMaxImage;
     private final Image thumbImage;
-    private GreetingServiceAsync greetingService;
+    private DivaServiceAsync greetingService;
     private final int height = 212;
     private final int width = 250;
 
@@ -55,7 +55,7 @@ public class ProfilePlotComponent extends ModularizedListener {
         }
     }
 
-    public ProfilePlotComponent(String results, SelectionManager selectionManager, GreetingServiceAsync greetingService) {
+    public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingService) {
         this.greetingService = greetingService;
         this.classtype = 3;
         this.components.add(ProfilePlotComponent.this);
