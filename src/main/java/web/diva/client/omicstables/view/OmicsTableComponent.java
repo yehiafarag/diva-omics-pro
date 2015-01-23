@@ -4,143 +4,264 @@
  */
 package web.diva.client.omicstables.view;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Label;
-import com.smartgwt.client.widgets.events.ClickEvent;
-import com.smartgwt.client.widgets.events.DragCompleteEvent;
-import com.smartgwt.client.widgets.events.DragCompleteHandler;
+import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.util.SC;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.events.DragStartEvent;
 import com.smartgwt.client.widgets.events.DragStartHandler;
 import com.smartgwt.client.widgets.events.DragStopEvent;
 import com.smartgwt.client.widgets.events.DragStopHandler;
+import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.ButtonItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
-import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.form.fields.TextItem;
+import com.smartgwt.client.widgets.form.fields.events.BlurEvent;
+import com.smartgwt.client.widgets.form.fields.events.BlurHandler;
+import com.smartgwt.client.widgets.form.fields.events.FocusEvent;
+import com.smartgwt.client.widgets.form.fields.events.FocusHandler;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitEvent;
-import com.smartgwt.client.widgets.grid.events.FilterEditorSubmitHandler;
+import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
-import web.diva.client.view.core.Notification;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 
 /**
  * @author Yehia Farag omics information table that has rows ids, and activated
  * groups colors
  */
-public final class OmicsTableComponent extends ModularizedListener implements IsSerializable, FilterEditorSubmitHandler {
+public final class OmicsTableComponent extends ModularizedListener implements IsSerializable {
 
     private final OmicsTable omicsIdTable;
-    private ListGrid groupTable;
+    private GroupTable groupTable;
 
-    public void setGroupTable(ListGrid groupTable) {
+    public void setGroupTable(GroupTable groupTable) {
         this.groupTable = groupTable;
     }
     private final ListGridRecord[] records;
-    private final SelectionManager selectionManager;
-//    private ListGrid selectionTable;
+    private SelectionManager selectionManager;
     private SelectItem colSelectionTable;
-    private boolean mouseSelection = false;
-    private boolean selectionTag = false;
-    private final Map<String, ListGridRecord> infoSearchingMap = new HashMap<String, ListGridRecord>();
+    private boolean selfSelectionTag = false;
+    private final String[] infoSearchingMap;
 
     @Override
     public String toString() {
         return "OmicsTable";
     }
-
-//    public void setSelectionTable(ListGrid selectionTable) {
-//        this.selectionTable = selectionTable;
-//        selectionTable.setShowFilterEditor(false);
-//        selectionChanged(Selection.TYPE.OF_ROWS);
-//    }
     private final VLayout omicsTableLayout;
-    private final Label header;
-    private int rowNumber;
+//    private final Label header;
+    private final int rowNumber,colNumber;
+    private TextItem searchingField;
+    private final HandlerRegistration searchingFieldFocusReg, searchingFieldBlurReg, searchingFieldKeyPressReg, searchBtnReg;
+    private HandlerRegistration omicsSelectionReg,omicsDargStartSelectionReg;
+    private final SectionStackSection rowSelectionSection;
 
-    public OmicsTableComponent(SelectionManager selectionManager, DatasetInformation datasetInfo, int rowsNumber) {
+    public OmicsTableComponent(SelectionManager selectionManager, DatasetInformation datasetInfo, int rowsNumber,SectionStackSection rowSelectionSection) {
+        timer = new Timer() {
+
+            @Override
+            public void run() {
+                SC.dismissCurrentDialog();
+            }
+        };
+        this.rowSelectionSection = rowSelectionSection;
+        infoSearchingMap = new String[rowsNumber];
+
         this.selectionManager = selectionManager;
         this.rowNumber = rowsNumber;
+        this.colNumber = datasetInfo.getColNumb();
         this.records = getRecodList(datasetInfo);
         omicsTableLayout = new VLayout();
-        header = new Label("Selected Rows Number ( 0 / " + rowsNumber + " )");
-        header.setHeight("18px");
-        header.setStyleName("labelheader");
-        omicsTableLayout.addMember(header);
+        rowSelectionSection.setTitle("&nbsp;Selection ( 0 / " + rowsNumber + " )");
+//        header = new Label("Selected Rows Number ( 0 / " + rowsNumber + " )");
+//        header.setHeight("18px");
+//        header.setStyleName("labelheader");
+//        omicsTableLayout.addMember(header);
         omicsTableLayout.setHeight("70%");
         omicsTableLayout.setWidth("100%");
+
+        /*searching field */
+        final DynamicForm form = new DynamicForm();
+        omicsTableLayout.addMember(form);
+        form.setAutoFocus(true);
+        form.setNumCols(3);
+        form.setWidth100();
+        form.setHeight(20);
+        searchingField = new TextItem("Search");
+        searchingField.setTitle("Search");
+        searchingField.setDefaultValue("Enter One Keyword");
+        searchingField.setWrapTitle(false);
+        searchingField.setTitleAlign(Alignment.LEFT);
+        form.setMargin(10);
+
+        searchingFieldFocusReg = searchingField.addFocusHandler(new FocusHandler() {
+
+            @Override
+            public void onFocus(FocusEvent event) {
+                searchingField.setValue(" ");
+            }
+        });
+
+        searchingFieldBlurReg = searchingField.addBlurHandler(new BlurHandler() {
+
+            @Override
+            public void onBlur(BlurEvent event) {
+                if (searchingField.getValueAsString().trim().equals("")) {
+                    searchingField.clearValue();
+                }
+            }
+        });
+
+        final ButtonItem button = new ButtonItem("search", "Search");
+        searchingFieldKeyPressReg = searchingField.addKeyPressHandler(new com.smartgwt.client.widgets.form.fields.events.KeyPressHandler() {
+
+            @Override
+            public void onKeyPress(com.smartgwt.client.widgets.form.fields.events.KeyPressEvent event) {
+                if (event.getKeyName().equalsIgnoreCase("Enter")) {
+                    searchKeyword();
+
+                }
+            }
+        });
+        button.setStartRow(false);
+        button.setWidth(80);
+        button.setIcon("../images/searchBtn.png");
+        searchBtnReg = button.addClickHandler(new com.smartgwt.client.widgets.form.fields.events.ClickHandler() {
+            @Override
+            public void onClick(com.smartgwt.client.widgets.form.fields.events.ClickEvent event) {
+                searchKeyword();
+            }
+        });
+
+        form.setFields(searchingField, button);
+        form.setColWidths(new Object[]{50, "*", 80});
+        searchingField.setWidth("*");
+        form.draw();
+
+        /*end*/
         this.omicsIdTable = new OmicsTable(datasetInfo);
         omicsTableLayout.addMember(omicsIdTable);
         initGrid();
-        this.classtype = 1;
+        this.classtype = 0;
         this.components.add(OmicsTableComponent.this);
         this.selectionManager.addSelectionChangeListener(OmicsTableComponent.this);
         datasetInfo = null;
         selectionChanged(Selection.TYPE.OF_ROWS);
     }
 
-    private void initGrid() {
-//       
-//        omicsIdTable.setData(records);
+    private void searchKeyword() {
 
+        if (searchingField.getValueAsString() == null || searchingField.getValueAsString().equalsIgnoreCase("") || searchingField.getValueAsString().equalsIgnoreCase("Enter One Keyword")) {
+            return;
+        }
+
+        SelectionManager.Busy_Task(true, false);
+        String keyword = searchingField.getValueAsString();
+        keyword = keyword.trim().toUpperCase();
+        Set<Integer> selectionIndex = new HashSet<Integer>();
+
+        for (int x = 0; x < infoSearchingMap.length; x++) {
+            String key = infoSearchingMap[x];
+            if (key.toUpperCase().contains(keyword)) {
+                selectionIndex.add(x);
+            }
+
+        }
+
+        int[] sel = new int[selectionIndex.size()];
+        int indexer = 0;
+        for (int x : selectionIndex) {
+            sel[indexer++] = x;
+
+        }
+        if (sel.length > 0) {
+            Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
+            selectionManager.setSelectedRows(selection);
+        } else {
+            SC.warn("Not Available", keyword.toUpperCase() + " Not Available");
+            timer.schedule(3000);
+
+        }
+//        SelectionManager.Busy_Task(false, false);
+
+    }
+    private final Timer timer;
+    private boolean dragStart;
+
+    private void initGrid() {
         omicsIdTable.setHeight("60%");
         omicsIdTable.setWidth("100%");
+       
+        omicsSelectionReg = omicsIdTable.addClickHandler(new ClickHandler() {
 
-        omicsIdTable.addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
             @Override
-            public void onClick(ClickEvent event) {
-                if (mouseSelection) {
+            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
+                if(dragStart)
                     return;
-                }
                 ListGridRecord[] selectionRecord = omicsIdTable.getSelectedRecords();
-//                if (selectionTable != null) {
-//                    selectionTable.setRecords(selectionRecord);
-//                    selectionTable.setShowAllRecords(false);
-//                    selectionTable.redraw();
-//                }
-                updateSelectionManagerOnTableSelection(selectionRecord);
+                if (selectionRecord != null && selectionRecord.length > 0) {
+                    SelectionManager.Busy_Task(true, false);
+                    updateSelectionManagerOnTableSelection(selectionRecord);
+                }
             }
         });
-        omicsIdTable.addDragStartHandler(new DragStartHandler() {
+        
+        
+        omicsDargStartSelectionReg = omicsIdTable.addDragStartHandler(new DragStartHandler() {
 
             @Override
             public void onDragStart(DragStartEvent event) {
-                mouseSelection = true;
+               dragStart=true;
             }
         });
-        omicsIdTable.addDragCompleteHandler(new DragCompleteHandler() {
+        
+        omicsSelectionReg = omicsIdTable.addDragStopHandler(new DragStopHandler() {
 
-            @Override
-            public void onDragComplete(DragCompleteEvent event) {
-                mouseSelection = false;
-            }
-        });
-
-        omicsIdTable.addDragStopHandler(new DragStopHandler() {
             @Override
             public void onDragStop(DragStopEvent event) {
-                ListGridRecord[] selectionRecord = omicsIdTable.getSelectedRecords();
-//                if (selectionTable != null) {
-//                    selectionTable.setRecords(selectionRecord);
-//                    selectionTable.redraw();
-//                }
-
-                updateSelectionManagerOnTableSelection(selectionRecord);
-                mouseSelection = false;
+                 dragStart= false;
+               ListGridRecord[] selectionRecord = omicsIdTable.getSelectedRecords();
+                if (selectionRecord != null && selectionRecord.length > 0) {
+                    SelectionManager.Busy_Task(true, false);
+                    updateSelectionManagerOnTableSelection(selectionRecord);
+                }
             }
         });
-        omicsIdTable.addFilterEditorSubmitHandler(OmicsTableComponent.this);
+        
+       
+                
+                
+                
+                
+//            omicsCellSelectionReg = omicsIdTable.addSelectionUpdatedHandler(new SelectionUpdatedHandler() {
+//
+//            @Override
+//            public void onSelectionUpdated(SelectionUpdatedEvent event) {
+//                if(event.isLeftButtonDown())
+//                    return;
+//                ListGridRecord[] selectionRecord = omicsIdTable.getSelectedRecords();
+//                if (selectionRecord != null && selectionRecord.length > 0) {
+//                    SelectionManager.Busy_Task(true, false);
+//                    updateSelectionManagerOnTableSelection(selectionRecord);
+//                }
+//
+//            }
+//        });
 
     }
 
     private void updateSelectionManager(int[] selectedIndices) {
-        selectionTag = true;
+        selfSelectionTag = true;
+        SelectionManager.Busy_Task(true, false);
         Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
         selectionManager.setSelectedRows(selection);
     }
@@ -152,11 +273,17 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     private ListGridRecord[] getRecodList(DatasetInformation datasetInfo) {
 
         ListGridRecord[] recordsInit = new ListGridRecord[datasetInfo.getRowsNumb()];
-        infoSearchingMap.clear();
         for (int x = 0; x < recordsInit.length; x++) {
             ListGridRecord record = new ListGridRecord();
             record.setAttribute("index", x);
-            record.setAttribute("gene", datasetInfo.getOmicsTabelData()[0][x]);
+            String[] annotationsRow = datasetInfo.getAnnotations()[x];
+            String searchKey = "";
+            for (int z = 0; z < datasetInfo.getAnnotationHeaders().length; z++) {
+                searchKey += annotationsRow[z] + "_";
+                record.setAttribute(datasetInfo.getAnnotationHeaders()[z], annotationsRow[z]);
+
+            }
+
             record.setAttribute("all", "");
             for (int c = 0; c < datasetInfo.getRowGroupsNumb(); c++) {
                 if (!datasetInfo.getOmicsTabelData()[c + 1][x].equalsIgnoreCase("#FFFFFF")) {
@@ -168,7 +295,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 }
             }
 
-            infoSearchingMap.put(datasetInfo.getOmicsTabelData()[0][x].toUpperCase(), record);
+            infoSearchingMap[x] = searchKey;
             recordsInit[x] = record;
         }
         return recordsInit;
@@ -181,7 +308,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 ListGridRecord rec = selectionRecord[index];
                 selectedIndices[index] = rec.getAttributeAsInt("index");
             }
-            selectionTag = true;
+            selfSelectionTag = true;
             updateSelectionManager(selectedIndices);
         }
 
@@ -189,42 +316,50 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
 
     @Override
     public void selectionChanged(Selection.TYPE type) {
-        if (selectionTag) {
-            selectionTag = false;
-            if (type == Selection.TYPE.OF_ROWS && selectionManager.getSelectedRows().getMembers() != null && selectionManager.getSelectedRows().getMembers().length != 0) {
-                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+        if (selfSelectionTag) {
+            selfSelectionTag = false;
+            if (type == Selection.TYPE.OF_ROWS && selectionManager.getSelectedRows().getMembers() != null && selectionManager.getSelectedRows().getMembers().length != 0 && omicsIdTable.isVisible()) {
+//                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+                rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+                if (groupTable != null && !groupTable.isGroubTableSelection()) {
+                    groupTable.deselectAllRecords();
+                } else {
+                    if (groupTable != null) {
+                        groupTable.setGroubTableSelection(false);
+                    }
+                }
+
+            } else if (type == Selection.TYPE.OF_COLUMNS && selectionManager.getSelectedColumns().getMembers() != null && selectionManager.getSelectedColumns().getMembers().length != 0 && !omicsIdTable.isVisible()) {
+//                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+                rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedColumns().getMembers().length + " / " + colNumber + " )");
             }
+
         } else if (type == Selection.TYPE.OF_ROWS) {
             Selection sel = selectionManager.getSelectedRows();
             if (sel != null) {
                 int[] selectedRows = sel.getMembers();
                 //update table selection             
                 if (selectedRows != null && selectedRows.length != 0) {
-
-//                    omicsIdTable.deselectAllRecords();
                     ListGridRecord[] reIndexSelection = new ListGridRecord[selectedRows.length];
                     int i = 0;
                     for (int z : selectedRows) {
                         reIndexSelection[i++] = records[z];
                     }
                     omicsIdTable.setRecords(reIndexSelection);
-//                    omicsIdTable.scrollToTop();
-//                    omicsIdTable.selectAllRecords();
-                    header.setText("Selected Rows Number ( " + reIndexSelection.length + " / " + rowNumber + " )");
-//                    omicsIdTable.selectRecords(reIndexSelection, true);
-
-//                    if (selectionTable != null) {
-//                        selectionTable.setRecords(omicsIdTable.getSelectedRecords());
-//                        selectionTable.redraw();
-//                    }
+//                    header.setText("Selected Rows Number ( " + reIndexSelection.length + " / " + rowNumber + " )");
+                    rowSelectionSection.setTitle("&nbsp;Selection ( " + reIndexSelection.length + " / " + rowNumber + " )");
                     try {
-//                        omicsIdTable.scrollToRow(omicsIdTable.getRecordIndex(reIndexSelection[0]));
-                        omicsIdTable.redraw();
+                        omicsIdTable.selectAllRecords();
                     } catch (Exception e) {
                         Window.alert(e.getLocalizedMessage());
                     }
-                    if (groupTable != null) {
+                    if (groupTable != null && !groupTable.isGroubTableSelection()) {
                         groupTable.deselectAllRecords();
+                    } else {
+                        if (groupTable != null) {
+                            groupTable.setGroubTableSelection(false);
+                        }
+
                     }
                 }
             }
@@ -232,7 +367,6 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             Selection sel = selectionManager.getSelectedColumns();
             if (sel != null) {
                 int[] selectedColumn = sel.getMembers();
-                //update table selection             
                 if (selectedColumn != null && selectedColumn.length != 0 && colSelectionTable != null) {
                     String[] values = new String[selectedColumn.length];
                     for (int x = 0; x < selectedColumn.length; x++) {
@@ -240,6 +374,9 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                     }
                     colSelectionTable.setValues(values);
                     colSelectionTable.redraw();
+                }
+                if (!omicsIdTable.isVisible()) {
+                    rowSelectionSection.setTitle("&nbsp;Selection ( " + selectedColumn.length + " / " + colNumber + " )");
                 }
             }
         }
@@ -252,47 +389,17 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
 
     @Override
     public void remove() {
+        searchingFieldFocusReg.removeHandler();
+        searchingFieldBlurReg.removeHandler();
+        searchingFieldKeyPressReg.removeHandler();
+        searchBtnReg.removeHandler();
+        if (omicsSelectionReg != null) {
+            omicsSelectionReg.removeHandler();
+        }
+        if (omicsDargStartSelectionReg != null) {
+            omicsDargStartSelectionReg.removeHandler();
+        }
+        selectionManager.removeSelectionChangeListener(this);
+        selectionManager = null;
     }
-
-    @Override
-    public void onFilterEditorSubmit(FilterEditorSubmitEvent event) {
-        event.cancel(); 
-        selectionManager.busyTask(true, false);
-        String keyword = event.getCriteria().getValues().get("gene").toString().toUpperCase();
-        List<Integer> selectionIndex = new ArrayList<Integer>();
-        List<ListGridRecord> selectionRecord = new ArrayList<ListGridRecord>();
-     
-        for (String key : infoSearchingMap.keySet()) {
-            if (key.contains(keyword)) {
-                int index = infoSearchingMap.get(key).getAttributeAsInt("index");
-                selectionIndex.add(index);
-                selectionRecord.add(infoSearchingMap.get(key));
-            }
-
-        }
-
-        int[] sel = new int[selectionIndex.size()];
-        ListGridRecord[] selRecord = new ListGridRecord[selectionIndex.size()];
-        for (int x = 0; x < selectionIndex.size(); x++) {
-            sel[x] = selectionIndex.get(x);
-            selRecord[x] = selectionRecord.get(x);
-        }
-        if (sel.length > 0) {
-            omicsIdTable.selectRecords(selRecord);
-            Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
-            selectionManager.setSelectedRows(selection);
-        } //        if (infoSearchingMap.containsKey(keyword.toUpperCase())) {
-        //            omicsIdTable.selectRecord(infoSearchingMap.get(keyword.toUpperCase()));
-        //            int index = infoSearchingMap.get(keyword.toUpperCase()).getAttributeAsInt("index");
-        //            int[] sel = new int[0];
-        //            sel[0] = index;
-        //            Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
-        //            selectionManager.setSelectedRows(selection);
-        //        } 
-        else {
-            Notification.notifi(keyword.toUpperCase() + " Not Available");
-        }
-        selectionManager.busyTask(false, false);
-    }
-
 }

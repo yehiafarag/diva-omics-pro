@@ -6,16 +6,20 @@
 package web.diva.server.filesystem;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.beans.DivaDataset;
@@ -69,6 +73,34 @@ public class FileSystemUtil implements Serializable{
         }
         System.gc();
         return ds;
+
+    }
+    
+      public DivaDataset loadDatasetAnnotation(File file,DivaDataset divaDs) {
+        try {
+
+            FileReader fr = new FileReader(file);
+            BufferedReader bufRdr = new BufferedReader(fr);
+            String headerLine = bufRdr.readLine();
+            String[] headerArr = headerLine.split("\t");
+            for(String str: headerArr)
+                System.err.println("str is --- "+str);
+           String line ="";
+           divaDs.setAnnotationHeaders(headerArr);
+           String[][] annotations = new String[divaDs.getDataLength()][headerArr.length];
+           int index = 0;
+            while ((line = bufRdr.readLine()) != null) {
+               String[] annotationRowArr = line.split("\t");
+               annotations[index] = annotationRowArr;
+               index++;
+               
+            }
+            divaDs.setAnnotations(annotations);
+        } catch (Exception e) {
+            System.err.println("error : "+e.getMessage());;
+        }
+        System.gc();
+        return divaDs;
 
     }
 

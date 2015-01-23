@@ -5,17 +5,18 @@
  */
 package web.diva.client.view.core;
 
-import com.google.gwt.user.client.Window;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.events.ClickEvent;
-import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
@@ -30,27 +31,26 @@ public class SaveDatasetPanel extends PopupPanel{
      private final HTML errorlabl;
     public SaveDatasetPanel(){
     this.setAnimationEnabled(true);
+      this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
         this.setModal(false);
-        this.setWidth(300 + "px");
-        this.setHeight(50 + "px");
-        mainBodyLayout = new VLayout();
+        mainBodyLayout = new VLayout();      
         
         mainBodyLayout.setWidth(300);
-        mainBodyLayout.setHeight(50);
-        this.add(mainBodyLayout);
+        mainBodyLayout.setHeight(150);
         
-         HLayout topLayout = new HLayout();
-        topLayout.setMembersMargin(1);
-        topLayout.setWidth(230);
-        topLayout.setHeight(20);
+         HorizontalPanel topLayout = new HorizontalPanel();
+        topLayout.setWidth("300px");
+        topLayout.setHeight("18px");
         mainBodyLayout.addMember(topLayout);
-        com.smartgwt.client.widgets.Label title = new com.smartgwt.client.widgets.Label("");
+        Label title = new Label("Publish Dataset Online");
         title.setStyleName("labelheader");
-        topLayout.addMember(title);
-        title.setWidth(283 + "px");
+        topLayout.add(title);
+        title.setWidth(250 + "px");
+         topLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
+        topLayout.setCellVerticalAlignment(title, HorizontalPanel.ALIGN_TOP);
 
-        com.smartgwt.client.widgets.Label closeBtn = new com.smartgwt.client.widgets.Label();
+        Label closeBtn = new Label();
 
         closeBtn.addStyleName("close");
         closeBtn.setHeight("16px");
@@ -63,33 +63,41 @@ public class SaveDatasetPanel extends PopupPanel{
             }
         });
 
-        topLayout.addMember(closeBtn);
+       topLayout.add(closeBtn);
+            topLayout.setCellHorizontalAlignment(closeBtn, HorizontalPanel.ALIGN_RIGHT);
+            topLayout.setCellVerticalAlignment(closeBtn, HorizontalPanel.ALIGN_TOP);
        
         
         form = new DynamicForm();
-        form.setGroupTitle("Publish Dataset Online");
-        form.setIsGroup(true);
-        form.setWidth(300);
+        form.setGroupTitle("");
+        
+        form.setIsGroup(false);
+        form.setWidth(250);
+        form.setPadding(10);
         form.setLayoutAlign(Alignment.CENTER);
 
        mainBodyLayout.addMember(form);
         name = new TextItem();
         name.setTitle("Dataset Name");
-        name.setWidth(300);
+        name.setWidth(250);
         name.setRequired(true);
+        name.setTitleOrientation(TitleOrientation.TOP);
         form.setFields(name);
-         HLayout hlo = new HLayout();
-        hlo.setWidth("100%");
-        hlo.setHeight("10%");
+        form.setBorder("0px solid");
+         VerticalPanel hlo = new VerticalPanel();
+        hlo.setWidth("300px");
+        hlo.setHeight("20px");
         okBtn = new IButton("Process");
-        Label spacer = new Label();
-        spacer.setWidth(100 + "px");
-        hlo.addMember(spacer);
-        hlo.addMember(okBtn);
+//        Label spacer = new Label();
+//        spacer.setWidth(100 + "px");
+//        hlo.addMember(spacer);
+        hlo.add(okBtn);
+        hlo.setCellHorizontalAlignment(okBtn, VerticalPanel.ALIGN_CENTER);
+            hlo.setCellVerticalAlignment(okBtn, VerticalPanel.ALIGN_MIDDLE);
 
-        hlo.setMargin(5);
-        hlo.setMembersMargin(1);
-        hlo.setAlign(Alignment.CENTER);
+//        hlo.setMargin(5);
+//        hlo.setMembersMargin(1);
+//        hlo.setAlign(Alignment.CENTER);
         
         mainBodyLayout.addMember(hlo);
         
@@ -100,6 +108,8 @@ public class SaveDatasetPanel extends PopupPanel{
         errorlabl.setWidth("100%");
         mainBodyLayout.addMember(errorlabl);
         mainBodyLayout.redraw();
+        this.setWidget(mainBodyLayout);
+         mainBodyLayout.setStyleName("modalLayout");
         this.show();
         this.hide();
     

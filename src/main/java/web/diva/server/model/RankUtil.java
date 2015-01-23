@@ -55,9 +55,7 @@ public class RankUtil {
         return res;
 
     }
-    private RankResult initFull(ArrayList<RPResult> jResults){
-   
-        
+    private RankResult initFull(ArrayList<RPResult> jResults){       
         
         RankResult results = new RankResult();
         int[] posRankToIndex = new int[jResults.get(0).getRowCount()];

@@ -5,6 +5,7 @@
  */
 package web.diva.client.pca.view;
 
+import web.diva.shared.unused.PCAPanel;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Label;

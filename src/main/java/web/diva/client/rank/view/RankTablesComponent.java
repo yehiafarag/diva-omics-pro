@@ -43,24 +43,30 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
 
        
     }
-
+    
+ @Override
+ public String toString(){
+ return "RankTable";
+ 
+ }
+    
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private final VLayout mainRankLayout;
-    private final UpdatedRankTable minRankTable;
-    private  UpdatedRankTable maxRankTable;
+    private final RankTableLayout minRankTable;
+    private  RankTableLayout maxRankTable;
    
     private final PopupPanel tablePopup;
     private final Label maxBtn;
     private final Label minBtn;
-    private final UpdatedRankBtn minSettingBtn,maxSettingsBtn;
+    private final RankSettingBtn minSettingBtn,maxSettingsBtn;
     private final DivaServiceAsync GWTClientService;
  private final  SelectionManager selectionManager;
     public RankTablesComponent(DivaServiceAsync greetingService, final SelectionManager selectionManager, final RankResult results,List<DivaGroup> colGroupsList) {
-        this.classtype = 5;
+        this.classtype = 3;
         this.components.add(RankTablesComponent.this);
         this.GWTClientService = greetingService;
         this.selectionManager = selectionManager;
@@ -99,7 +105,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
          topLayout.setCellHorizontalAlignment(btnsLayout, HorizontalPanel.ALIGN_RIGHT);
         topLayout.setCellVerticalAlignment(btnsLayout, HorizontalPanel.ALIGN_TOP);
     
-        minSettingBtn = new UpdatedRankBtn(selectionManager, GWTClientService);
+        minSettingBtn = new RankSettingBtn(selectionManager, GWTClientService);
         btnsLayout.add(minSettingBtn);
         btnsLayout.setCellHorizontalAlignment(minSettingBtn, HorizontalPanel.ALIGN_LEFT);
         maxBtn = new Label(); 
@@ -112,7 +118,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
         btnsLayout.setCellHorizontalAlignment(maxBtn, HorizontalPanel.ALIGN_RIGHT);
         btnsLayout.setCellVerticalAlignment(maxBtn, HorizontalPanel.ALIGN_TOP);
         
-        maxSettingsBtn = new UpdatedRankBtn(selectionManager, GWTClientService);      
+        maxSettingsBtn = new RankSettingBtn(selectionManager, GWTClientService);      
         
         minBtn = new Label();
         minBtn.addStyleName("minmize");
@@ -128,7 +134,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
                     maxmizeTableLayout.setHeight("80%");
                     maxmizeTableLayout.setWidth("80%");
                     
-                     maxRankTable = new UpdatedRankTable(selectionManager, results.getDatasetId(), results);
+                     maxRankTable = new RankTableLayout(selectionManager, results.getDatasetId(), results);
                     maxRankTable.setWidth("80%");
                     maxRankTable.setHeight("80%");
                     
@@ -176,7 +182,7 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
         
        
         
-        minRankTable = new UpdatedRankTable(selectionManager, results.getDatasetId(), results);
+        minRankTable = new RankTableLayout(selectionManager, results.getDatasetId(), results);
         mainRankLayout.addMember(minRankTable);
 //        minRankTable.setWidth("100%");
 //        minRankTable.setHeight("30%");
@@ -277,20 +283,20 @@ public class RankTablesComponent  extends ModularizedListener implements IsSeria
 
        
        private void viewRankTables( String perm, String seed, List<String> colGropNames, String log2) {
-        selectionManager.busyTask(true,true);
+        selectionManager.Busy_Task(true,true);
         GWTClientService.computeRank(perm, seed, colGropNames, log2,
                 new AsyncCallback<RankResult>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Window.alert("An error occurred while attempting to contact the server");
 //                        init=false;
-                        selectionManager.busyTask(false,true);
+                        selectionManager.Busy_Task(false,true);
                     }
 
                     @Override
                     public void onSuccess(RankResult result) {                       
                         minRankTable.updateRecords(result);
-                        selectionManager.busyTask(false,true);
+                        selectionManager.Busy_Task(false,true);
                       
                     }
                 });

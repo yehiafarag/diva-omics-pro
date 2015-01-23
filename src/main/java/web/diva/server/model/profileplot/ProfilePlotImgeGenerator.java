@@ -9,6 +9,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtilities;
 import web.diva.server.model.beans.DivaDataset;
@@ -19,6 +23,8 @@ import web.diva.server.model.beans.DivaDataset;
  */
 public class ProfilePlotImgeGenerator extends ProfilePlot {
 
+    ChartUtilities cu = new ChartUtilities() {
+};
     private boolean aalias = false;
     private boolean[] members;
     private  int width;
@@ -80,11 +86,25 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
         super.paint(graphics);
         byte[] imageData = null;
         try{
-        imageData = ChartUtilities.encodeAsPNG(image);
+        imageData = BufferedImageToByteArray(image);
         }catch(Exception e){e.printStackTrace();}
         String base64 = Base64.encodeBase64String(imageData);
         base64 = "data:image/png;base64," + base64;
         return base64;
 
     }
+    
+    public byte[] BufferedImageToByteArray(BufferedImage orImage){
+  try{
+    System.out.println("working ");
+  ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  ImageIO.write(orImage, "png", baos );
+     
+  byte[] imageBytes=baos.toByteArray();
+  return imageBytes;
+  //do something with the byte array
+  
+  }catch(IOException ie){}
+  return null;
+ }
 }

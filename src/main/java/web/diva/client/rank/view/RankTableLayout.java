@@ -28,7 +28,7 @@ import web.diva.shared.beans.RankResult;
  *
  * @author Yehia Farag
  */
-public class UpdatedRankTable extends ListGrid implements SelectionChangedHandler, IsSerializable {
+public class RankTableLayout extends ListGrid implements SelectionChangedHandler, IsSerializable {
 
     private boolean mouseSelection = false;
     private ListGridRecord[] posRecordMap, negRecordMap;
@@ -130,7 +130,7 @@ public class UpdatedRankTable extends ListGrid implements SelectionChangedHandle
     private boolean selectionTag = false;
 //    private final String[] headers;
 
-    public UpdatedRankTable(SelectionManager selectionManager, int datasetId, RankResult results) {
+    public RankTableLayout(SelectionManager selectionManager, int datasetId, RankResult results) {
         this.selectionManager = selectionManager;
         initGrid(results.getHeaders()); 
         this.updateRecords(results);   

@@ -5,7 +5,6 @@
  */
 package web.diva.server.filesystem;
 
-import java.awt.Color;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,8 +17,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
-import no.uib.jexpress_modularized.core.dataset.Group;
-import no.uib.jexpress_modularized.core.model.Selection;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
@@ -48,13 +45,41 @@ public class DB implements Serializable{
         path = fileFolderPath;
         File appFolder = new File(path);
         for (File datasetFile : appFolder.listFiles()) {
+             if (datasetFile.getName().endsWith("_Annotation.txt")) 
+                 continue;
             if (datasetFile.getName().endsWith(".txt")) {
                 DivaDataset divaDs = this.getDataset(0, datasetFile.getName());
+                String name = datasetFile.getName().substring(0, (datasetFile.getName().length() - 4));
+                divaDs= addAnnotationFile(divaDs,name+"_Annotation.txt");
                 this.setDataset(divaDs);
 
             }
         }
 
+    }
+    
+    
+    private DivaDataset addAnnotationFile(DivaDataset divaDs,String fileName){
+    File annotationFile = new File(path,fileName);
+        System.out.println("----  "+fileName);
+    if(annotationFile.exists()){
+        System.out.println("loading anno");
+        
+        divaDs = databaseUtil.loadDatasetAnnotation(annotationFile,divaDs);
+    }else{
+        System.out.println("in rowId init");
+    String[][] annotations = new String[divaDs.getDataLength()][1];
+    String[] annotationHeaders = new String[]{divaDs.getInfoHeaders()[0]};
+    divaDs.setAnnotationHeaders(annotationHeaders);
+    int index=0;
+    for(String str:divaDs.getRowIds()){
+        String[] row= new String[]{str};
+        annotations[index++] = row;    
+    }
+    divaDs.setAnnotations(annotations);
+    
+    }
+    return divaDs;
     }
     /**
      * This method is responsible for getting available datasets names and ids
@@ -107,6 +132,7 @@ public class DB implements Serializable{
         newDS.getRowGroups().addAll(jDataset.getRowGroups());
         newDS.setName(jDataset.getName());
         newDS = util.initDivaDs(newDS, datasetId);
+        newDS.setParentDsName(jDataset.getName());
         String[] geneNamesArr = util.initGeneNamesArr(newDS.getGeneIndexNameMap());
         newDS.setGeneNamesArr(geneNamesArr);
        
