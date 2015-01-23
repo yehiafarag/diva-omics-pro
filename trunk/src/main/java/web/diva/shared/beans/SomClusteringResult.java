@@ -19,11 +19,6 @@ public class SomClusteringResult implements IsSerializable{
     private String heatMapImgUrl;
     private String interactiveRowImgUrl;
     
-     private String rotetedSideTreeImgUrl;
-    private String rotetedUpperTreeImgUrl;
-    private String rotetedHeatMapImgUrl;
-     private String rotetedInteractiveRowImgUrl;
-    
     
     
     private String scaleImgUrl;
@@ -163,7 +158,7 @@ public class SomClusteringResult implements IsSerializable{
         this.sideTreeHeight = sideTreeHeight;
     }
 
-    public String getInteractiveRowImgUrl() {
+    public String getInteractiveColumnImgUrl() {
         return interactiveRowImgUrl;
     }
 
@@ -171,36 +166,7 @@ public class SomClusteringResult implements IsSerializable{
         this.interactiveRowImgUrl = interactiveRowImgUrl;
     }
 
-    public String getRotetedSideTreeImgUrl() {
-        return rotetedSideTreeImgUrl;
-    }
 
-    public void setRotetedSideTreeImgUrl(String rotetedSideTreeImgUrl) {
-        this.rotetedSideTreeImgUrl = rotetedSideTreeImgUrl;
-    }
-
-    public String getRotetedUpperTreeImgUrl() {
-        return rotetedUpperTreeImgUrl;
-    }
-
-    public void setRotetedUpperTreeImgUrl(String rotetedUpperTreeImgUrl) {
-        this.rotetedUpperTreeImgUrl = rotetedUpperTreeImgUrl;
-    }
-
-    public String getRotetedHeatMapImgUrl() {
-        return rotetedHeatMapImgUrl;
-    }
-
-    public void setRotetedHeatMapImgUrl(String rotetedHeatMapImgUrl) {
-        this.rotetedHeatMapImgUrl = rotetedHeatMapImgUrl;
-    }
-
-    public String getRotetedInteractiveRowImgUrl() {
-        return rotetedInteractiveRowImgUrl;
-    }
-
-    public void setRotetedInteractiveRowImgUrl(String rotetedInteractiveRowImgUrl) {
-        this.rotetedInteractiveRowImgUrl = rotetedInteractiveRowImgUrl;
-    }
+ 
     
 }

@@ -146,38 +146,22 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
 
     }
 
-    private void createBGaps(int[] gaps) {
-        bgaps = new boolean[data.getDataWidth()];
-        //java.util.Arrays.fill(bgaps,f);
-        for (int i = 0; i < gaps.length; i++) {
-            bgaps[gaps[i]] = true;
-        }
-    }
 
     public ProfilePlot(Hashtable props, Dataset data, final JScrollPane scroll) {
 
-        //@TODO: reimplement me ?
-        //NOTE: "structures" doesn't seem important
-//        if (data != null && data.structures != null && data.structures.containsKey("gaps")) {
-//            int[] gaps = (int[]) data.structures.get("gaps");
-//            createBGaps(gaps);
-//        }
         if (data != null) {
             this.data = data;
         }
         if (scroll != null) {
             scrollPane = scroll;
         }
-
         this.props = props;
-
         sp = getPropsWindow();
-
-        createDummy();
         init();
 
         scrollPane.addComponentListener(new ComponentAdapter() {
 
+            @Override
             public void componentResized(ComponentEvent e) { //size=new Dimension(xaxis.predictLength() + yaxis.predictWidth(), LineChart.this.scrollPane.getSize().height);
                 forceFullRepaint();
             }
@@ -185,76 +169,24 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
 
     }
 
-    public LineProps2 getPropsWindow() {
-
+    public final LineProps2 getPropsWindow() {
         Component owner = null;
         if (getRootPane() != null) {
             owner = getRootPane().getTopLevelAncestor();
         }
         LineProps2 sp = new LineProps2((JFrame) owner, true);
-
-//        sp.copy.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                ImageHandler.ImageToClipBoard(getImage());
-//            }
-//        });
-//
-//        KeyListener k = new KeyAdapter() {
-//
-//            public void keyPressed(KeyEvent e) {
-//                rangeChanged = true;
-//            }
-//        };
-//
-//        sp.ymin.addKeyListener(k);
-//        sp.ymax.addKeyListener(k);
-
         bgf.fillCombo(sp.SbgSV);
         bgf.fillGradCombo(sp.gradtypeSV);
-
-//        sp.reset.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                //yaxis.resetAxis(Ry);
-//
-//                yaxis.setValueRange(ProfilePlot.this.data.getMinMeasurement(), ProfilePlot.this.data.getMaxMeasurement());
-//                yaxis.setManualRange(false);
-//                //yaxis.force_end_labels=false;
-//
-//                rangeChanged = false;
-//                //updateAxisValues();
-//                forceFullRepaint();
-//            }
-//        });
-
-//        sp.ok.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                readForm();
-//                forceFullRepaint();
-//            }
-//        });
-//
-//        sp.defaults.addActionListener(new ActionListener() {
-//
-//            public void actionPerformed(ActionEvent e) {
-//                writeValues();
-//            }
-//        });
-
         readValues(sp);
-
         return sp;
     }
 
-    //public void setPropertiesAndScrollPane(Hashtable p, JScrollPane sp) {
     public void setPropertiesAndScrollPane(JScrollPane sp) {
         scrollPane = null;
 
         if (sp != null) {
             sp.addComponentListener(new ComponentAdapter() {
-
+ @Override
                 public void componentResized(ComponentEvent e) {
                     //  System.out.println("the lol fole is ( "+xaxis.predictLength()+xaxis.endLength()+yaxis.predictWidth()+"  ,  "+LineChart.this.scrollPane.getViewport().getSize().height);
                     //  dsize=new Dimension(xaxis.predictLength()+xaxis.endLength()+yaxis.predictWidth(),LineChart.this.scrollPane.getViewport().getSize().height);
@@ -300,33 +232,6 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
         return new Rectangle(valueframe.x - 1, valueframe.y - 1, valueframe.width + 2, valueframe.height + 2);
     }
 
-    /*
-     * public void updateAxisValues(){ sp.ymin.setValue(yaxis.minimum);
-     * sp.ymax.setValue(yaxis.maximum); }
-     */
-    public void createDummy() {
-        //NOTE: tautology: rest of method is dead code. Don't know why it's here
-        if (true) {
-            return;
-        }
-
-        boolean[] gr = new boolean[data.getDataLength()];
-        for (int i = 0; i < 1; i++) {
-            gr[i] = true;
-        }
-
-        //data.addGroup(new Boolean(true),"testgroup",Color.red,gr,false);
-        boolean[] gr2 = new boolean[data.getDataLength()];
-        for (int i = 0; i < 2; i++) {
-            gr2[i] = true;
-        }
-
-        //data.addGroup(new Boolean(true),"testgroup",Color.green,gr2,false);
-        /*
-         * draw=new boolean[data.getDataLength()]; draw[4]=true; draw[2]=true;
-         * draw[1]=true; draw[8]=true;
-         */
-    }
 
     public void setData(Dataset data) {
 
@@ -515,12 +420,8 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
 
     }
 
-    public void init() {
-
-        //setOpaque(true); //setBackground(new Color(210,204,204));
-        //scrollPane.getViewport().setBackground(getBackground());
+    public final void init() {
         setForeground(Color.black);
-
         if (scrollPane != null) {
             scrollPane.setCorner(JScrollPane.LOWER_RIGHT_CORNER, new JPanel());
         }
@@ -535,67 +436,32 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
 
         boolean[] visibleRows = createVisibleRowIndexes();
 
-        int cnt = 0;
-
-        //if(data==null) System.out.print("\nNO DATA");
         if (data != null) {
             xaxis = new LabelAxis(0, this, data.getColInfos(), visibleRows);
         } else {
             xaxis = new LabelAxis(0, this, new String[][]{{"s"}, {" "}}, new boolean[]{true, true});
         }
 
-        //if(true) return;
         xaxis.axiscolor = getForeground();
         yaxis.axiscolor = getForeground();
-
         yaxis.dropFirstGridLine = true;
         yaxis.dropLastGridLine = true;
         xaxis.dropFirstGridLine = true;
         xaxis.dropLastGridLine = true;
-
         setXaxisTitle("");
         setYaxisTitle("");
         xaxis.setTitleFont(new Font("Times New Roman", 1, 15));
         yaxis.setTitleFont(new Font("Times New Roman", 1, 15));
-
         topText.setFont(new Font("Times New Roman", 1, 16));
 
         //NOTE: a tautology, so the rest of the code of the method is in effect unreachable. 
-        //not removed since it is the same in JExpress, and that seems to work
-        if (true) {
-            return;
-        }
-
-        //setSize(new Dimension(xaxis.predictLength()+yaxis.predictWidth(),350)); sp = getPropsWindow();
-        readForm();
-        updateForm();
-        FormUpdated = true;
-        forceFullRepaint();
+        //not removed since it is the same in JExpress, and that seems to work       
 
     }
 
-// public void packupComponent(){
-    /*
-     * if(MainPic==null || MainPic.getWidth()!=getPreferredSize().width ||
-     * MainPic.getWidth()!=getPreferredSize().height){ MainPic=new
-     * BufferedImage(getPreferredSize().width,getPreferredSize().height,
-     * BufferedImage.TYPE_INT_ARGB); }
-     *
-     * Graphics tempg=MainPic.getGraphics(); //readForm();
-     *
-     * FullRepaint=true; // paintChart(tempg); if(scp!=null)scp.repaint();
-     * repaint(); parent.getViewport().repaint();
-     *
-     * if(scp==null){scp = new scrollpic(new ImageIcon(MainPic),1);
-     *
-     * parent.setViewportView(scp); } else scp.setIcon(new ImageIcon(MainPic));
-     *
-     * // scp.setBorder(new javax.swing.border.EtchedBorder());
-     */
-//      repaint();
-//  }
-    //TODO: document this method
+
     public void setDraw(boolean[] draw) {
+        System.err.println("draw "+draw.length);
         this.draw = draw;
         forceFullRepaint();
     }
@@ -611,7 +477,6 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
                 }
             }
             selection[index] = selected;
-//                System.out.println(index+"  --> "+selected);
         }
         return selection;
 
@@ -621,18 +486,14 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
         return draw;
     }
 
-//public int Height(){return getSize().height;}
-//public int Width(){return getSize().width;}
     public int Height() {
         return getSize().height;
-    }//size.height;}
+    }
 
     public int Width() {
         return getSize().width;
-    }//return dsize.width;}
+    }
 
-//   public int Height(){return 300;}
-//   public int Width(){return 450;}
     public void forceFullRepaint() {
         FullRepaint = true;
         repaint();
@@ -643,11 +504,6 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
 
         int[] x = null;
         Graphics g = null;
-        //public double minthresholdpercent = 10;
-        //private double minthreshold = 0.0; //settes i paint..
-
-        //things for speeding up drawing..
-        //turned off... still to difficult!
         if (data != null) {
             double mm = data.getMaxMeasurement();
             if (mm < Math.abs(data.getMinMeasurement())) {
@@ -656,24 +512,20 @@ public class ProfilePlot extends JComponent implements Scrollable, Serializable 
             minthreshold = (minthresholdpercent / 100.0) * mm;
         }
 
-        // System.out.print("\nmint : "+minthreshold);
-        //  System.out.print("\nmintp : "+minthresholdpercent);
         int totalvis = totalVisble();
         int totalshad = totalShadowed();
 
-        useSpeeding = false;
-        //if(totalvis>minVisible) useSpeeding=true;
+        useSpeeding = true;
 
-        if ((totalvis > minVisible && (totalshad > minVisible || totalshad == 0))) {
-            useSpeeding = true;
-        } else {
-            useSpeeding = false;
-        }
+//        if ((totalvis > minVisible && (totalshad > minVisible || totalshad == 0))) {
+//            useSpeeding = true;
+//        } else {
+//            useSpeeding = false;
+//        }
 
         if (useSpeeding && !enableSpeeding) {
             useSpeeding = enableSpeeding; //enablespeeding is set globally and has veto
-        } //   if(useSpeeding) System.out.print("\nPP");
-        //   else System.out.print("\nNN");
+        } 
 
         if (LockFullRepaint) {
             FullRepaint = true;

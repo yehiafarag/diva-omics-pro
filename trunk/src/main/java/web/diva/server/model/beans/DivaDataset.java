@@ -7,6 +7,8 @@ package web.diva.server.model.beans;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
+import no.uib.jexpress_modularized.core.dataset.AnnotationManager;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
 
 /**
@@ -21,6 +23,41 @@ public class DivaDataset extends Dataset implements Serializable {
     private String[] geneNamesArr;
 //    private Map<Integer, Number[]> membersMap;
     private Number[][] lineChartPointArr;
+    private String parentDsName;
+    
+    private  String[][] annotations;
+    private String[] annotationHeaders;
+    
+     public String[][] getAnnotations() {
+
+//        String[][] ret = null;
+//        ret = annotations;
+//        if (ret != null && ret.length != getDataLength()) {
+//            ret = new String[getDataLength()][1];
+//            for (int i = 0; i < ret.length; i++) {
+//                ret[i][0] = "Row" + (i + 1);
+//            }
+//            annotations = ret;
+//        }
+        return annotations;
+
+    }
+    public String[] getAnnotationHeaders() {
+
+//        AnnotationManager am = AnnotationManager.getAnnotationManager();
+//        Set<String> rowAnnotations = getRowAnnotationNamesInUse();
+//        if (rowAnnotations == null) {
+//            rowAnnotations = am.getManagedColumnAnnotationNames();
+//        }
+//        // String[] rowHeaders = null;
+//        if (rowAnnotations.isEmpty()) {
+//            annotationHeaders = new String[]{"Column ID"};
+//        } else {
+//            annotationHeaders = rowAnnotations.toArray(new String[rowAnnotations.size()]);
+//        }
+        return annotationHeaders;
+
+    }
 
     public int getId() {
         return id;
@@ -30,6 +67,14 @@ public class DivaDataset extends Dataset implements Serializable {
         this.id = id;
     }
     private int id;
+
+    public void setAnnotations(String[][] annotations) {
+        this.annotations = annotations;
+    }
+
+    public void setAnnotationHeaders(String[] annotationHeaders) {
+        this.annotationHeaders = annotationHeaders;
+    }
 
 //    public Map<Integer, Number[]> getMembersMap() {
 //        return membersMap;
@@ -81,6 +126,14 @@ public class DivaDataset extends Dataset implements Serializable {
 
     public void setLineChartPointArr(Number[][] lineChartPointArr) {
         this.lineChartPointArr = lineChartPointArr;
+    }
+
+    public String getParentDsName() {
+        return parentDsName;
+    }
+
+    public void setParentDsName(String parentDsName) {
+        this.parentDsName = parentDsName;
     }
 
 }

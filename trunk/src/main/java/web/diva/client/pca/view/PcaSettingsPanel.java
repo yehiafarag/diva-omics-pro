@@ -21,7 +21,7 @@ import com.smartgwt.client.widgets.layout.VLayout;
  *
  * @author Yehia Farag
  */
-public class UpdatedPcaPanel extends PopupPanel {
+public class PcaSettingsPanel extends PopupPanel {
 
     private final IButton okBtn;
 
@@ -31,7 +31,7 @@ public class UpdatedPcaPanel extends PopupPanel {
     private final ListBox pcaI;
     private final ListBox pcaII;
 
-    public UpdatedPcaPanel(int colNumber) {
+    public PcaSettingsPanel(int colNumber) {
 
         this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
@@ -115,8 +115,8 @@ public class UpdatedPcaPanel extends PopupPanel {
             pcaI.addItem("Principal Component nr " + x);
             pcaII.addItem("Principal Component nr " + x);
         }
-//        pcaI.setSelectedIndex(0);
-//        pcaII.setSelectedIndex(1);
+        pcaI.setSelectedIndex(0);
+        pcaII.setSelectedIndex(1);
 
         okBtn = new IButton("Start Process");
         okBtn.setWidth("200px");

@@ -23,6 +23,8 @@ public class DatasetInformation implements IsSerializable,Serializable {
     private String datasetInfo;
 //    private String[][] rowGroupsNames;
     private String[][] omicsTabelData;
+    private String [][] annotations;
+    private String [] annotationHeaders;
 //    private String[] pcaColNames;
 
     private List<DivaGroup> colGroupsList, rowGroupList;
@@ -129,5 +131,21 @@ public class DatasetInformation implements IsSerializable,Serializable {
 
     public void setRowGroupList(List<DivaGroup> rowGroupList) {
         this.rowGroupList = rowGroupList;
+    }
+
+    public String[][] getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String[][] annotations) {
+        this.annotations = annotations;
+    }
+
+    public String[] getAnnotationHeaders() {
+        return annotationHeaders;
+    }
+
+    public void setAnnotationHeaders(String[] annotationHeaders) {
+        this.annotationHeaders = annotationHeaders;
     }
 }

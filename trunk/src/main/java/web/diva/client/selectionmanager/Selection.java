@@ -4,8 +4,6 @@
  */
 package web.diva.client.selectionmanager;
 
-import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  *
@@ -20,9 +18,9 @@ public class Selection {
 
         OF_ROWS, OF_COLUMNS
     };
-    protected HashSet<Integer> members;
-    public Selection.TYPE type;
-    protected boolean active = true;
+    private int[] members;
+    private Selection.TYPE type;
+    private boolean active = true;
 
     /**
      * Create empty selection of given type
@@ -31,7 +29,7 @@ public class Selection {
      */
     public Selection(Selection.TYPE selectionType) {
         type = selectionType;
-        members = new HashSet<Integer>();
+        members = new int[]{};
     }
 
     /**
@@ -42,7 +40,8 @@ public class Selection {
      */
     public Selection(Selection.TYPE selectionType, int[] selectedIndices) {
         this(selectionType);
-        addMembers(selectedIndices);
+        members=selectedIndices;
+//        addMembers(selectedIndices);
     }
 
     public boolean isActive() {
@@ -57,40 +56,40 @@ public class Selection {
         return type;
     }
 
-    public void addMember(int id) {
-        members.add(id);
-    }
+//    public void addMember(int id) {
+//        members.add(id);
+//    }
 
-    private void addMembers(int[] ids) {
-        if (ids == null) {
-            throw new IllegalArgumentException("Array od selected indices is null");
-        }
-        for (int id : ids) {
-            members.add(id);
-        }
-    }
+//    private void addMembers(int[] ids) {
+//        if (ids == null) {
+//            throw new IllegalArgumentException("Array od selected indices is null");
+//        }
+//        for (int id : ids) {
+//            members.add(id);
+//        }
+//    }
 
-    public boolean hasMember(int member) {
-        return members.contains(member);
-    }
+//    public boolean hasMember(int member) {
+//        return members.contains(member);
+//    }
 
     public int[] getMembers() {
-        if (members.isEmpty()) {
-            return null;
-        }
-        int[] ms = new int[members.size()];
-        Iterator<Integer> it = members.iterator();
-        for (int i = 0; it.hasNext(); ms[i++] = it.next()) {
-        }
-        return ms;
+//        if (members.isEmpty()) {
+//            return null;
+//        }
+//        int[] ms = new int[members.size()];
+//        Iterator<Integer> it = members.iterator();
+//        for (int i = 0; it.hasNext(); ms[i++] = it.next()) {
+//        }
+        return members;
     }
 
     public void clear() {
-        members.clear();
+        members = new int[]{};
     }
 
     public int size() {
-        return members.size();
+        return members.length;
     }
 
     @Override

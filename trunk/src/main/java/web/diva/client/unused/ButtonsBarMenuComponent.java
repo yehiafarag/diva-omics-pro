@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package web.diva.client.view.core;
+package web.diva.client.unused;
 
 import com.google.gwt.user.client.ui.Label;
 

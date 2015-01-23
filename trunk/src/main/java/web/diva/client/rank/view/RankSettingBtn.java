@@ -5,6 +5,7 @@
  */
 package web.diva.client.rank.view;
 
+import web.diva.client.unused.RankPanel;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -19,12 +20,12 @@ import web.diva.shared.beans.DivaGroup;
  *
  * @author Yehia Farag
  */
-public class UpdatedRankBtn extends Label{
+public class RankSettingBtn extends Label{
     
     private final RankPanel rankPanel;
      private final DivaServiceAsync GWTClientService;
  private final  SelectionManager selectionManager;
-    public  UpdatedRankBtn(SelectionManager selectionManager,DivaServiceAsync GWTClientService){
+    public  RankSettingBtn(SelectionManager selectionManager,DivaServiceAsync GWTClientService){
         this.selectionManager = selectionManager;
         this.GWTClientService=GWTClientService;
         
@@ -77,13 +78,13 @@ public class UpdatedRankBtn extends Label{
         return rankPanel;
     }
       private void updateAndViewRankPanel() {
-        selectionManager.busyTask(true,true);
+        selectionManager.Busy_Task(true,true);
         GWTClientService.getColGroups(new AsyncCallback<List<DivaGroup>>() {
             @Override
             public void onFailure(Throwable caught) {
                 Window.alert("An error occurred while attempting to contact the server");
 //                        init=false;
-                selectionManager.busyTask(false,true);
+                selectionManager.Busy_Task(false,true);
             }
 
             @Override
@@ -92,7 +93,7 @@ public class UpdatedRankBtn extends Label{
                 getRankPanel().updateData(result);
                  getRankPanel().getPopupPanel().show();
                 getRankPanel().getPopupPanel().center();
-                 selectionManager.busyTask(false,true);
+                 selectionManager.Busy_Task(false,true);
 
             }
         });

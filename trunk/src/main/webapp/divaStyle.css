@@ -82,12 +82,12 @@ html body {
     
 }
 
-#diva_selectds_latout {
+#diva_selectds_layout {
        float: right;
     width: 280px;
-    height: 20px;
+    height: 40px;
     margin: 0 0 0 0;
-    top: 3%;
+    top: 2%;
     position: absolute;
     right: 50px;
 }
@@ -280,8 +280,8 @@ h3 {
     outline: none;
     cursor: pointer;
 }
-.magnifying  {
-    cursor: url(images/maximize.png),none;
+.clickableImg  {
+    cursor: pointer;
 }
 
 
@@ -394,7 +394,7 @@ html>body .gwt-PopupPanel {
     margin: 0;  
     top: 0;
     left: 0;
-    z-index: 800070;
+    z-index: 800044;
     overflow: hidden;
 
     /*   background-position: 1%;  */
@@ -650,8 +650,9 @@ html>body .gwt-DecoratedPopupPanel {
 .profileplot{
     border-bottom: none;
     border-left: none;
-        border-top: none;
+    border-top: none;
     border-right: 1px solid #E6E6E6;
+    cursor: pointer;
 }
 .pca{
     border-bottom: none;

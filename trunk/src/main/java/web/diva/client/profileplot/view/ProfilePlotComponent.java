@@ -10,6 +10,8 @@ import com.smartgwt.client.widgets.layout.VLayout;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -35,13 +37,12 @@ public class ProfilePlotComponent extends ModularizedListener {
     private final Image profilePlotMaxImage;
     private final Image thumbImage;
     private DivaServiceAsync greetingService;
-    private final int height = 212;
-    private final int width = 250;
+    private final HandlerRegistration lablePopupClickHandlerReg,imagePopupClickHandlerReg;
 
     @Override
     public String toString() {
 
-        return "LineChart";
+        return "ProfilePlot";
     }
 
     @Override
@@ -57,7 +58,7 @@ public class ProfilePlotComponent extends ModularizedListener {
 
     public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingService) {
         this.greetingService = greetingService;
-        this.classtype = 3;
+        this.classtype = 1;
         this.components.add(ProfilePlotComponent.this);
         this.selectionManager = selectionManager;
 
@@ -66,7 +67,6 @@ public class ProfilePlotComponent extends ModularizedListener {
         thumbLayout.setHeight("46%");
         thumbLayout.setWidth("25%");
         thumbLayout.setMargin(0);
-//        thumbLayout.setBorder("1px solid #E6E6E6");
         thumbLayout.setStyleName("profileplot");
 
         HorizontalPanel topLayout = new HorizontalPanel();
@@ -89,37 +89,25 @@ public class ProfilePlotComponent extends ModularizedListener {
         maxmizeBtn.setHorizontalAlignment(Label.ALIGN_RIGHT);
         topLayout.setCellHorizontalAlignment(maxmizeBtn, HorizontalPanel.ALIGN_RIGHT);
         
-        
+       
 
         final PopupPanel imagePopup = new PopupPanel(true, true);
         imagePopup.setAnimationEnabled(true);
         imagePopup.ensureDebugId("cwBasicPopup-imagePopup");
-        maxmizeBtn.addClickHandler(new ClickHandler() {
+         ClickHandler popupClickHandler = new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 imagePopup.center();
                 imagePopup.show();
             }
-        });
-
-        
-        
-     
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      
-
+        };
+         
+        lablePopupClickHandlerReg =  maxmizeBtn.addClickHandler(popupClickHandler);
+ 
         profilePlotMaxImage = new Image(results);
         
-        int maxHeight = 700;//(profilePlotMaxImage.getHeight());
-        int maxWidth = 900;//profilePlotMaxImage.getWidth();
+        int maxHeight = 700;
+        int maxWidth = 900;
         
         profilePlotMaxImage.setHeight(maxHeight+"px");
         profilePlotMaxImage.setWidth(maxWidth+"px");
@@ -160,6 +148,7 @@ public class ProfilePlotComponent extends ModularizedListener {
             @Override
             public void onClick(ClickEvent event) {
 //                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
+                
                 Window.open(profilePlotMaxImage.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=no,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
                 
             }
@@ -181,39 +170,44 @@ public class ProfilePlotComponent extends ModularizedListener {
 
         thumbImage = new Image(results);
         thumbImage.ensureDebugId("cwBasicPopup-thumb");
-        thumbImage.addStyleName("cw-BasicPopup-thumb");
+        thumbImage.addStyleName("clickableImg");
+        imagePopupClickHandlerReg = thumbImage.addClickHandler(popupClickHandler);
 
         thumbLayout.addMember(thumbImage);
         
         thumbImage.setHeight("100%");
         thumbImage.setWidth("100%");
 //       
-//        thumbLayout.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-//        thumbLayout.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
         Selection sel = selectionManager.getSelectedRows();
         if (sel != null) {
-            int[] selectedRows = sel.getMembers();
-            this.updateSelection(selectedRows);
+          final  int[] selectedRows = sel.getMembers(); 
+          Timer t = new Timer() {
+      @Override
+      public void run() {
+          updateSelection(selectedRows);
+      }
+    };
+    // Schedule the timer to run once in 0.5 seconds.
+    t.schedule(500);
+            
         }
 
     }
 
-    private void updateSelection(int[] selection) {
-        selectionManager.busyTask(true,false);
+    private void updateSelection(int[] selection) {   
         if (selection != null && selection.length > 0) {
-            greetingService.updateLineChartSelection(selection, width, height, new AsyncCallback<String>() {
+            greetingService.updateLineChartSelection(selection, new AsyncCallback<String>() {
                 @Override
-                public void onFailure(Throwable caught) {
-                    
+                public void onFailure(Throwable caught) {                    
                         Window.alert("ERROR IN SERVER CONNECTION");
-                        selectionManager.busyTask(false,false);
+//                        selectionManager.Busy_Task(false,false);
                 }
 
                 @Override
                 public void onSuccess(String result) {
                     profilePlotMaxImage.setUrl(result);
                     thumbImage.setUrl(result);
-                    selectionManager.busyTask(false,false);
+                    SelectionManager.Busy_Task(false,false);
                 }
             });
         }
@@ -226,6 +220,8 @@ public class ProfilePlotComponent extends ModularizedListener {
 
     @Override
     public void remove() {
+        imagePopupClickHandlerReg.removeHandler();
+        lablePopupClickHandlerReg.removeHandler();
         greetingService = null;
         selectionManager.removeSelectionChangeListener(ProfilePlotComponent.this);
         selectionManager = null;

@@ -37,7 +37,7 @@ public interface DivaServiceAsync {
 
     public void createColGroup( String name, String color, String type, int[] selection, AsyncCallback<DatasetInformation> asyncCallback);
 
-    public void createSubDataset(String name,String type, int[] selection, AsyncCallback<Integer> asyncCallback);
+    public void createSubDataset(String name,String type, int[] selection, AsyncCallback<String> asyncCallback);
 
     public void updateDatasetInfo(AsyncCallback<DatasetInformation> asyncCallback);
 
@@ -45,15 +45,13 @@ public interface DivaServiceAsync {
 
     public void exportData(String rowGroup, AsyncCallback<String> asyncCallback);
 
-    public void saveDataset( String newName, AsyncCallback<Integer> asyncCallback);
+    public void saveDataset( String newName, AsyncCallback<String> asyncCallback);
 
     public void getGroupsPanelData(AsyncCallback<LinkedHashMap<String, String>[]> asyncCallback);
-
-    public void getColNamesMaps(AsyncCallback<LinkedHashMap<String, String>> asyncCallback);
     
     public void getColGroups(AsyncCallback<List<DivaGroup>> asyncCallback);
 
-    public void updateLineChartSelection(int[] selection, double w, double h, AsyncCallback<String> asyncCallback);
+    public void updateLineChartSelection(int[] selection, AsyncCallback<String> asyncCallback);
 
     public void updatePCASelection(int[] selection,AsyncCallback<String> asyncCallback);
 
@@ -65,6 +63,7 @@ public interface DivaServiceAsync {
     
     public void  updateSideTree(int x,int y, double w, double h,AsyncCallback<SomClustTreeSelectionUpdate> asyncCallback);
     public void  updateUpperTree(int x,int y, double w, double h,AsyncCallback<SomClustTreeSelectionUpdate> asyncCallback);
+    public void updateSomClustInteractiveColumn(int[] selection,AsyncCallback<String> asyncCallback) ;
 
      public void  pcaShowAll(boolean showAll,int[] selection,AsyncCallback<String> asyncCallback);
       public void pcaZoomIn(int startX, int startY, int endX, int endY, AsyncCallback<PCAImageResult> asyncCallback);
