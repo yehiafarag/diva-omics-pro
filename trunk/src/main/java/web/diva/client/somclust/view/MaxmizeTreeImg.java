@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
+import com.smartgwt.client.widgets.Img;
 import web.diva.shared.beans.ClientClusterNode;
 
 /**
@@ -83,6 +84,7 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
         this.addMouseOutHandler(MaxmizeTreeImg.this);
         this.mainNode = node;
         this.type = type;
+      
         
          
     }

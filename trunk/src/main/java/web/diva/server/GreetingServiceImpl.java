@@ -110,9 +110,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     }
     @Override
      public String updateSomClustInteractiveColumn(int[] selection) {
-         
+         String url = ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateSomClustInteractiveColumn(selection);
         System.out.println("updateing clustering interactive  with "+ selection.length);
-        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateSomClustInteractiveColumn(selection);
+        return url;
     }
 
     @Override
@@ -131,8 +131,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     private RankResult rankResults;
 
     @Override
-    public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2) {  
-            return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).computeRank(perm, seed, colGropNames, log2);
+    public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2,boolean defaultRank) {  
+            return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getRankProductResults(perm, seed, colGropNames, log2,defaultRank);
+    }
+    @Override
+    public RankResult  getDefaultRank(){
+        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getDefaultRank();
     }
 
     @Override
@@ -165,8 +169,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     @Override
     public String updateLineChartSelection(int[] selection) {
 
+       
+        String results = ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateLineChartSelection(selection); 
         System.out.println("updateing profile plot with "+ selection.length);
-        String results = ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateLineChartSelection(selection);
         return results;
     }
 

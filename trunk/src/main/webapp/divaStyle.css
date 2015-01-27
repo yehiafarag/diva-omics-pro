@@ -10,7 +10,9 @@ html body {
         width: 100%;
         height: 100%;
         display: table;
-        background: #ffffff;  }
+        background: #ffffff;  
+	/* z-index: 800036; */
+}
 .tooltip{
 /*    left: 35%;
     top:1%;
@@ -33,7 +35,7 @@ html body {
 
 #content_header {
     width: 100%;
-    height: 9%;
+    height: 80px;
     min-height: 80px;
     display: table;
 
@@ -121,6 +123,7 @@ html body {
 #diva_mid_panel{
     float: left;
     width: 50%;
+    alignment-adjust: central;
     /*background: #000000;*/ 
     /*background-color:red;*/  
     margin: 0px 0 0 0;

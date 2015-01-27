@@ -25,6 +25,7 @@ public class RankResult implements IsSerializable, Serializable {
     private int[] negIndexToRank;
     private int datasetId;
     private int[] posRankToNegRank;
+    
 
     public double[][] getTableData() {
         return tableData;
@@ -151,5 +152,6 @@ public class RankResult implements IsSerializable, Serializable {
     public void setPosRankToNegRank(int[] posRankToNegRank) {
         this.posRankToNegRank = posRankToNegRank;
     }
+
 
 }

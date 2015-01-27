@@ -207,7 +207,7 @@ public class ProfilePlotComponent extends ModularizedListener {
                 public void onSuccess(String result) {
                     profilePlotMaxImage.setUrl(result);
                     thumbImage.setUrl(result);
-                    SelectionManager.Busy_Task(false,false);
+//                    SelectionManager.Busy_Task(false,false);
                 }
             });
         }

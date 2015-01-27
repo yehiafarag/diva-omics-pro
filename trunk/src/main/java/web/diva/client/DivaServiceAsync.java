@@ -31,7 +31,9 @@ public interface DivaServiceAsync {
     
 //    public void computeHeatmap(int datasetId, ArrayList<String> indexer, ArrayList<String> colIndexer, AsyncCallback<HeatMapImageResult> asyncCallback);
 
-    public void computeRank(String perm, String seed, List<String> colGropNames, String log2, AsyncCallback<RankResult> asyncCallback);
+    public void computeRank(String perm, String seed, List<String> colGropNames, String log2,boolean defaultRank, AsyncCallback<RankResult> asyncCallback);
+    
+    public void  getDefaultRank( AsyncCallback<RankResult> asyncCallback);
 
     public void createRowGroup(String name, String color, String type, int[] selection, AsyncCallback<DatasetInformation> asyncCallback);
 

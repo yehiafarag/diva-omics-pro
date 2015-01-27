@@ -162,7 +162,8 @@ public class DB implements Serializable{
             if (!dbFile.exists()) {
                 dbFile.createNewFile();
             } else {
-                return;
+                dbFile.delete();
+                dbFile.createNewFile();
             }
             OutputStream file = new FileOutputStream(dbFile);
             OutputStream buffer = new BufferedOutputStream(file);

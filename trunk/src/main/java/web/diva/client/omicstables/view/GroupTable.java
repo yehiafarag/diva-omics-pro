@@ -37,7 +37,7 @@ public class GroupTable extends ListGrid {
 
     public GroupTable(SelectionManager selectionManagerInst) {
         this.selectionManager = selectionManagerInst;
-        this.setHeight("30%");
+        this.setHeight("29%");
         setWidth("100%");
         this.setLeaveScrollbarGap(true);
         this.setSelectionType(SelectionStyle.MULTIPLE);
