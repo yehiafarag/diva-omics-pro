@@ -7,8 +7,6 @@ package web.diva.server.model.beans;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
-import no.uib.jexpress_modularized.core.dataset.AnnotationManager;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
 
 /**
@@ -27,6 +25,16 @@ public class DivaDataset extends Dataset implements Serializable {
     
     private  String[][] annotations;
     private String[] annotationHeaders;
+
+    public String getDefaultRankingName() {
+        return defaultRankingName;
+    }
+
+    public void setDefaultRankingName(String defaultRankingName) {
+        this.defaultRankingName = defaultRankingName;
+    }
+    
+    private String defaultRankingName;
     
      public String[][] getAnnotations() {
 

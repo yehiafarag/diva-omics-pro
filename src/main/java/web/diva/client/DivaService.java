@@ -33,7 +33,9 @@ public interface DivaService extends RemoteService {
 //    HeatMapImageResult computeHeatmap(int datasetId, ArrayList<String> indexer, ArrayList<String> colIndexer);
     PCAImageResult computePCA(int comI, int comII);
 
-    RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2);
+    RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2,boolean defaultRank);
+    
+     RankResult getDefaultRank();
 
     DatasetInformation createRowGroup(String name, String color, String type, int[] selection);
 

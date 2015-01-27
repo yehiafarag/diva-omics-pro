@@ -169,7 +169,7 @@ public class HeatmapColorFactory implements Serializable{
 //        ColorFactories.add(cf);
         colorFactory = cf;
 
-
+//
 //        cf = new ColorFactory();
 //        cf.setMirror(true);
 //        cf.initControlPoints(true);
@@ -178,20 +178,20 @@ public class HeatmapColorFactory implements Serializable{
 //        cp.get(1).setColor(Color.white);
 //        cp.get(2).setColor(Color.GREEN);
 //        cf.setMissing(Color.GRAY);
-//
-////        ColorFactories.add(cf);
-//
-//        ColorFactory cf2 = new ColorFactory();
-//        cf2.initControlPoints(true);
-//        cf2.setMirror(true);
-//        List<ControlPoint> cp2 = cf2.getControlPoints();
-//        cp2.get(0).setColor(Color.green);
-//        cp2.get(1).setColor(Color.black);
-//        cp2.get(2).setColor(Color.red);
-//        cf2.setControlPoints(cp2);
-//        cf2.setMissing(Color.blue);
-////        ColorFactories.add(cf2);
-//
+
+//        ColorFactories.add(cf);
+
+        ColorFactory cf2 = new ColorFactory();
+        cf2.initControlPoints(true);
+        cf2.setMirror(true);
+        List<ControlPoint> cp2 = cf2.getControlPoints();
+        cp2.get(0).setColor(Color.GREEN);
+        cp2.get(1).setColor(Color.BLACK);
+        cp2.get(2).setColor(Color.RED);
+        cf2.setControlPoints(cp2);
+        cf2.setMissing(Color.GREEN);
+//        ColorFactories.add(cf2);
+
 //        cf = new ColorFactory();
 //        cf.setMirror(false);
 //        cf.initControlPoints(false);
@@ -199,7 +199,7 @@ public class HeatmapColorFactory implements Serializable{
 //        cp.get(0).setColor(Color.green);
 //        cp.get(1).setColor(Color.CYAN);
 //        cf.setMissing(Color.blue);
-//        ColorFactories.add(cf);
+          colorFactory = cf2;
 
     }
     

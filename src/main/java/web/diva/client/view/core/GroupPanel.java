@@ -156,7 +156,7 @@ public class GroupPanel extends PopupPanel{
         
          this.setWidget(mainBodyLayout);
          mainBodyLayout.setStyleName("modalLayout");
-//        mainBodyLayout.redraw();
+        mainBodyLayout.redraw();
         this.show();
         this.hide();
 

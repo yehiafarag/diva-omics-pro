@@ -47,7 +47,7 @@ public class SomClustImgGenerator {
 
     private final int squareW = 12;
     private final int squareL = 2;
-    private final int LeftTreeWidth = 200;
+    private final int LeftTreeWidth = 350;
     private final int TopTreeHeight = 70;
     private int LeftTreeHeight,TopTreeWidth;   
 

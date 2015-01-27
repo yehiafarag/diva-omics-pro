@@ -82,10 +82,6 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
         this.records = getRecodList(datasetInfo);
         omicsTableLayout = new VLayout();
         rowSelectionSection.setTitle("&nbsp;Selection ( 0 / " + rowsNumber + " )");
-//        header = new Label("Selected Rows Number ( 0 / " + rowsNumber + " )");
-//        header.setHeight("18px");
-//        header.setStyleName("labelheader");
-//        omicsTableLayout.addMember(header);
         omicsTableLayout.setHeight("70%");
         omicsTableLayout.setWidth("100%");
 
@@ -187,11 +183,11 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             Selection selection = new Selection(Selection.TYPE.OF_ROWS, sel);
             selectionManager.setSelectedRows(selection);
         } else {
+            SelectionManager.Busy_Task(false, true);
             SC.warn("Not Available", keyword.toUpperCase() + " Not Available");
             timer.schedule(3000);
 
         }
-//        SelectionManager.Busy_Task(false, false);
 
     }
     private final Timer timer;
@@ -237,25 +233,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             }
         });
         
-       
-                
-                
-                
-                
-//            omicsCellSelectionReg = omicsIdTable.addSelectionUpdatedHandler(new SelectionUpdatedHandler() {
-//
-//            @Override
-//            public void onSelectionUpdated(SelectionUpdatedEvent event) {
-//                if(event.isLeftButtonDown())
-//                    return;
-//                ListGridRecord[] selectionRecord = omicsIdTable.getSelectedRecords();
-//                if (selectionRecord != null && selectionRecord.length > 0) {
-//                    SelectionManager.Busy_Task(true, false);
-//                    updateSelectionManagerOnTableSelection(selectionRecord);
-//                }
-//
-//            }
-//        });
+    
 
     }
 
@@ -374,10 +352,12 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                     }
                     colSelectionTable.setValues(values);
                     colSelectionTable.redraw();
+
                 }
-                if (!omicsIdTable.isVisible()) {
+                if (!omicsIdTable.isVisible() && selectedColumn != null) {
                     rowSelectionSection.setTitle("&nbsp;Selection ( " + selectedColumn.length + " / " + colNumber + " )");
                 }
+
             }
         }
     }

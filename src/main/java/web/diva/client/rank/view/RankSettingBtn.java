@@ -24,12 +24,10 @@ public class RankSettingBtn extends Label{
     
     private final RankPanel rankPanel;
      private final DivaServiceAsync GWTClientService;
- private final  SelectionManager selectionManager;
-    public  RankSettingBtn(SelectionManager selectionManager,DivaServiceAsync GWTClientService){
-        this.selectionManager = selectionManager;
+    public  RankSettingBtn(DivaServiceAsync GWTClientService,RankPanel rankPanel){
         this.GWTClientService=GWTClientService;
         
-        rankPanel = new RankPanel();
+        this.rankPanel = rankPanel;
         this.addStyleName("settings");
         this.setHeight("16px");
         this.setWidth("16px");
@@ -73,18 +71,21 @@ public class RankSettingBtn extends Label{
         public void rankPanelvalidate(){
         rankPanel.getForm2().validate();
         }
+         public boolean isDefaultRank() {
+        return rankPanel.isDefaultRank();
+    }
 
     public RankPanel getRankPanel() {
         return rankPanel;
     }
       private void updateAndViewRankPanel() {
-        selectionManager.Busy_Task(true,true);
+        SelectionManager.Busy_Task(true,true);
         GWTClientService.getColGroups(new AsyncCallback<List<DivaGroup>>() {
             @Override
             public void onFailure(Throwable caught) {
                 Window.alert("An error occurred while attempting to contact the server");
 //                        init=false;
-                selectionManager.Busy_Task(false,true);
+                SelectionManager.Busy_Task(false,true);
             }
 
             @Override
@@ -93,7 +94,7 @@ public class RankSettingBtn extends Label{
                 getRankPanel().updateData(result);
                  getRankPanel().getPopupPanel().show();
                 getRankPanel().getPopupPanel().center();
-                 selectionManager.Busy_Task(false,true);
+                SelectionManager.Busy_Task(false,true);
 
             }
         });

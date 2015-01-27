@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -561,6 +562,7 @@ public class Computing implements Serializable {
         jG.setGeneList(util.initGroupGeneList(divaDataset.getGeneIndexNameMap(), jG.getMembers()));
         Collections.reverse(divaDataset.getRowGroups());
         divaDataset.addRowGroup(jG);
+           
         Collections.reverse(divaDataset.getRowGroups());
         this.updateDatasetInfo();
         this.initOmicsTableData();
@@ -705,6 +707,48 @@ public class Computing implements Serializable {
             if (newName.equalsIgnoreCase(dsName)) {
                 return newName;
             }
+        }
+        return "";
+    }
+      /**
+     * This method is used to store updated datasets
+     *
+     * @return dataset id
+     */
+    public String saveCurrentDataset() {
+        if (divaDataset.getParentDsName().equalsIgnoreCase(divaDataset.getName())) {
+            getAvailableDatasetsMap();
+
+            System.out.println("its new dataset to save");
+            DivaDataset newDS = new DivaDataset(divaDataset.getData(), divaDataset.getRowIds(), divaDataset.getColumnIds());
+            newDS.setParentDsName(divaDataset.getParentDsName());
+            newDS.setColumnIds(divaDataset.getColumnIds());
+            newDS.setMissingMeasurements(divaDataset.getMissingMeasurements());
+            newDS.addRowAnnotationNameInUse(divaDataset.getInfoHeaders()[0]);
+            newDS.setName(divaDataset.getName());
+
+            newDS.setAnnotationHeaders(divaDataset.getAnnotationHeaders());
+            newDS.setAnnotations(divaDataset.getAnnotations());
+            newDS.setRowIds(divaDataset.getRowIds());
+            newDS.getColumnGroups().clear();
+
+            newDS.getColumnGroups().addAll(divaDataset.getColumnGroups());
+            newDS.getRowGroups().clear();
+
+            for (Group g : divaDataset.getRowGroups()) {
+                if (g.getName().equalsIgnoreCase("All")) {
+                    newDS.addRowGroup(g);
+                    break;
+                }
+            }
+            newDS.setDefaultRankingName(divaDataset.getDefaultRankingName());
+            newDS = util.initDivaDs(newDS, divaDataset.getId());
+            newDS.setGeneNamesArr(divaDataset.getGeneNamesArr());
+            database.setDataset(newDS);
+        } else {
+            
+            System.out.println("its not dataset to save");
+            database.setDataset(divaDataset);
         }
         return "";
     }
@@ -870,7 +914,7 @@ public class Computing implements Serializable {
      * @param log2
      * @return rank results
      */
-    public RankResult computeRank(int datasetId, String perm, String seed, List<String> colGropNames, String log2) {
+    public RankResult processRank(int datasetId, String perm, String seed, List<String> colGropNames, String log2) {
         String type = "TwoClassUnPaired";
         int iPerm = Integer.valueOf(perm);
         int iSeed = Integer.valueOf(seed);
@@ -904,6 +948,44 @@ public class Computing implements Serializable {
         rankResults.setDatasetId(datasetId);
         return rankResults;
     }
+    
+    
+    /**
+     * This method is responsible for computing Ranking
+     *@return RankResult
+     */
+    public RankResult getDefaultRank() {
+
+        if (divaDataset.getDefaultRankingName() == null || !computingDataList.contains(divaDataset.getDefaultRankingName())) {
+            String type = "OneClass";
+            int iPerm = 400;
+            int iSeed = 288848379;
+            boolean log = true;
+            int[] col1 = null;
+            for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
+                if (g.getName().equalsIgnoreCase("All")) {
+                    col1 = g.getMembers();
+                }
+            }
+
+            ComputeRank cr = new ComputeRank(divaDataset);
+            ArrayList<RPResult> jResults = cr.createResult(type, iPerm, iSeed, col1, null, log);
+            RankResult rankResults = rankUtil.handelRankTable(jResults);
+            rankResults.setDatasetId(divaDataset.getId());
+            String key = divaDataset.getName() + "_RANK_" + "All" + "_" + "Log 2" + ".ser";
+            saveRankResult(key, rankResults);
+            computingDataList.add(key);
+            divaDataset.setDefaultRankingName(key);
+            saveCurrentDataset();
+
+            return rankResults;
+        } else {
+            RankResult rankResults = getRankResult(divaDataset.getDefaultRankingName());
+
+            return rankResults;
+
+        }
+    }
 
     /**
      * This method is responsible for storing PCA results
@@ -935,26 +1017,32 @@ public class Computing implements Serializable {
         RankResult results = database.getRankResult(id);
         return results;
     }
-
-    public RankResult computeRank(String perm, String seed, List<String> colGropNames, String log2) {
+    
+    public RankResult getRankProductResults(String perm, String seed, List<String> colGropNames, String log2, boolean defaultRank) {
         String colGroupName = "";
         RankResult rankResults = null;
         for (String str : colGropNames) {
             colGroupName = colGroupName + str + "_";
-        }
+        }        
+        
         String key = divaDataset.getName() + "_RANK_" + colGroupName + "_" + log2 + ".ser";
         if (computingDataList.contains(key)) {
             rankResults = getRankResult(key);
-
+            
         } else {
             try {
-                rankResults = computeRank(divaDataset.getId(), perm, seed, colGropNames, log2);
+                rankResults = processRank(divaDataset.getId(), perm, seed, colGropNames, log2);
                 saveRankResult(key, rankResults);
                 computingDataList.add(key);
+                
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
         }
+        if (defaultRank) {
+                    divaDataset.setDefaultRankingName(key);
+                    saveCurrentDataset();
+                }
         return rankResults;
     }
 
