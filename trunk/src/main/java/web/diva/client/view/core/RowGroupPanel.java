@@ -24,7 +24,6 @@ import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.CellSelectionChangedEvent;
 import com.smartgwt.client.widgets.grid.events.CellSelectionChangedHandler;
-import com.smartgwt.client.widgets.layout.HLayout;
 import java.util.List;
 import web.diva.shared.beans.DivaGroup;
 
@@ -37,7 +36,7 @@ public class RowGroupPanel extends PopupPanel {
     private final IButton okBtn;
     private HTML errorlabl;
     private ListGrid selectionTable;
-    private final VerticalPanel mainBodyLayout;
+    private final VerticalPanel mainBodyLayout,framLayout;
     private DynamicForm form;
     private TextItem name;
 
@@ -55,21 +54,32 @@ public class RowGroupPanel extends PopupPanel {
         this.ensureDebugId("cwBasicPopup-imagePopup");
         this.setModal(false);
 
+        framLayout = new VerticalPanel();
+        framLayout.setWidth("400px");
+        framLayout.setHeight("256px");
+        
+
         mainBodyLayout = new VerticalPanel();
-        mainBodyLayout.setWidth("400px");
-        mainBodyLayout.setHeight("256px");
+        mainBodyLayout.setWidth("398px");
+        mainBodyLayout.setHeight("234px");
+        mainBodyLayout.setStyleName("modalPanelBody");
         this.add(mainBodyLayout);
-        mainBodyLayout.setStyleName("modalLayout");
+        
+        
 
         HorizontalPanel topLayout = new HorizontalPanel();
 //        topLayout.setMembersMargin(1);
-        topLayout.setWidth("400px");
+        topLayout.setWidth("398px");
         topLayout.setHeight("20px");
-        mainBodyLayout.add(topLayout);
+        framLayout.add(topLayout);
+        framLayout.add(mainBodyLayout);
         Label title = new Label(type);
         title.setStyleName("labelheader");
         topLayout.add(title);
-        title.setWidth(300 + "px");
+        title.setWidth(200 + "px");
+         topLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
+            topLayout.setCellVerticalAlignment(title, HorizontalPanel.ALIGN_TOP);
+        
 
         Label closeBtn = new Label();
 
@@ -86,10 +96,10 @@ public class RowGroupPanel extends PopupPanel {
         });
 
         topLayout.add(closeBtn);
-//        mainBodyLayout.setMargin(5);
+        topLayout.setCellHorizontalAlignment(closeBtn, HorizontalPanel.ALIGN_RIGHT);
+            topLayout.setCellVerticalAlignment(closeBtn, HorizontalPanel.ALIGN_TOP);
         try {
-//            mainBodyLayout.setMembersMargin(5);
-
+            
             selectionTable = new ListGrid();
             initSelectionTable(selectionStyle);
             mainBodyLayout.add(selectionTable);
@@ -122,7 +132,7 @@ public class RowGroupPanel extends PopupPanel {
         if (type.equalsIgnoreCase("Create Sub-Dataset")) {
             form = new DynamicForm();
             form.setGroupTitle("");
-            form.setWidth(400);
+            form.setWidth(398);
             form.setLayoutAlign(Alignment.CENTER);
 
             name = new TextItem();
@@ -135,16 +145,15 @@ public class RowGroupPanel extends PopupPanel {
 
         }
 
-        HLayout hlo = new HLayout();
-        hlo.setWidth(400);
-        hlo.setHeight(30);
+        HorizontalPanel hlo = new HorizontalPanel();
+        hlo.setWidth("398px");
+        hlo.setHeight("30px");
         okBtn = new IButton(type);
         okBtn.setWidth(200);
-        hlo.addMember(okBtn);
-
-        hlo.setMargin(10);
-        hlo.setMembersMargin(20);
-        hlo.setAlign(Alignment.CENTER);
+        hlo.add(okBtn);
+        hlo.setCellHorizontalAlignment(okBtn,HorizontalPanel.ALIGN_CENTER);
+        hlo.setCellVerticalAlignment(okBtn,HorizontalPanel.ALIGN_MIDDLE);
+        
         mainBodyLayout.add(hlo);
 
         errorlabl = new HTML("<h4 style='color:red;margin-left: 20px;height=20px;'>PLEASE CHECK YOUR DATA INPUT ..</h4>");
@@ -154,8 +163,10 @@ public class RowGroupPanel extends PopupPanel {
         mainBodyLayout.add(errorlabl);
         rowGroupsList = null;
 //        mainBodyLayout.redraw();
+        this.setWidget(framLayout);
+        framLayout.setStyleName("modalPanelLayout");
         this.show();
-        this.hide();
+        this.hide();;
 
     }
 
@@ -189,22 +200,23 @@ public class RowGroupPanel extends PopupPanel {
 
     private void initSelectionTable(SelectionStyle selectionStyle) {
 
-        selectionTable.setWidth("400px");
+        selectionTable.setWidth("398px");
         selectionTable.setHeight(150);
         selectionTable.setShowHeaderContextMenu(false);
         selectionTable.setLeaveScrollbarGap(false);
         selectionTable.setSelectionType(selectionStyle);
         selectionTable.setStyleName("borderless");
+        selectionTable.setMargin(3);
 
-        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 50);
+        ListGridField groupNameField = new ListGridField("groupName", "Group Name");
         groupNameField.setAlign(Alignment.CENTER);
         groupNameField.setType(ListGridFieldType.TEXT);
-        groupNameField.setAutoFitWidth(Boolean.TRUE);
 
         ListGridField colorField = new ListGridField("color", "Color");
         colorField.setAlign(Alignment.CENTER);
         colorField.setType(ListGridFieldType.IMAGE);
         colorField.setCanEdit(false);
+        colorField.setWidth("72px");
 
         ListGridField countField = new ListGridField("count", "Count");
         countField.setAlign(Alignment.CENTER);

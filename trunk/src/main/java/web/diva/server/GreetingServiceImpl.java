@@ -4,9 +4,6 @@ import com.google.gwt.user.client.rpc.SerializationException;
 import web.diva.client.DivaService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -74,9 +71,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getPCASelection(startX,startY,endX, endY);
     }
 
-    private final DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-    private final Calendar cal = Calendar.getInstance();
-    private final String textFile = "Export Data" + dateFormat.format(cal.getTime()).replace(":", " ");
+    
 
     @Override
     public TreeMap<Integer, String> getAvailableDatasets(int userTabId) {
@@ -196,7 +191,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     public String exportData(String rowGroup) {
         String appPath = this.getServletContext().getRealPath("/");
         String url = this.getThreadLocalRequest().getRequestURL().toString();
-        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportDataTotext(rowGroup, appPath, url.substring(0, (url.length() - 10)), textFile);
+        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportDataTotext(rowGroup, appPath, url.substring(0, (url.length() - 10)));
     }
 
     @Override

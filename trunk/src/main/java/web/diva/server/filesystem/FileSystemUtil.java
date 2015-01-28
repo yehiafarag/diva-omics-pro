@@ -83,15 +83,19 @@ public class FileSystemUtil implements Serializable{
             BufferedReader bufRdr = new BufferedReader(fr);
             String headerLine = bufRdr.readLine();
             String[] headerArr = headerLine.split("\t");
-            for(String str: headerArr)
-                System.err.println("str is --- "+str);
+          
            String line ="";
            divaDs.setAnnotationHeaders(headerArr);
            String[][] annotations = new String[divaDs.getDataLength()][headerArr.length];
            int index = 0;
             while ((line = bufRdr.readLine()) != null) {
                String[] annotationRowArr = line.split("\t");
-               annotations[index] = annotationRowArr;
+               String[] defaultAnnotRow = new String[headerArr.length];
+               for(int x=0;x<annotationRowArr.length;x++){
+               defaultAnnotRow[x]= annotationRowArr[x];
+               
+               }
+               annotations[index] = defaultAnnotRow;
                index++;
                
             }

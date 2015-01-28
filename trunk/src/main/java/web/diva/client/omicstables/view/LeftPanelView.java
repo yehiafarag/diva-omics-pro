@@ -37,6 +37,7 @@ import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.view.core.GroupPanel;
 import web.diva.client.view.core.RowGroupPanel;
+import web.diva.client.view.core.SaveAsPanel;
 import web.diva.client.view.core.SaveDatasetPanel;
 import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
@@ -75,9 +76,7 @@ public class LeftPanelView extends SectionStack {
         this.setHeight("89%");
         this.setMargin(2);
         this.setScrollSectionIntoView(false);
-
-        rowSelectionSection = new SectionStackSection("&nbsp;Selection ( " +  0+ " / " + datasetInfo.getRowsNumb() + " )");
-       
+        rowSelectionSection = new SectionStackSection("&nbsp;Selection ( " +  0+ " / " + datasetInfo.getRowsNumb() + " )");     
 
         rowSelectionSection.setControls();
         rowSelectionSection.setCanCollapse(false);
@@ -198,9 +197,11 @@ public class LeftPanelView extends SectionStack {
                     if (activeGroupPanel == null) {
                         initActiveGroupPanel(datasetInfo.getRowGroupList());
                     }
+                    if(datasetInfo.getRowGroupList().size()>1){
                     updateActiveGroupPanelPanel();
                     activeGroupPanel.center();
                     activeGroupPanel.show();
+                    }
 
                 }
             }
@@ -261,8 +262,6 @@ public class LeftPanelView extends SectionStack {
         });
 
         IMenuButton datasetMenuBtn = new IMenuButton("Dataset", datasetMenu);
-//        datasetMenuBtn.setShowMenuButtonImage(false);
-
         rowGBtnLayout.add(datasetMenuBtn);
         datasetMenuBtn.setWidth("9%");
         datasetMenuBtn.setAlign(Alignment.CENTER);
@@ -409,7 +408,7 @@ public class LeftPanelView extends SectionStack {
             @Override
             public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
                 String[] gnames = activeGroupPanel.getSelectRowGroups();
-                if (gnames != null) {
+                if (gnames != null && gnames.length != 0) {
                     activateGroups(gnames);
                 }
             }
@@ -497,9 +496,11 @@ public class LeftPanelView extends SectionStack {
 
                     @Override
                     public void onSuccess(String result) {
-                        Window.open(result, "downlod window", "status=0,toolbar=0,menubar=0,location=0");
-
+//                        Window.open(result, "downlod window", "status=0,toolbar=0,menubar=0,location=0");     
+                        sa.setResourceUrl(result);
                         SelectionManager.Busy_Task(false, true);
+                        sa.center();
+                        sa.show();
                         exportPanel.hide(true);
                         result = null;
 
@@ -507,6 +508,7 @@ public class LeftPanelView extends SectionStack {
                 });
 
     }
+    private final SaveAsPanel sa = new SaveAsPanel("File");
 
     /**
      * This method is responsible for invoking create row group method
@@ -524,7 +526,6 @@ public class LeftPanelView extends SectionStack {
                     public void onFailure(Throwable caught) {
                         Window.alert("ERROR IN SERVER CONNECTION");
                         SelectionManager.Busy_Task(false, true);
-
                     }
 
                     @Override
@@ -586,7 +587,6 @@ public class LeftPanelView extends SectionStack {
                     public void onSuccess(String datasetId) {
                         subDsPanel.hide(true);
                         selectionManager.updateDropdownList(datasetId);
-
                         SC.say("Done", "Successfully Stored Sub-Dataset");
                     }
                 });
@@ -640,12 +640,10 @@ public class LeftPanelView extends SectionStack {
                         Window.alert("ERROR IN SERVER CONNECTION");
                         SelectionManager.Busy_Task(false, true);
                     }
-
                     @Override
                     public void onSuccess(DatasetInformation result) {
                         activeGroupPanel.hide(true);
                         selectionManager.updateAllModules(result);
-                        result = null;
 
                     }
                 });

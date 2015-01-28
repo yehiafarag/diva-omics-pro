@@ -13,7 +13,6 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -130,9 +129,6 @@ public class Computing implements Serializable {
         datasetInfo = new DatasetInformation();
         datasetInfo.setAnnotationHeaders(divaDataset.getAnnotationHeaders());
         datasetInfo.setAnnotations(divaDataset.getAnnotations());
-        System.out.println("ann length "+divaDataset.getAnnotations().length);
-        for(String str: divaDataset.getAnnotationHeaders())
-            System.err.println("anno header : "+str);
         datasetInfo.setId(divaDataset.getId());
         datasetInfo.setRowsNumb(divaDataset.getDataLength());
         datasetInfo.setColNumb(divaDataset.getDataWidth());
@@ -509,11 +505,12 @@ public class Computing implements Serializable {
      */
     public DatasetInformation activateGroups(String[] rowGroups) {
 
+        for(String str: rowGroups)
+            System.out.println("group name "+str);
         if (rowGroups != null && rowGroups.length > 0) {
             List<no.uib.jexpress_modularized.core.dataset.Group> updatedActiveGroupList = new ArrayList<no.uib.jexpress_modularized.core.dataset.Group>();
             for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getRowGroups()) {
                 g.setActive(false);
-
                 updatedActiveGroupList.add(g);
             }
             divaDataset.getRowGroups().clear();
@@ -521,8 +518,8 @@ public class Computing implements Serializable {
             updatedActiveGroupList.clear();
             for (Group g : divaDataset.getRowGroups()) {
                 for (String gName : rowGroups) {
-
                     if (gName.equalsIgnoreCase(g.getName())) {
+                        System.out.println("update active group "+ g.getName());
                         g.setActive(true);
                         break;
                     }
@@ -1045,17 +1042,16 @@ public class Computing implements Serializable {
                 }
         return rankResults;
     }
-
+//    private final String textFile = "Export Data" + dateFormat.format(cal.getTime()).replace(":", " ");
     /**
      * This method is responsible for exporting data
      *
      * @param gName - selected group name
      * @param path - path to divaFiles folder
      * @param url - context url
-     * @param textFileName - exported file name
      * @return exported file url
      */
-    public String exportDataTotext(String gName, String path, String url, String textFileName) {
+    public String exportDataTotext(String gName, String path, String url) {
         Group g = null;
         for (Group gr : divaDataset.getRowGroups()) {
             if (gr.getName().equalsIgnoreCase(gName)) {
@@ -1063,7 +1059,11 @@ public class Computing implements Serializable {
                 break;
             }
         }
-        return util.exportDataTotext(divaDataset, g, path, url, textFileName);
+        if(g != null){
+        String textFile = divaDataset.getName()+"-"+g.getName();
+        return util.exportDataTotext(divaDataset, g.getMembers(), path, url, textFile);
+        }else
+            return "";
 
     }
 
