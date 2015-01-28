@@ -108,7 +108,6 @@ public class DivaUtil implements Serializable{
                     color = "#000000";
                 } else if (g.getGeneList().contains(geneNameArr[x]) && g.isActive()) {
                     color = g.getHashColor();
-                    System.out.println("color is "+color);
                 }
                 colorArr[x] = color;
             }
@@ -117,7 +116,7 @@ public class DivaUtil implements Serializable{
 
     }
 
-    public String exportDataTotext(DivaDataset divaDataset, Group rowGroup, String path, String url, String textFileName) {
+    public String exportDataTotext(DivaDataset divaDataset, int[] dataIndex, String path, String url, String textFileName) {
         File text = new File(path, textFileName + ".txt");
         try {
             if (text.exists()) {
@@ -126,17 +125,24 @@ public class DivaUtil implements Serializable{
             text.createNewFile();
             FileWriter outFile = new FileWriter(text, true);
             PrintWriter out1 = new PrintWriter(outFile);
-            String header = divaDataset.getInfoHeaders()[0];
-            for (int x = 0; x < divaDataset.getColumnIds().length; x++) {
-                header += "\t" + divaDataset.getColumnIds()[x];
+            String header = divaDataset.getAnnotationHeaders()[0];//divaDataset.getInfoHeaders()[0];
+            for (int z = 1; z < divaDataset.getAnnotationHeaders().length; z++) {
+                header += "\t" + divaDataset.getAnnotationHeaders()[z];
+            }
+
+            for (String columnId : divaDataset.getColumnIds()) {
+                header += "\t" + columnId;
             }
             try {
                 out1.append(header);
                 out1.println();
-                int[] dataIndex = rowGroup.getMembers();
                 Arrays.sort(dataIndex);
                 for (int x : dataIndex) {
-                    String line = divaDataset.getGeneNamesArr()[x];
+                    String[] annoRow = divaDataset.getAnnotations()[x];
+                    String line = annoRow[0];
+                    for (int z = 1; z < annoRow.length; z++) {
+                        line += "\t" + annoRow[z];
+                    }
                     double[] data = divaDataset.getData()[x];
                     for (int z = 0; z < data.length; z++) {
                         line += "\t" + data[z];
