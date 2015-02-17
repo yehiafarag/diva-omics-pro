@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.smartgwt.client.widgets.Img;
 import web.diva.shared.beans.ClientClusterNode;
 
 /**
@@ -20,21 +19,49 @@ import web.diva.shared.beans.ClientClusterNode;
  */
 public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutHandler {
 
-    private final int squareL = 2;
+    private  int squareL ;
     private ClientClusterNode mainNode;
     private final int type;
     private final HTML toolTip;
     private boolean selectedNode;
+    private double scale =1;
+    private int xcor;
+    private int ycor;
 
     @Override
     public final void onMouseMove(MouseMoveEvent event) {
         int y = (int) (event.getY());
         int x = ((int) (event.getX()));
         ClientClusterNode node = null;
-        x = this.getHeight()-x;
+        y = (int)((double)y/scale);
+        x = this.getHeight()-((int)((double) x/scale));
+
+//            int modX = this.getHeight()- ((event.getClientX() - this.getAbsoluteLeft())/2);
+//            int modY = event.getClientY() - (this.getAbsoluteTop()/2);
+//            
+//            
+//            
+//               
+//        switch (type) {
+//            case 1:
+//
+//                node = getTooltipAt(y, x, mainNode);
+//                break;
+//            case 2:
+//                node = getTooltipAt(x, y, mainNode);
+//                break;
+//
+//        }
+//            toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">" + " x " + x + " y " + y + "   x " + modX + " relative y " + modY+" node is null "+(node==null)+" layout eidth "+this.getHeight()+"</textarea>");
+//            toolTip.setVisible(true);
+            
+            
+            
+            
+            
         switch (type) {
             case 1:
-                
+
                 node = getTooltipAt(y, x, mainNode);
                 break;
             case 2:
@@ -42,12 +69,17 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
                 break;
 
         }
-              if (node != null) {
+        toolTip.setVisible(true);
+        if (node != null) {
+            xcor = x;
+            ycor = y;
             selectedNode = true;
-          this.setStyleName("clusterTreeOverNode");
+            this.setStyleName("clusterTreeOverNode");
             toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">" + "Merged at " + node.getValue() + " - Nodes: " + node.getMembers() + "</textarea>");
             toolTip.setVisible(true);
         } else {
+            xcor = -1000;
+            ycor = -10000;
             selectedNode = false;
             toolTip.setVisible(false);
             this.setStyleName("clusterTreeOver");
@@ -76,14 +108,16 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
         return ret;
     }
 
-    public MaxmizeTreeImg(String url, ClientClusterNode node, int type,HTML toolTip) {
+    public MaxmizeTreeImg(String url, ClientClusterNode node, int type,HTML toolTip,int squareL) {
         super(url);
+        this.squareL= squareL;
         this.toolTip = toolTip ;
         toolTip.setVisible(false);
         this.addMouseMoveHandler(MaxmizeTreeImg.this);
         this.addMouseOutHandler(MaxmizeTreeImg.this);
         this.mainNode = node;
         this.type = type;
+         this.setStyleName("clusterTreeOver");
       
         
          
@@ -95,6 +129,18 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
 
     public boolean isSelectedNode() {
         return selectedNode;
+    }
+    public void setScale(double scale){
+        this.scale = scale;
+//        squareL = (int)((double)squareL*scale);
+    }
+
+    public int getXcor() {
+        return xcor;
+    }
+
+    public int getYcor() {
+        return ycor;
     }
 
    

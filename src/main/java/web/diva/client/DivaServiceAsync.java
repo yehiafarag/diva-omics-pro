@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
 import web.diva.shared.beans.DivaGroup;
+import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
@@ -46,6 +47,8 @@ public interface DivaServiceAsync {
     public void activateGroups(String[] rowGroups, AsyncCallback<DatasetInformation> asyncCallback);
 
     public void exportData(String rowGroup, AsyncCallback<String> asyncCallback);
+    
+      public void exportImgAsPdf(String chartType, AsyncCallback<String> asyncCallback);
 
     public void saveDataset( String newName, AsyncCallback<String> asyncCallback);
 
@@ -65,7 +68,7 @@ public interface DivaServiceAsync {
     
     public void  updateSideTree(int x,int y, double w, double h,AsyncCallback<SomClustTreeSelectionUpdate> asyncCallback);
     public void  updateUpperTree(int x,int y, double w, double h,AsyncCallback<SomClustTreeSelectionUpdate> asyncCallback);
-    public void updateSomClustInteractiveColumn(int[] selection,AsyncCallback<String> asyncCallback) ;
+    public void updateSomClustInteractiveColumn(int[] selection,AsyncCallback<InteractiveColumnsResults> asyncCallback) ;
 
      public void  pcaShowAll(boolean showAll,int[] selection,AsyncCallback<String> asyncCallback);
       public void pcaZoomIn(int startX, int startY, int endX, int endY, AsyncCallback<PCAImageResult> asyncCallback);

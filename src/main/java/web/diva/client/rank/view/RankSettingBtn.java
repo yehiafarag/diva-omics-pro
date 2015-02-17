@@ -41,11 +41,11 @@ public class RankSettingBtn extends Label{
 
     }
     public void hidePanel(){
-    rankPanel.getPopupPanel().hide();
+    rankPanel.hide();
     }
       public void showPanel(){
-          rankPanel.getPopupPanel().center();
-    rankPanel.getPopupPanel().show();
+          rankPanel.center();
+    rankPanel.show();
     }
       
       public void setClickListener(com.smartgwt.client.widgets.events.ClickHandler handler){
@@ -92,8 +92,8 @@ public class RankSettingBtn extends Label{
             public void onSuccess(List<DivaGroup> result) {
 
                 getRankPanel().updateData(result);
-                 getRankPanel().getPopupPanel().show();
-                getRankPanel().getPopupPanel().center();
+                 getRankPanel().show();
+                getRankPanel().center();
                 SelectionManager.Busy_Task(false,true);
 
             }

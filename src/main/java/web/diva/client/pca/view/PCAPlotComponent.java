@@ -29,6 +29,7 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
+import web.diva.client.view.core.SaveAsPanel;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.UpdatedTooltip;
 
@@ -86,8 +87,8 @@ public class PCAPlotComponent extends ModularizedListener {
 
         mainThumbPCALayout = new VLayout();
         mainThumbPCALayout.setStyleName("pca");
-        mainThumbPCALayout.setHeight("46%");
-        mainThumbPCALayout.setWidth("25%");
+        mainThumbPCALayout.setHeight("100%");
+        mainThumbPCALayout.setWidth("100%");
         HorizontalPanel topLayout = new HorizontalPanel();
         mainThumbPCALayout.addMember(topLayout);
         topLayout.setWidth("100%");
@@ -189,7 +190,7 @@ public class PCAPlotComponent extends ModularizedListener {
             @Override
             public void onClick(ClickEvent event) {
                 if (pcsSettingPanel == null) {
-                    initPcaSettingPanel(colNumber);
+                    initPcaSettingPanel(results.getPcaLabelData());
                 }
 
                 pcsSettingPanel.center();
@@ -216,7 +217,24 @@ public class PCAPlotComponent extends ModularizedListener {
 
             @Override
             public void onClick(ClickEvent event) {
-                Window.open(thumbChart.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
+//                Window.open(thumbChart.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
+                SelectionManager.Busy_Task(true, false);
+//                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
+                GWTClientService.exportImgAsPdf("PCA_Plot", new AsyncCallback<String>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Window.alert("ERROR IN SERVER CONNECTION");
+                        SelectionManager.Busy_Task(false, false);
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                        SaveAsPanel sa = new SaveAsPanel("PCA Image", result);
+                        sa.center();
+                        sa.show();
+                        SelectionManager.Busy_Task(false, false);
+                    }
+                });
 
             }
         });
@@ -232,14 +250,14 @@ public class PCAPlotComponent extends ModularizedListener {
         minLabelReg = minmizeBtn.addClickHandler(minmizeClickHandler);
 
         final VLayout updatedMmaxmizePlotImgLayout = new VLayout();
-        updatedMmaxmizePlotImgLayout.setHeight(700);
+        updatedMmaxmizePlotImgLayout.setHeight(710);
         updatedMmaxmizePlotImgLayout.setWidth(900);
 
         mainPcaPopupBodyLayout.addMember(updatedMmaxmizePlotImgLayout);
 
         tooltipViewPortLayout = new HorizontalPanel();
         tooltipViewPortLayout.setWidth(900 + "px");
-        tooltipViewPortLayout.setHeight("50px");
+        tooltipViewPortLayout.setHeight("80px");
         mainPcaPopupBodyLayout.addMember(tooltipViewPortLayout);
         tooltipViewPortLayout.add(tooltipLabel);
         tooltipLabel.setStyleName("tooltip");
@@ -254,6 +272,22 @@ public class PCAPlotComponent extends ModularizedListener {
                 }
             }
         };
+        
+        VerticalPanel variationPanel = new VerticalPanel();
+        variationPanel.setWidth("300px");
+        variationPanel.setHeight("70px");
+        variationPanel.setStyleName("fullborder");
+        tooltipViewPortLayout.add(variationPanel);
+        tooltipViewPortLayout.setCellVerticalAlignment(variationPanel, HorizontalPanel.ALIGN_TOP);
+        tooltipViewPortLayout.setCellHorizontalAlignment(variationPanel, HorizontalPanel.ALIGN_RIGHT);
+        
+        Label l1= new Label(results.getPcax());
+         Label l2= new Label(results.getPcay());
+          Label l3= new Label(results.getTotalVarianc());
+          variationPanel.add(l1);
+          variationPanel.add(l2);
+          variationPanel.add(l3);
+        
 
         imagereg = thumbChart.addClickHandler(maxmizeClickHandler);
 
@@ -425,9 +459,9 @@ public class PCAPlotComponent extends ModularizedListener {
 
     private PcaSettingsPanel pcsSettingPanel;
 
-    private void initPcaSettingPanel(int colNumber) {
+    private void initPcaSettingPanel(String[] pcaLabelData) {
 
-        pcsSettingPanel = new PcaSettingsPanel(colNumber);
+        pcsSettingPanel = new PcaSettingsPanel(pcaLabelData);
         pcsSettingPanel.getOkBtn().addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
 
             @Override

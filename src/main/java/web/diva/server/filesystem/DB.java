@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
+import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
@@ -135,6 +136,7 @@ public class DB implements Serializable{
         newDS.setParentDsName(jDataset.getName());
         String[] geneNamesArr = util.initGeneNamesArr(newDS.getGeneIndexNameMap());
         newDS.setGeneNamesArr(geneNamesArr);
+        newDS.setParentDsName(jDataset.getName());
        
 
         return newDS;
@@ -223,7 +225,7 @@ public class DB implements Serializable{
      * @param id  - clustering results id
      * @param results - pca result to store
      */
-    public void savePCAResult(String id, PCAResults results) {
+    public void savePCAResult(String id, PcaResults results) {
 
         try {
             File dbFile = new File(path + "/computing", id);
@@ -250,8 +252,8 @@ public class DB implements Serializable{
      * @param id  - pca results id
      * @return results - pca results result 
      */
-    public PCAResults getPCAResult(String id) {
-        PCAResults results = databaseUtil.deSerializePCAResult(id, path + "/computing");
+    public PcaResults getPCAResult(String id) {
+        PcaResults results = databaseUtil.deSerializePCAResult(id, path + "/computing");
         return results;
     }
       /**

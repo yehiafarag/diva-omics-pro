@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
+import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAResults;
@@ -169,7 +170,7 @@ public class FileSystemUtil implements Serializable{
         return null;
     }
 
-    public PCAResults deSerializePCAResult(String name, String path) {
+    public PcaResults deSerializePCAResult(String name, String path) {
 
         try {
             File dbFile = new File(path, name);
@@ -181,7 +182,7 @@ public class FileSystemUtil implements Serializable{
             InputStream buffer = new BufferedInputStream(file);
             ObjectInput input = new ObjectInputStream(buffer);
             //deserialize the List
-            PCAResults serResult = (PCAResults) input.readObject();
+            PcaResults serResult = (PcaResults) input.readObject();
             System.gc();
             return serResult;
 

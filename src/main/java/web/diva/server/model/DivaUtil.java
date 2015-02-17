@@ -3,7 +3,14 @@ package web.diva.server.model;
 *
 *used
  */
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -158,6 +165,7 @@ public class DivaUtil implements Serializable{
                 outFile.close();
             }
             System.gc();
+            System.out.println("text is "+url + text.getName());
             return url + text.getName();
         } catch (IOException e) {
             System.err.println(e.getMessage());
@@ -165,5 +173,32 @@ public class DivaUtil implements Serializable{
         }
         return "";
 
+    }
+    
+     public String exportImgAsPdf(BufferedImage bimage, File userFolder, String url, String textFileName) {
+        try {   
+            
+            File pdfFile = new File(userFolder, textFileName + ".pdf");
+            if(!pdfFile.exists())
+                pdfFile.createNewFile();          
+            Document document = new Document();
+            Rectangle size =  new Rectangle(bimage.getWidth()+200,bimage.getHeight()+200);
+            
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+            document.setPageSize(size);
+            document.open();        
+            
+            PdfContentByte cb = writer.getDirectContent();
+            Image image = Image.getInstance(bimage, null);       
+            image.setAbsolutePosition(0, 0);
+            image.setRotationDegrees(90);
+            cb.addImage(image);           
+            document.close();
+             return url +userFolder.getName()+"/"+pdfFile.getName();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+         return "";
     }
 }

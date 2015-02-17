@@ -63,7 +63,6 @@ public class RowGroupPanel extends PopupPanel {
         mainBodyLayout.setWidth("398px");
         mainBodyLayout.setHeight("234px");
         mainBodyLayout.setStyleName("modalPanelBody");
-        this.add(mainBodyLayout);
         
         
 
@@ -166,7 +165,7 @@ public class RowGroupPanel extends PopupPanel {
         this.setWidget(framLayout);
         framLayout.setStyleName("modalPanelLayout");
         this.show();
-        this.hide();;
+        this.hide();
 
     }
 

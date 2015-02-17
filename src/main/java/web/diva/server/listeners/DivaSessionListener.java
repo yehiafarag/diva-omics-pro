@@ -5,8 +5,6 @@
  */
 package web.diva.server.listeners;
 
-import java.io.File;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import web.diva.server.model.Computing;
@@ -17,11 +15,12 @@ import web.diva.server.model.Computing;
  */
 public class DivaSessionListener implements HttpSessionListener {
 
+    private Computing comp;
     @Override
     public void sessionCreated(HttpSessionEvent se) {
         
         String path = se.getSession().getServletContext().getInitParameter("fileFolder");
-        Computing comp = new Computing(path);
+        comp = new Computing(path);
         se.getSession().setAttribute("computing", comp);
         System.out.println("session start :-) ");
         System.gc();
@@ -30,7 +29,8 @@ public class DivaSessionListener implements HttpSessionListener {
     }
 
     @Override
-    public void sessionDestroyed(HttpSessionEvent se) {
+    public void sessionDestroyed(HttpSessionEvent se) {        
+        comp.removeUserFolder();
         System.gc();
         System.out.println("session end :-(");
     }

@@ -17,7 +17,7 @@ public class SomClusteringResult implements IsSerializable{
     private String sideTreeImgUrl;
     private String upperTreeImgUrl;
     private String heatMapImgUrl;
-    private String interactiveRowImgUrl;
+    private InteractiveColumnsResults interactiveRowImgUrl;
     
     
     
@@ -37,6 +37,8 @@ public class SomClusteringResult implements IsSerializable{
     private int topTreeHeight;
     private int sideTreeHeight;
     
+    private int squareL;
+     private int squareW;
 
     public String getSideTreeImgUrl() {
         return sideTreeImgUrl;
@@ -158,12 +160,28 @@ public class SomClusteringResult implements IsSerializable{
         this.sideTreeHeight = sideTreeHeight;
     }
 
-    public String getInteractiveColumnImgUrl() {
+    public InteractiveColumnsResults getInteractiveColumnImgUrl() {
         return interactiveRowImgUrl;
     }
 
-    public void setInteractiveRowImgUrl(String interactiveRowImgUrl) {
+    public void setInteractiveRowImgUrl(InteractiveColumnsResults interactiveRowImgUrl) {
         this.interactiveRowImgUrl = interactiveRowImgUrl;
+    }
+
+    public int getSquareL() {
+        return squareL;
+    }
+
+    public void setSquareL(int squareL) {
+        this.squareL = squareL;
+    }
+
+    public int getSquareW() {
+        return squareW;
+    }
+
+    public void setSquareW(int squareW) {
+        this.squareW = squareW;
     }
 
 

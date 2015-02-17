@@ -22,6 +22,11 @@ public class PCAImageResult implements IsSerializable {
     private double dataAreaMinX;
     private double dataAreaMinY, MinX, MinY, MaxX, MaxY;
     private UpdatedTooltip tooltipInformatinData;
+    private String totalVarianc;
+    private String pcax;
+    private String pcay;
+    
+    private String[] pcaLabelData;
 
     private PCAPoint[] indexeMap;
 
@@ -129,6 +134,38 @@ public class PCAImageResult implements IsSerializable {
 
     public void setTooltipInformatinData(UpdatedTooltip tooltipInformatinData) {
         this.tooltipInformatinData = tooltipInformatinData;
+    }
+
+    public String[] getPcaLabelData() {
+        return pcaLabelData;
+    }
+
+    public void setPcaLabelData(String[] pcaLabelData) {
+        this.pcaLabelData = pcaLabelData;
+    }
+
+    public String getTotalVarianc() {
+        return totalVarianc;
+    }
+
+    public void setTotalVarianc(String totalVarianc) {
+        this.totalVarianc = totalVarianc;
+    }
+
+    public String getPcax() {
+        return pcax;
+    }
+
+    public void setPcax(String pcax) {
+        this.pcax = pcax;
+    }
+
+    public String getPcay() {
+        return pcay;
+    }
+
+    public void setPcay(String pcay) {
+        this.pcay = pcay;
     }
 
 }

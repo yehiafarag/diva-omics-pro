@@ -12,10 +12,10 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
  *
@@ -24,7 +24,6 @@ import com.smartgwt.client.widgets.layout.VLayout;
 public class UpdatedSomClustPanel extends PopupPanel {
 
     private final IButton processBtn;
-    private final VLayout mainBodyLayout;
 
     private final ListBox linkage;
     private final ListBox distanceMeasure;
@@ -35,15 +34,22 @@ public class UpdatedSomClustPanel extends PopupPanel {
         this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
         this.setModal(false);
-        mainBodyLayout = new VLayout();
-        mainBodyLayout.setWidth(300);
-        mainBodyLayout.setHeight(150);
+        
+           VerticalPanel framLayout = new VerticalPanel();
+       framLayout.setWidth("300px");
+        framLayout.setHeight("150px");
+
+        VerticalPanel mainBodyLayout = new VerticalPanel();
+        
+        mainBodyLayout.setWidth("298px");
+        mainBodyLayout.setHeight("150px");
+           mainBodyLayout.setStyleName("modalPanelBody");
+          
 
         HorizontalPanel topLayout = new HorizontalPanel();
-        topLayout.setWidth("300px");
+        topLayout.setWidth("298px");
         topLayout.setHeight("20px");
-        topLayout.setSpacing(3);
-        mainBodyLayout.addMember(topLayout);
+        
         Label title = new Label("Hierarchical Clustering Settings");
         title.setStyleName("labelheader");
         topLayout.add(title);
@@ -69,13 +75,13 @@ public class UpdatedSomClustPanel extends PopupPanel {
         topLayout.setCellHorizontalAlignment(closeBtn, HorizontalPanel.ALIGN_RIGHT);
         topLayout.setCellVerticalAlignment(closeBtn, HorizontalPanel.ALIGN_TOP);
 
-        mainBodyLayout.setMembersMargin(2);
         //main body
 
         HorizontalPanel linkageLayout = new HorizontalPanel();
-        mainBodyLayout.addMember(linkageLayout);
-        linkageLayout.setWidth("300px");
+        mainBodyLayout.add(linkageLayout);
+        linkageLayout.setWidth("298px");
         linkageLayout.setHeight("20px");
+       
 
         Label linkageTitle = new Label("LINKAGE ");
         linkageTitle.setWidth("100px");
@@ -98,8 +104,8 @@ public class UpdatedSomClustPanel extends PopupPanel {
         linkageLayout.setCellHorizontalAlignment(linkage, HorizontalPanel.ALIGN_LEFT);
 
         HorizontalPanel distanceMeasureLayout = new HorizontalPanel();
-        mainBodyLayout.addMember(distanceMeasureLayout);
-        distanceMeasureLayout.setWidth("300px");
+        mainBodyLayout.add(distanceMeasureLayout);
+        distanceMeasureLayout.setWidth("298px");
         distanceMeasureLayout.setHeight("20px");
 
         Label distanceMeasureTitle = new Label("Distance Measure");
@@ -131,12 +137,12 @@ public class UpdatedSomClustPanel extends PopupPanel {
         clusterColumns.setValue(true);
         clusterColumns.setHeight("20px");
         clusterColumns.setStyleName("secheadertitle");
-        mainBodyLayout.addMember(clusterColumns);
+        mainBodyLayout.add(clusterColumns);
 
         //ok button
         HLayout hlo = new HLayout();
-        mainBodyLayout.addMember(hlo);
-        hlo.setWidth("300px");
+        mainBodyLayout.add(hlo);
+        hlo.setWidth("298px");
         hlo.setHeight("30px");
         processBtn = new IButton("Run Clustering");
         hlo.addMember(processBtn);
@@ -145,10 +151,10 @@ public class UpdatedSomClustPanel extends PopupPanel {
         hlo.setMembersMargin(1);
         hlo.setAlign(Alignment.CENTER);
 
-        this.setWidget(mainBodyLayout);
-        mainBodyLayout.setStyleName("modalLayout");
-        this.show();
-        this.hide();
+       framLayout.add(topLayout);
+        framLayout.add(mainBodyLayout);
+           this.setWidget(framLayout);
+           framLayout.setStyleName("modalPanelLayout");
 
     }
     

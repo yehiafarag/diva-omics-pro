@@ -4,6 +4,7 @@ package web.diva.client.view.core;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.smartgwt.client.util.SC;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -16,8 +17,13 @@ import com.google.gwt.user.client.ui.PopupPanel;
  */
 public  class Notification{
     
-    private static final PopupPanel notification = new PopupPanel(true,true);
-    private static final Label notificationMessage = new Label();
+    private static final Timer  timer = new Timer() {
+
+            @Override
+            public void run() {
+                SC.dismissCurrentDialog();
+            }
+        };
 
     private Notification() {
       
@@ -25,27 +31,13 @@ public  class Notification{
         
     }
     
-    public static void notifi(String message) {
-        notification.setAnimationEnabled(true);
-        notification.setWidget(notificationMessage);
-        int width =200;
-        if((message.length()*10)  > 200)
-            width = (message.length()*10) ;
-        notification.setWidth(width+"px");
-        notification.setStyleName("notification");
-        notification.setHeight("100px");
-        notificationMessage.setText(message);
-        notification.show();
-        notification.center();
-        Timer t = new Timer() {
-            @Override
-            public void run() {
-                notification.hide();
-            }
-        };
+    public static void notifi(String title,String message) {
+        SC.warn(title, message.toUpperCase());
+            // Schedule the timer to close the popup in 3 seconds.
+        timer.schedule(3000);
 
-        // Schedule the timer to close the popup in 3 seconds.
-        t.schedule(4000);
+        
+   
 
     }
 

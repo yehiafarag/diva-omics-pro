@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import no.uib.jexpress_modularized.core.dataset.Group;
 import no.uib.jexpress_modularized.pca.computation.PcaCompute;
+import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.PCAPoint;
@@ -19,7 +20,7 @@ import web.diva.shared.beans.PCAResults;
  */
 public class PCAUtil {
 
-    public PCAResults getPCAResults(DivaDataset divaDataset, int pcx, int pcy) {
+    public PcaResults getPCAResults(DivaDataset divaDataset, int pcx, int pcy) {
         PcaCompute pcaCompute = new PcaCompute(divaDataset);
         no.uib.jexpress_modularized.pca.computation.PcaResults jResults = pcaCompute.createPCA();
         TreeMap<Integer, PCAPoint> pointList = new TreeMap<Integer, PCAPoint>();
@@ -56,12 +57,12 @@ public class PCAUtil {
 
         }
 
-        PCAResults res = new PCAResults();
-        res.setPoints(pointList);
-        res.setPcai(pcx);
-        res.setPcaii(pcy);
-        res.setHeader(divaDataset.getInfoHeaders()[0]);
-        return res;
+//        PCAResults res = new PCAResults();
+//        res.setPoints(pointList);
+//        res.setPcai(pcx);
+//        res.setPcaii(pcy);
+//        res.setHeader(divaDataset.getInfoHeaders()[0]);
+        return jResults;
     }
 
     public Object[] getTooltips(PCAImageResult results, TreeMap<Integer, PCAPoint> pointList) {

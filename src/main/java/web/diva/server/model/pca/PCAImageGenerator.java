@@ -79,24 +79,23 @@ public class PCAImageGenerator implements Serializable{
     private int zoomedpca = 0;
     private boolean quadratic = true;
     private boolean showPCA = true;
-    
-    private int[] notshadIndex ;
-    
-    
-    public boolean[] zoomedSelectionChange(int[] sel){
-    ArrayList<Integer> reIndexSel = new ArrayList<Integer>();
-            for (int x : sel) {
-                if (indexToZoomed[x]!= -100) {
-                    reIndexSel.add(indexToZoomed[x]);
-                }
+
+    private int[] notshadIndex;
+
+    public boolean[] zoomedSelectionChange(int[] sel) {
+        ArrayList<Integer> reIndexSel = new ArrayList<Integer>();
+        for (int x : sel) {
+            if (indexToZoomed[x] != -100) {
+                reIndexSel.add(indexToZoomed[x]);
             }
-            int[] zoomSel = new int[reIndexSel.size()];
-            for(int x=0;x<zoomSel.length;x++){
-                zoomSel[x]= reIndexSel.get(x);
-            }
-            boolean[] notShaded = getSelectedIndexes(zoomSel);
-            return notShaded;
-    
+        }
+        int[] zoomSel = new int[reIndexSel.size()];
+        for (int x = 0; x < zoomSel.length; x++) {
+            zoomSel[x] = reIndexSel.get(x);
+        }
+        boolean[] notShaded = getSelectedIndexes(zoomSel);
+        return notShaded;
+
     }
 
     public void selectionChanged(int[] sel) {
@@ -117,14 +116,14 @@ public class PCAImageGenerator implements Serializable{
 //
 //        } 
 //        else {
-            notshadIndex = sel;
-            boolean[] notShaded = getSelectedIndexes(sel);
-            plot.setNotShaded(notShaded);
-            
+        notshadIndex = sel;
+        boolean[] notShaded = getSelectedIndexes(sel);
+        plot.setNotShaded(notShaded);
+
 //        }
-        if (shadowUnselected == false) {                
-                plot.forceFullRepaint();
-            }
+        if (shadowUnselected == false) {
+            plot.forceFullRepaint();
+        }
     }
 
     public boolean isShadowUnselected() {
@@ -141,8 +140,10 @@ public class PCAImageGenerator implements Serializable{
 ////        Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
 ////        SelectionManager.getSelectionManager().setSelectedRows(points, selection);
 //    }
+    private final String[] pcaLabelData;
+    private final String totalvarStr;
 
-    public PCAImageGenerator(PcaResults pcaResults, DivaDataset divaDataset,int pcax,int pcay) {
+    public PCAImageGenerator(PcaResults pcaResults, DivaDataset divaDataset, int pcax, int pcay) {
 
         this.divaDataset = divaDataset;
         this.pcaResults = pcaResults;
@@ -150,23 +151,33 @@ public class PCAImageGenerator implements Serializable{
         this.pcay = pcay;
         this.plot = new PcaPlot();
         plot.setMaximumSize(new Dimension(32767, 32767));
-        plot.setMinimumSize(new Dimension(900,700));
-        plot.setPreferredSize(new Dimension(900,700));
+        plot.setMinimumSize(new Dimension(900, 700));
+        plot.setPreferredSize(new Dimension(900, 700));
 //        isneurons = false;
         plot.setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLUE));
         plot.setLayout(new java.awt.FlowLayout(0, 5, 1));
-        plot.setSize(900,700);
+        plot.setSize(900, 700);
         plot.setBackground(Color.WHITE);
-        
-       
 //        plot.dotsize = 5;
-        indexToZoomed = new int[divaDataset.getDataLength()];
-       
-//        
+        indexToZoomed = new int[divaDataset.getDataLength()];//        
         updatePlot();
-       }
+        pcaLabelData = new String[pcaResults.eigenvalues.length];
+        for (int i = 0; i < pcaResults.eigenvalues.length; i++) {
+            pcaLabelData[i] = ("Principal Component nr." + String.valueOf(i + 1) + " - " + pcaResults.varianceastr(i) + "% var.");
+        }
+        double totalvar = 0.0;
+        java.text.NumberFormat numformat = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
+        numformat.setMaximumFractionDigits(1);
+        if (pcax != pcay) {
+            totalvar = pcaResults.varianceaccounted(pcax) + pcaResults.varianceaccounted(pcay);
+        } else {
+            totalvar = pcaResults.varianceaccounted(pcax);
+        }
+        totalvarStr = ("Total variance retained: " + numformat.format(totalvar) + "% var.");
 
-   
+    }
+
+
     
     /**
      * If this is a som representation, light up the neuron at point p.
@@ -379,7 +390,7 @@ public class PCAImageGenerator implements Serializable{
 
         
         plot.setXaxisTitle("Principal Component " + (pcax + 1));
-        plot.setYaxisTitle("Principal Component" + (pcay + 1));
+        plot.setYaxisTitle("Principal Component " + (pcay + 1));
      
 //        plot.Layout.put("chartbgSV", new Color(255, 255, 255));
         plot.setFullRepaint(true);        
@@ -392,9 +403,14 @@ public class PCAImageGenerator implements Serializable{
         
         
     }
+    private BufferedImage image;
+
+    public BufferedImage getImage() {
+        return image;
+    }
     
    public String toImage(){
-        BufferedImage image = (BufferedImage)plot.getImage();
+        image = (BufferedImage)plot.getImage();
         byte[] imageData = null;
         try{
         imageData = ChartUtilities.encodeAsPNG(image);
@@ -921,4 +937,12 @@ public class PCAImageGenerator implements Serializable{
 //         }
      
      }
+
+    public String[] getPcaLabelData() {
+        return pcaLabelData;
+    }
+
+    public String getTotalvarStr() {
+        return totalvarStr;
+    }
 }

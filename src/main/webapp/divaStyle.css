@@ -14,14 +14,15 @@ html body {
 	/* z-index: 800036; */
 }
 .tooltip{
-/*    left: 35%;
-    top:1%;
-    height:70px;
-    overflow: auto;
-    width: 15%;
-    margin: 0 0 0 0;
-    position: absolute;
-    z-index:2;*/
+width: 540px;
+    height:68px;
+    margin-left:20px;
+    
+    background-color:  white;
+    border-top: 1px solid #E6E6E6;
+    border-bottom:  1px solid #E6E6E6;
+    border-left:  1px solid #E6E6E6;;
+    border-right: 1px solid #E6E6E6;
     
     
 }
@@ -131,7 +132,7 @@ html body {
 }
 .diva_mid_panel_border{
     border: 1px solid #E6E6E6;
-    margin-top: 2px;
+    /*margin-top: 2px;*/
     
 }
 
@@ -168,7 +169,6 @@ html body {
 }
 
 #templatemo_right {
-    float: left;
     width: 29%;
     overflow: hidden;
     margin: 0 0px 0px 5px;
@@ -370,7 +370,7 @@ h3 {
 }
 .SomClusteringResults {
     margin: 0;
-    overflow: hiddenclust;
+    overflow: hidden;
 }
 .windowBackground{
     /* z-index: 2000000001; */
@@ -577,9 +577,9 @@ html>body .gwt-DecoratedPopupPanel {
   padding-left: 10px;
   background: gray;
   z-index: 2000000000;
-    color: orange;  
-   
-    
+  color: orange;  
+
+
 }
 
 .tooltip textarea{
@@ -590,14 +590,11 @@ html>body .gwt-DecoratedPopupPanel {
     font-size: 12px;
     padding-left: 10px;
     padding-top: 5px;
-    width: 890px;
-    height:43px;
-    
-    background-color:  #E6E6E6;
-    border-top: 1px solid black;
-    border-bottom: none;
-    border-left: none;
-    border-right: none;
+    width: 530px;
+    height:63px;
+
+    background-color:  white;
+    border:none;
 
 }
 
@@ -693,7 +690,43 @@ html>body .gwt-DecoratedPopupPanel {
     -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
     transform: rotate(90deg);
     transform-origin:  0% 100%;
-    margin-left:20px;
+    margin-left:20px;     
+    
+    
+/*      -ms-transform: rotate(90deg) scale(1);  IE 9 
+    -webkit-transform: rotate(90deg) scale(1);  Chrome, Safari, Opera 
+    transform: rotate(90deg) scale(2);
+    transform-origin:  0% 100%;
+    margin-left:20px;    
+
+
+     filter: progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand',
+        M11=2, M12=2,
+        M21=0, M22=2); 
+
+        -webkit-backface-visibility:auto ;
+        overflow-x: hidden;*/
+}
+.rotatezoomI{
+    
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+    transform: rotate(90deg);
+    transform-origin:  0% 100%;
+    margin-left:20px;  
+     zoom: 1.5;
+    -moz-transform: scale(1.5);
+    
+}
+.rotatezoomII{
+    
+    -ms-transform: rotate(90deg); /* IE 9 */
+    -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+    transform: rotate(90deg);
+    transform-origin:  0% 100%;
+    margin-left:20px;  
+     zoom: 2;
+    -moz-transform: scale(2);
     
 }
 
@@ -789,5 +822,46 @@ html>body .gwt-DecoratedPopupPanel {
   -moz-box-shadow: 0 1px #ededed, 0 -1px #ededed;
   -webkit-box-shadow: 0 1px #ededed, 0 -1px #ededed;
   box-shadow: 0 1px #ededed, 0 -1px #ededed;
+   padding-top: 5px;
     
+}
+.topborder{
+    border-top: 1px solid #E6E6E6;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    
+}
+.fullborder{
+    border: 1px solid #E6E6E6;    
+    padding-left: 30px;
+    margin-right: 20px;
+    
+    
+}
+
+.scaled {
+    transform: scale(0.5);
+    -ms-transform: scale(0.5); /* IE 9 */
+    -webkit-transform: scale(0.5); /* Safari and Chrome */
+    -o-transform: scale(0.5); /* Opera */
+    -moz-transform: scale(0.5); /* Firefox */
+    filter: progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand',
+        M11=0.5, M12=0,
+        M21=0, M22=0.5);
+    -webkit-backface-visibility: hidden;
+}
+#hSliderThumbDisabled{        
+    background: url(images/screen.png);
+}
+.welcomepagelayout{
+    
+ margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 50px;
+    
+ width: 60%;
+ height: 100%;
 }

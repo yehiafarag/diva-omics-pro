@@ -11,11 +11,9 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.widgets.IButton;
-//import com.smartgwt.client.widgets.Label;
-import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
  *
@@ -31,29 +29,31 @@ public class PcaSettingsPanel extends PopupPanel {
     private final ListBox pcaI;
     private final ListBox pcaII;
 
-    public PcaSettingsPanel(int colNumber) {
+    public PcaSettingsPanel(String[] pcaLabelData) {
 
         this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
         this.setModal(true);
 
-       
+        VerticalPanel framLayout = new VerticalPanel();
+       framLayout.setWidth("400px");
+        framLayout.setHeight("150px");
 
-        VLayout mainBodyLayout = new VLayout();
+        VerticalPanel mainBodyLayout = new VerticalPanel();
 
-        mainBodyLayout.setWidth("400px");
+        mainBodyLayout.setWidth("398px");
         mainBodyLayout.setHeight("150px");
+          mainBodyLayout.setStyleName("modalPanelBody");
+          mainBodyLayout.setSpacing(3);
 
         HorizontalPanel topLayout = new HorizontalPanel();
-        topLayout.setWidth(400+"px");
+        topLayout.setWidth(398+"px");
         topLayout.setHeight(20+"px");
-        topLayout.setSpacing(3);
-        mainBodyLayout.addMember(topLayout);
 
         Label title = new Label("Principal Component Analysis Settings");
         title.setStyleName("labelheader");
         topLayout.add(title);
-        title.setWidth(350 + "px");
+        title.setWidth(250 + "px");
         topLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
         topLayout.setCellVerticalAlignment(title, HorizontalPanel.ALIGN_TOP);
 
@@ -76,44 +76,52 @@ public class PcaSettingsPanel extends PopupPanel {
         topLayout.setCellVerticalAlignment(closeBtn, HorizontalPanel.ALIGN_TOP);
 
         pcaI = new ListBox();
-        pcaI.setWidth("200px");
+        pcaI.setWidth("250px");
         pcaI.setHeight("25px");
         pcaI.setTitle("X AXES");
-        HLayout hp1 = new HLayout();
-        hp1.setWidth(400);
+      
+        HorizontalPanel hp1 = new HorizontalPanel();
+        hp1.setWidth("398px");
         hp1.setHeight("30px");
         Label l1 = new Label("X AXES ");
         l1.setHeight("25px");
         l1.setWidth("100px");
 
-        hp1.addMember(l1);
-        hp1.addMember(pcaI);
-        hp1.setMargin(5);
+        hp1.add(l1);
+        hp1.add(pcaI);
+          hp1.setCellHorizontalAlignment(l1, HorizontalPanel.ALIGN_CENTER);
+        hp1.setCellVerticalAlignment(l1, HorizontalPanel.ALIGN_BOTTOM);
+          hp1.setCellHorizontalAlignment(pcaI, HorizontalPanel.ALIGN_LEFT);
+        hp1.setCellVerticalAlignment(pcaI, HorizontalPanel.ALIGN_BOTTOM);
+//        hp1.setMargin(5);
 
-        mainBodyLayout.addMember(hp1);
-        hp1.setAlign(Alignment.LEFT);
+        mainBodyLayout.add(hp1);
+//        hp1.setAlign(Alignment.LEFT);
 
         pcaII = new ListBox();
-        pcaII.setWidth("200px");
+        pcaII.setWidth("250px");
         pcaII.setHeight("25px");
         pcaII.setTitle("Y AXES");
 
-        HLayout hp2 = new HLayout();
-        hp2.setWidth(400);
+        HorizontalPanel hp2 = new HorizontalPanel();
+        hp2.setWidth("398px");
         hp2.setHeight("30px");
         Label l2 = new Label("Y AXES ");
         l2.setHeight("25px");
         l2.setWidth("100px");
 
-        hp2.addMember(l2);
-        hp2.addMember(pcaII);
-        hp2.setMargin(5);
-
-        mainBodyLayout.addMember(hp2);
-        hp2.setAlign(Alignment.LEFT);
-        for (int x = 1; x <= colNumber; x++) {
-            pcaI.addItem("Principal Component nr " + x);
-            pcaII.addItem("Principal Component nr " + x);
+        hp2.add(l2);
+        hp2.add(pcaII);
+   hp2.setCellHorizontalAlignment(l2, HorizontalPanel.ALIGN_CENTER);
+        hp2.setCellVerticalAlignment(l2, HorizontalPanel.ALIGN_BOTTOM);
+          hp2.setCellHorizontalAlignment(pcaII, HorizontalPanel.ALIGN_LEFT);
+        hp2.setCellVerticalAlignment(pcaII, HorizontalPanel.ALIGN_BOTTOM);
+        mainBodyLayout.add(hp2);
+        
+        
+        for (String str: pcaLabelData) {
+            pcaI.addItem(str);
+            pcaII.addItem(str);
         }
         pcaI.setSelectedIndex(0);
         pcaII.setSelectedIndex(1);
@@ -125,24 +133,22 @@ public class PcaSettingsPanel extends PopupPanel {
         okBtn.setShowDown(true);
         okBtn.setTitleStyle("stretchTitle");
        
-         HLayout bottomLayout = new HLayout();
+         HorizontalPanel bottomLayout = new HorizontalPanel();
         bottomLayout.setWidth(400+"px");
         bottomLayout.setHeight(30+"px");
-        bottomLayout.setMargin(5);
-        bottomLayout.setAlign(Alignment.LEFT);
         
-         Label l3 = new Label(" ");
-        l3.setHeight("25px");
-        l3.setWidth("100px");
+        bottomLayout.add(okBtn);
 
-        bottomLayout.addMember(l3);
-        bottomLayout.addMember(okBtn);
-//        bottomLayout.setCellHorizontalAlignment(okBtn, HorizontalPanel.ALIGN_CENTER);
-        mainBodyLayout.addMember(bottomLayout);
+        bottomLayout.setCellHorizontalAlignment(okBtn, VerticalPanel.ALIGN_CENTER);
+            bottomLayout.setCellVerticalAlignment(okBtn, VerticalPanel.ALIGN_MIDDLE);
+        mainBodyLayout.add(bottomLayout);
 
 
-        this.setWidget(mainBodyLayout);
-        mainBodyLayout.setStyleName("modalLayout");
+
+        framLayout.add(topLayout);
+        framLayout.add(mainBodyLayout);
+           this.setWidget(framLayout);
+           framLayout.setStyleName("modalPanelLayout");
 
     }
 

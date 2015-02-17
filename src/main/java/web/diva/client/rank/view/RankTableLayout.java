@@ -29,7 +29,8 @@ import web.diva.shared.beans.RankResult;
  */
 public class RankTableLayout extends ListGrid implements  IsSerializable {
 
-    private ListGridRecord[] posRecordMap, negRecordMap;
+    private ListGridRecord[] posRecordMap, negRecordMap, selectedRows;
+ 
 
     public void remove() {
         clickReg.removeHandler();
@@ -37,6 +38,7 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
         dragStopReg.removeHandler();
 
     }
+    private boolean showSelectedOnly;
 
     public void updateTable(int[] selection) {
         if (selectionTag) {
@@ -49,11 +51,40 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
             for (int z : selection) {
                 reIndexSelection[i++] = posRecordMap[z];
             }
-            this.selectRecords(reIndexSelection);
-            this.scrollToRow(this.getRecordIndex(reIndexSelection[0]));
+            selectedRows = reIndexSelection;
+            if (showSelectedOnly) {
+                this.setRecords(reIndexSelection);
+                this.selectAllRecords();
+                this.scrollToTop();
+            } else {
+                this.setRecords(records);
+                this.selectRecords(reIndexSelection);
+                this.scrollToRow(this.getRecordIndex(reIndexSelection[0]));
+            }
+
         }
 
     }
+
+    public void showSelectedOnly(boolean showSelectedOnly) {
+        this.showSelectedOnly = showSelectedOnly;       
+        if (showSelectedOnly) {    
+            selectedRows = this.getSelectedRecords();      
+            this.setRecords(selectedRows);            
+            this.selectAllRecords();    
+            this.scrollToTop();
+            
+        } else {
+            this.setRecords(records);
+            if(selectedRows != null){
+            this.selectRecords(selectedRows);
+            this.scrollToRow(this.getRecordIndex(selectedRows[0]));
+            }
+            
+        }
+        
+    }
+    
 
   
 
@@ -66,10 +97,10 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
     
 
     public RankTableLayout(SelectionManager selectionManager, int datasetId, RankResult results) {
+       
         this.selectionManager = selectionManager;
         initGrid(results.getHeaders());
         this.updateRecords(results);
-        records = null;
         results = null;
 
     }
@@ -79,6 +110,7 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
         setShowRecordComponentsByCell(true);
         setCanRemoveRecords(false);
         setShowHeaderContextMenu(false);
+        setHeight100();
         setShowEdges(false);
         setStyleName("borderless");
         setShowAllRecords(false);
