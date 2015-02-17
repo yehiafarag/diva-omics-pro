@@ -20,7 +20,7 @@ import web.diva.shared.beans.ClientClusterNode;
  */
 public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler {
 
-    private final int squareL = 2;
+    private final int squareL ;
     private ClientClusterNode mainNode;
     private final int type;
     private final HTML toolTip;
@@ -75,8 +75,9 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
         return ret;
     }
 
-    public TreeImg(String url, ClientClusterNode node, int type,HTML toolTip) {
+    public TreeImg(String url, ClientClusterNode node, int type,HTML toolTip,int squareL) {
         super(url);
+        this.squareL = squareL;
         this.toolTip = toolTip ;
         toolTip.setVisible(false);
         this.addMouseMoveHandler(TreeImg.this);

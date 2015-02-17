@@ -88,7 +88,13 @@
             <artifactId>smartgwtl</artifactId>
             <version>5</version>
         </dependency>
-        
+       <dependency>
+	<groupId>com.itextpdf</groupId>
+	<artifactId>itextpdf</artifactId>
+	<version>5.5.4</version>
+</dependency>
+
+
  <!--        
        <dependency>
             <groupId>com.smartgwt</groupId>

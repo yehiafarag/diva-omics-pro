@@ -25,6 +25,7 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
+import web.diva.client.view.core.SaveAsPanel;
 
 /**
  *
@@ -56,16 +57,16 @@ public class ProfilePlotComponent extends ModularizedListener {
         }
     }
 
-    public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingService) {
-        this.greetingService = greetingService;
+    public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingServices) {
+        this.greetingService = greetingServices;
         this.classtype = 1;
         this.components.add(ProfilePlotComponent.this);
         this.selectionManager = selectionManager;
 
         this.selectionManager.addSelectionChangeListener(ProfilePlotComponent.this);
         thumbLayout = new VLayout();
-        thumbLayout.setHeight("46%");
-        thumbLayout.setWidth("25%");
+        thumbLayout.setHeight("100%");
+        thumbLayout.setWidth("100%");
         thumbLayout.setMargin(0);
         thumbLayout.setStyleName("profileplot");
 
@@ -144,12 +145,30 @@ public class ProfilePlotComponent extends ModularizedListener {
           maxTopLayout.setCellHorizontalAlignment(minmizeBtn, HorizontalPanel.ALIGN_RIGHT);
         
         saveBtn.addClickHandler(new ClickHandler() {
-            
+
             @Override
             public void onClick(ClickEvent event) {
+                SelectionManager.Busy_Task(true, false);
 //                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
+                greetingService.exportImgAsPdf("Profile_Plot", new AsyncCallback<String>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Window.alert("ERROR IN SERVER CONNECTION");
+                        SelectionManager.Busy_Task(false, false);
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                        SaveAsPanel sa = new SaveAsPanel("Profile Plot Image", result);
+                        sa.center();
+                        sa.show();
+                        SelectionManager.Busy_Task(false, false);
+                    }
+                });
+
                 
-                Window.open(profilePlotMaxImage.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=no,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
+             
+//                Window.open(profilePlotMaxImage.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=no,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
                 
             }
         });

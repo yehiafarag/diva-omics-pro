@@ -12,6 +12,7 @@ import web.diva.server.model.Computing;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 import web.diva.shared.beans.DivaGroup;
+import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 import web.diva.shared.beans.SomClusteringResult;
@@ -104,9 +105,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateUpperTree(x, y, w, h);
     }
     @Override
-     public String updateSomClustInteractiveColumn(int[] selection) {
-         String url = ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateSomClustInteractiveColumn(selection);
-        System.out.println("updateing clustering interactive  with "+ selection.length);
+     public InteractiveColumnsResults updateSomClustInteractiveColumn(int[] selection) {
+         InteractiveColumnsResults url = ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).updateSomClustInteractiveColumn(selection);
         return url;
     }
 
@@ -193,11 +193,20 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
         String url = this.getThreadLocalRequest().getRequestURL().toString();
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportDataTotext(rowGroup, appPath, url.substring(0, (url.length() - 10)));
     }
+    
+     @Override
+    public String exportImgAsPdf(String chartType) {
+         System.out.println("requested export image");
+        String appPath = this.getServletContext().getRealPath("/");
+        String url = this.getThreadLocalRequest().getRequestURL().toString();
+        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportImgAsPdf(chartType, appPath, getThreadLocalRequest().getSession().getId(), url.substring(0, (url.length() - 10)));
+    }
 
     @Override
     public List<DivaGroup> getColGroups() {
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getColGroups();
     }
 
+    
     
 }

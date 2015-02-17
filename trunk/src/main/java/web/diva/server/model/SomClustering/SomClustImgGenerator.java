@@ -10,7 +10,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -30,8 +29,12 @@ import no.uib.jexpress_modularized.core.visualization.colors.ui.ScaleAndAxis;
 import no.uib.jexpress_modularized.somclust.model.Node;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.encoders.ImageEncoder;
+import org.jfree.chart.encoders.ImageEncoderFactory;
+import org.jfree.chart.encoders.ImageFormat;
 import web.diva.server.model.HeatmapColorFactory;
 import web.diva.shared.beans.ClientClusterNode;
+import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 
 /**
@@ -45,9 +48,9 @@ public class SomClustImgGenerator {
     private final boolean gengenscale = false;
     private final Color GridCol = Color.DARK_GRAY;
 
-    private final int squareW = 12;
-    private final int squareL = 2;
-    private final int LeftTreeWidth = 350;
+    private final int squareW ;//= 12;
+    private final  int squareL ;//= 2;
+    private final int LeftTreeWidth ;//= 350;
     private final int TopTreeHeight = 70;
     private int LeftTreeHeight,TopTreeWidth;   
 
@@ -65,13 +68,45 @@ public class SomClustImgGenerator {
     private ColorFactory colors;
     private final java.text.NumberFormat numformat;
 
-    public SomClustImgGenerator(Node rowNode, Node colNode) {
+    public SomClustImgGenerator(Node rowNode, Node colNode,int rowNumber) {
         this.rowNode = rowNode;
         this.colNode = colNode;
         numformat = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
         numformat.setMaximumFractionDigits(3);
         numformat.setMinimumFractionDigits(1);
+        if(rowNumber <= 1000){
+        squareL = 4;
+        squareW = 12;
+        LeftTreeWidth = 200;       
+        
+        }
+        else if(rowNumber <= 10000){
+        squareL = 4;
+        squareW = 12;
+        LeftTreeWidth = 300;       
+        
+        }
+        else if(rowNumber <= 20000){
+        squareL = 4;
+        squareW = 12;
+        LeftTreeWidth = 500;       
+        
+        }
+        else {
+        squareL = 2;
+        squareW = 12;
+        LeftTreeWidth = 600;       
+            System.out.println("LeftTreeWidth "+LeftTreeWidth+"  squareL "+squareL);
+        }
 
+    }
+
+    public int getSquareW() {
+        return squareW;
+    }
+
+    public int getSquareL() {
+        return squareL;
     }
 
     public TreeView getUpperTree() {
@@ -135,10 +170,10 @@ public class SomClustImgGenerator {
         colorFactory = new HeatmapColorFactory();
         BufferedImage heatMapImg = null;
         if (clustColumn) {
-            heatMapImg = new BufferedImage((upperTree.getWidth() + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+            heatMapImg = new BufferedImage((upperTree.getWidth() + squareW), (sideTree.getHeight()), BufferedImage.TYPE_INT_ARGB);
         } else {
-            heatMapImg = new BufferedImage((dataset.getColumnIds().length * 12 + 12), (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
-            TopTreeWidth = dataset.getColumnIds().length * 12 + 12;
+            heatMapImg = new BufferedImage((dataset.getColumnIds().length * squareW + squareW), (sideTree.getHeight()), BufferedImage.TYPE_INT_ARGB);
+            TopTreeWidth = dataset.getColumnIds().length * squareW + squareW;
 
         }
         Graphics g = heatMapImg.getGraphics();
@@ -147,16 +182,32 @@ public class SomClustImgGenerator {
         String defaultHeatMap = this.generateEncodedImg(heatMapImg);     
         return defaultHeatMap;
     }
-     public String generateInteractiveColumn(Dataset dataset, int[] selection) {
+
+    public String getNavgStringImg() {
+        return navgStringImg;
+    }
+    private  String navgStringImg  ;
+     public InteractiveColumnsResults generateInteractiveColumn(Dataset dataset, int[] selection) {
 
          BufferedImage interactiveColumnImg = null;
-         interactiveColumnImg = new BufferedImage(12, (sideTree.getHeight() - 7), BufferedImage.TYPE_INT_ARGB);
+         interactiveColumnImg = new BufferedImage(squareW+ squareW, (sideTree.getHeight()), BufferedImage.TYPE_INT_ARGB);
+         
+         BufferedImage navgBackGroungImg = new BufferedImage(400, 10, BufferedImage.TYPE_INT_ARGB);
+         Graphics navGr = navgBackGroungImg.getGraphics();
+         int navUnit =  (dataset.getDataLength()/200)+1;
+         
+         System.out.println("nav unit us "+navUnit);
 
          Graphics g = interactiveColumnImg.getGraphics();
-         g.setFont(getTableFont(12));
-        drawTable(g,  new Point(0, 0), dataset,selection);
+         g.setFont(getTableFont(5));
+        drawTable(g,  new Point(0, 0), dataset,selection,navGr,navUnit);
+        navgBackGroungImg = rotateImage(navgBackGroungImg, 180);
         String interactiveColumnImgUrl = this.generateEncodedImg(interactiveColumnImg);     
-        return interactiveColumnImgUrl;
+        navgStringImg = this.generateEncodedImg(navgBackGroungImg);     
+        InteractiveColumnsResults results = new InteractiveColumnsResults();
+        results.setInteractiveColumn(interactiveColumnImgUrl);
+        results.setNavgUrl(navgStringImg);
+        return results;
     }
 
     public String generateScale(Dataset dataset,boolean clustColumn) {
@@ -304,7 +355,10 @@ public class SomClustImgGenerator {
     private int[] WdSUM;
   
     
-    public void drawTable(Graphics gr, Point UL,Dataset dataset, int[] selection) {
+    public void drawTable(Graphics gr, Point UL,Dataset dataset, int[] selection, Graphics navgGr,int countNavUnit) {
+        
+        
+        
         Font f = getTableFont(squareL - 1);
         AnnotationManager annManager = AnnotationManager.getAnnotationManager();
         String[] rowIds = dataset.getRowIds();
@@ -335,29 +389,37 @@ public class SomClustImgGenerator {
         }
 
         Graphics2D g2d = (Graphics2D) gr;
+         Graphics2D g2dNav = (Graphics2D) navgGr;
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2dNav.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         int X = UL.x;
         int Y = UL.y;
-        int H = squareL;
+//        int H = squareL;
 
         int L = dataset.getDataLength();
         int W = headers.length;
 
         JLabel l = new JLabel("    ");
-        l.setFont(f);
-        l.setIconTextGap(2);
-        javax.swing.border.Border UB = javax.swing.BorderFactory.createMatteBorder(1, 1, 0, 1, Color.WHITE);
-        javax.swing.border.Border LB = javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, Color.WHITE);
+        JLabel lNav = new JLabel(" ");
+//        l.setFont(f);
+//        l.setIconTextGap(2);
+        javax.swing.border.Border UB = javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 0, Color.WHITE);
+        javax.swing.border.Border LB = javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 0, Color.WHITE);
+        
+//          Color borderColor = hex2Rgb("#e3e3e3");
+        javax.swing.border.Border navBorder = javax.swing.BorderFactory.createMatteBorder(2,0, 0, 0,Color.WHITE);
 
         l.setMaximumSize(new Dimension(200, squareL));
+        lNav.setSize(new Dimension(2,5));
+        lNav.setBorder(navBorder);
 
         boolean drawTableHeader = false;
 
         //if there is not enough room for a header.. skip header.
-        if (UL.y < squareL) {
-            drawTableHeader = false;
-        }
+//        if (UL.y < squareL) {
+//            drawTableHeader = false;
+//        }
 
         if (Wd == null) {
             Wd = new int[inf[0].length];
@@ -372,13 +434,13 @@ public class SomClustImgGenerator {
                     }
                 }
             }
-            for (int i = 0; i < inf.length; i++) {
+            for (String[] inf1 : inf) {
                 for (int j = 0; j < Wd.length; j++) {
                     if (squareL < 6) {
                         Wd[j] = 5;
                         continue;
                     }
-                    l.setText(inf[i][j]);
+                    l.setText(inf1[j]);
                     l.validate();
                     if (l.getPreferredSize().width > Wd[j]) {
                         Wd[j] = l.getPreferredSize().width + 16;
@@ -400,6 +462,10 @@ public class SomClustImgGenerator {
 
         l.setBackground(Color.WHITE);
         l.setOpaque(true);
+      
+         lNav.setBackground(Color.WHITE);
+        lNav.setOpaque(true);
+        
         if (sideTree == null) {
             return;
         }
@@ -413,42 +479,46 @@ public class SomClustImgGenerator {
 
 
         //draw the table header.. (if wanted)
-        if (drawTableHeader) {
-
-            l.setBackground(Color.WHITE);
-            l.setForeground(Color.white);
-
-            for (int j = 0; j < W; j++) {
-                X = UL.x + WdSUM[j];
-                Y = UL.y;
-                BNDS.setBounds(X, Y, Wd[j], squareL + 1);
-
-                if (gr.getClipBounds() != null && !gr.getClipBounds().intersects(BNDS)) {
-                    continue;
-                }
-                gr.translate(X, Y);
-                l.setBounds(0, 0, Wd[j] + 1, squareL + 1);
-                l.setBorder(LB);
-
-                if (squareL >= 6) {
-                    l.setText(headers[j]);
-                }
-                l.validate();
-                l.paint(gr);
-                gr.translate(-X, -Y);
-            }
-        }
-
+//        if (drawTableHeader) {
+//
+//            l.setBackground(Color.WHITE);
+//            l.setForeground(Color.white);
+//
+//            for (int j = 0; j < W; j++) {
+//                X = UL.x + WdSUM[j];
+//                Y = UL.y;
+//                BNDS.setBounds(X, Y, Wd[j], squareL + 1);
+//
+//                if (gr.getClipBounds() != null && !gr.getClipBounds().intersects(BNDS)) {
+//                    continue;
+//                }
+//                gr.translate(X, Y);
+//                l.setBounds(0, 0, Wd[j] + 1, squareL + 1);
+//                l.setBorder(LB);
+//
+//                if (squareL >= 6) {
+//                    l.setText(headers[j]);
+//                }
+//                l.validate();
+//                l.paint(gr);
+//                gr.translate(-X, -Y);
+//            }
+//        }
         l.setForeground(Color.WHITE);
 
-        boolean[] sel = selectedRows((selection == null ? null : selection),dataset);
+        boolean[] sel = selectedRows((selection == null ? null : selection), dataset);
+        boolean coloredNav = false;
+        int navCounter = 0;
+        for (int i = 0; i < L; i++) {   
+            
+          
 
-        for (int i = 0; i < L; i++) {
+            
             Rindex = LArr[i];
-
             for (int j = 0; j < W; j++) {
                 X = UL.x + WdSUM[j];
-                Y = UL.y + (squareL * (i + 1));
+                Y = UL.y + (squareL * (i + 1));               
+                
 
                 BNDS.setBounds(X, Y, Wd[j], squareL + 1);
 
@@ -462,6 +532,13 @@ public class SomClustImgGenerator {
                         if (group.isActive()) {
                             if (group.hasMember(Rindex)) {
                                 l.setBackground(group.getColor());
+                                if (!coloredNav) {
+                                    lNav.setBackground(Color.RED);
+                                    lNav.setForeground(Color.RED);
+                                    coloredNav = true;                                    
+                                }
+                                
+                                
                                 break;
 
                             }
@@ -470,12 +547,17 @@ public class SomClustImgGenerator {
                     }
 
 //                    l.setBackground(new Color(225, 225, 255));
-
                 } else {
+//                   
+//                    if (!coloredNav) {
+//                                    lNav.setBackground(Color.WHITE);
+//                                    lNav.setForeground(Color.WHITE);                                  
+//                                }
+
                     l.setBackground(Color.WHITE);
                 }
-
-                gr.translate(X, Y);
+                if (i != 0)
+                    gr.translate(X, Y);
                 l.setBounds(0, 0, Wd[j] + 1, squareL + 1);
 
                 if (i < L - 1) {
@@ -489,36 +571,49 @@ public class SomClustImgGenerator {
                 }
                 l.validate();
                 l.paint(gr);
-                gr.translate(-X, -Y);
+                gr.translate(-X,-Y);
+              
             }
-        }
+              if (navCounter >= countNavUnit) {
+                navCounter = 0;
+                lNav.validate();
+                lNav.paint(navgGr);
+                navgGr.translate(2,0);
+                coloredNav = false;
+                lNav.setBackground(Color.WHITE);
+                lNav.setForeground(Color.WHITE);
 
-        if (squareL < 6) {
-            return;
-        }
-
-        l.setBackground(Color.WHITE);
-        f = getTableFont(squareL - 2);
-        //f = new Font("Arial",1,squareL-2);
-        l.setFont(f);
-
-
-        for (int j = 0; j < W; j++) {
-            X = UL.x + WdSUM[j];
-            Y = UL.y;
-
-            BNDS.setBounds(X, Y, Wd[j], squareL + 1);
-            if (gr.getClipBounds() != null && !gr.getClipBounds().intersects(BNDS)) {
-                continue;
             }
+            navCounter++;
+        }  
+        
 
-            gr.translate(X, Y);
-            l.setBounds(0, 0, Wd[j], squareL + 1);
-//            l.setBorder(javax.swing.BorderFactory.createLineBorder(GridCol));
-            l.setText(headers[j]);
-            l.validate();
-            gr.translate(-X, -Y);
-        }
+//        if (squareL < 6) {
+//            return;
+//        }
+//
+//        l.setBackground(Color.WHITE);
+//        f = getTableFont(squareL - 2);
+//        //f = new Font("Arial",1,squareL-2);
+//        l.setFont(f);
+//
+//
+//        for (int j = 0; j < W; j++) {
+//            X = UL.x + WdSUM[j];
+//            Y = UL.y;
+//
+//            BNDS.setBounds(X, Y, Wd[j], squareL + 1);
+//            if (gr.getClipBounds() != null && !gr.getClipBounds().intersects(BNDS)) {
+//                continue;
+//            }
+//
+//            gr.translate(X, Y);
+//            l.setBounds(0, 0, Wd[j], squareL + 1);
+////            l.setBorder(javax.swing.BorderFactory.createLineBorder(GridCol));
+//            l.setText(headers[j]);
+//            l.validate();
+//            gr.translate(-X, -Y);
+//        }
         
   }
    private boolean[] selectedRows(int[] selectedRows,Dataset dataset) {
@@ -585,7 +680,9 @@ public class SomClustImgGenerator {
     private String generateEncodedImg(BufferedImage upperTreeBImage) {
         String sideTreeBase64 = "";
         try {
-            byte[] imageData = ChartUtilities.encodeAsPNG(upperTreeBImage);
+            ImageEncoder in = ImageEncoderFactory.newInstance(ImageFormat.PNG, 0);
+          
+            byte[] imageData = in.encode(upperTreeBImage);
             sideTreeBase64 = Base64.encodeBase64String(imageData);
             sideTreeBase64 = "data:image/png;base64," + sideTreeBase64;
             System.gc();
@@ -617,6 +714,7 @@ public class SomClustImgGenerator {
             base64 = "data:image/png;base64," + base64;
             result.setTreeImgUrl(base64);
             System.gc();
+            
             return result;
 
         } catch (IOException e) {
@@ -650,7 +748,7 @@ public class SomClustImgGenerator {
             
              System.gc();
             
-            
+//            result.setTreeImgUrl(navgStringImg);
             
             return result;
         } catch (IOException e) {
@@ -700,16 +798,63 @@ public class SomClustImgGenerator {
         return TopTreeHeight;
     }
 
-    public Image rotatImg(BufferedImage upperTreeBImage) {
-        Image image=null;
-        AffineTransform identity = new AffineTransform();
-
-        Graphics2D g2d = (Graphics2D) upperTreeBImage.getGraphics();
-        AffineTransform trans = new AffineTransform();
-        trans.setTransform(identity);
-        trans.rotate(Math.toRadians(45));
-        g2d.drawImage(image, trans, null);
-        return image;
-
+   
+      /**
+     *
+     * @param colorStr e.g. "#FFFFFF"
+     * @return
+     */
+    private Color hex2Rgb(String colorStr) {
+        return new Color(
+                Integer.valueOf(colorStr.substring(1, 3), 16),
+                Integer.valueOf(colorStr.substring(3, 5), 16),
+                Integer.valueOf(colorStr.substring(5, 7), 16));
     }
+    private BufferedImage rotateImage(BufferedImage masterImage, int angle) {
+     int virtualAngle = getVirtualAngle(angle);
+        Dimension size = new Dimension(masterImage.getWidth(), masterImage.getHeight());
+        int masterWidth = masterImage.getWidth();
+        int masterHeight = masterImage.getHeight();
+
+        double x = 0; //masterWidth / 2.0;
+        double y = 0; //masterHeight / 2.0;
+
+        switch (virtualAngle) {
+            case 0:
+                break;
+            case 180:
+                break;
+            case 90:
+            case 270:
+                size = new Dimension(masterImage.getHeight(), masterImage.getWidth());
+                x = (masterHeight - masterWidth) / 2.0;
+                y = (masterWidth - masterHeight) / 2.0;
+                break;
+        }
+        BufferedImage renderedImage = new BufferedImage(size.width, size.height, masterImage.getTransparency());
+        Graphics2D g2d = renderedImage.createGraphics();
+
+        AffineTransform at = AffineTransform.getTranslateInstance(x, y);
+
+        at.rotate(Math.toRadians(virtualAngle), masterWidth / 2.0, masterHeight / 2.0);
+        g2d.drawImage(masterImage, at, null);
+
+        g2d.dispose();
+    return renderedImage;
+}
+    
+    protected int getVirtualAngle(int angle) {
+        float fRotations = (float) angle / 360f;
+        int rotations = (int) (fRotations - (fRotations / 1000));
+
+        int virtual = angle - (rotations * 360);
+
+        if (virtual < 0) {
+            virtual = 360 + virtual;
+        }
+
+        return virtual;
+    }
+   
+ 
 }

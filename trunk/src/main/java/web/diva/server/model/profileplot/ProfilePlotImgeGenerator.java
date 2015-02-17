@@ -5,16 +5,26 @@
  */
 package web.diva.server.model.profileplot;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.encoders.ImageEncoder;
+import org.jfree.chart.encoders.ImageEncoderFactory;
+import org.jfree.chart.encoders.ImageFormat;
 import web.diva.server.model.beans.DivaDataset;
 
 /**
@@ -73,30 +83,37 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
         forceFullRepaint();       
     
     }
-    
+    private BufferedImage image;
+
+    public BufferedImage getImage() {
+        return image;
+    }
 
     @Override
-    public String toImage(){
-        BufferedImage image = new BufferedImage(width,height, BufferedImage.TYPE_INT_RGB);
-        
+    public String toImage() {
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
         Graphics2D graphics = image.createGraphics();
         graphics.setPaint(Color.WHITE);
-       
+
         super.forceFullRepaint();
         super.paint(graphics);
         byte[] imageData = null;
-        try{
-        imageData = BufferedImageToByteArray(image);
-        }catch(Exception e){e.printStackTrace();}
+        try {
+            ImageEncoder in = ImageEncoderFactory.newInstance(ImageFormat.PNG, 0);
+            imageData = in.encode(image);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String base64 = Base64.encodeBase64String(imageData);
         base64 = "data:image/png;base64," + base64;
         return base64;
 
     }
-    
-    public byte[] BufferedImageToByteArray(BufferedImage orImage){
-  try{
-    System.out.println("working ");
+
+    public byte[] BufferedImageToByteArray(BufferedImage orImage) {
+        try {
+ 
   ByteArrayOutputStream baos=new ByteArrayOutputStream();
   ImageIO.write(orImage, "png", baos );
      
@@ -107,4 +124,6 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
   }catch(IOException ie){}
   return null;
  }
+
+   
 }

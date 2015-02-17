@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
 import web.diva.shared.beans.DivaGroup;
+import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
@@ -48,6 +49,8 @@ public interface DivaService extends RemoteService {
     DatasetInformation activateGroups(String[] rowGroups);
 
     String exportData(String rowGroup);
+    
+    String exportImgAsPdf(String chartType);
 
     String saveDataset(String newName);
 
@@ -65,7 +68,7 @@ public interface DivaService extends RemoteService {
 
     SomClustTreeSelectionUpdate updateUpperTree(int x, int y, double w, double h);
 
-    String updateSomClustInteractiveColumn(int[] selection);
+    InteractiveColumnsResults updateSomClustInteractiveColumn(int[] selection);
 
     String pcaShowAll(boolean showAll, int[] selection);
 

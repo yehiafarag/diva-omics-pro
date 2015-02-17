@@ -18,16 +18,18 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class HeatmapImg extends Image implements MouseMoveHandler, MouseOutHandler {
 
+    private final int squareL;
+    private final int squareW;
     @Override
     public void onMouseMove(MouseMoveEvent event) {
         int x = 0;
         int y = 0;
         if (type == 1) {
-            x = event.getX() / 12;
-            y = event.getY() / 2;
+            x = event.getX() / squareW;
+            y = event.getY() / squareL;
         }else{
-         y = event.getX() / 2;
-            x = event.getY() / 12;
+         y = event.getX() / squareL;
+            x = event.getY() / squareW;
         }
         
         if (rowNames[y] != null && colNames[x] != null) {
@@ -51,8 +53,10 @@ public class HeatmapImg extends Image implements MouseMoveHandler, MouseOutHandl
     private final int type;
    
     
-    public HeatmapImg(String url, String[] rowNames, String[] colNames,double[][] values,HTML toolTip,int type) {
+    public HeatmapImg(String url, String[] rowNames, String[] colNames,double[][] values,HTML toolTip,int type,int squareL,int squareW) {
         super(url);
+        this.squareL = squareL;
+        this.squareW = squareW;
         this.addMouseMoveHandler(HeatmapImg.this);
         this.addMouseOutHandler(HeatmapImg.this);
         this.colNames = colNames;
@@ -61,6 +65,7 @@ public class HeatmapImg extends Image implements MouseMoveHandler, MouseOutHandl
         this.toolTip = toolTip;
         toolTip.setVisible(false);
         this.type= type;
+        
     }
     public void updateTooltips(String[] rowNames, String[] colNames,double[][] values){
      this.colNames = colNames;

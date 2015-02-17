@@ -30,8 +30,6 @@ import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.EditCompleteEvent;
 import com.smartgwt.client.widgets.grid.events.EditCompleteHandler;
-import com.smartgwt.client.widgets.layout.HLayout;
-import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.ArrayList;
 import java.util.List;
 import web.diva.shared.beans.DivaGroup;
@@ -40,7 +38,7 @@ import web.diva.shared.beans.DivaGroup;
  *
  * @author Yehia Farag pup-up window for rank panel user inputs
  */
-public final class RankPanel {
+public final class RankPanel extends PopupPanel {
 
 //    private final SelectItem selectColGroups;
     private RadioGroupItem radioGroupItem;
@@ -50,7 +48,6 @@ public final class RankPanel {
     private final HTML errorlabl;
     private DynamicForm form2;
     private ListGrid selectionTable;
-    private final PopupPanel popupPanel;
     private boolean defaultRank;
 
     public DynamicForm getForm2() {
@@ -60,39 +57,49 @@ public final class RankPanel {
     public HTML getErrorlabl() {
         return errorlabl;
     }
-    private final VLayout mainBodyLayout;
+//    private final VLayout mainBodyLayout;
 
     public RankPanel() {
-        popupPanel = new PopupPanel(false, true);
-        popupPanel.setAnimationEnabled(true);
-        popupPanel.ensureDebugId("cwBasicPopup-imagePopup");
-        popupPanel.setModal(true);
-        popupPanel.center();
-        
-        mainBodyLayout = new VLayout();
-        popupPanel.setWidget(mainBodyLayout);
-        mainBodyLayout.setStyleName("modalLayout");
+//        popupPanel = new PopupPanel(false, true);
+//        popupPanel.setAnimationEnabled(true);
+//        popupPanel.ensureDebugId("cwBasicPopup-imagePopup");
+//        popupPanel.setModal(true);
+//        popupPanel.center();
+        this.setAnimationEnabled(true);
+        this.ensureDebugId("cwBasicPopup-imagePopup");
+        this.setModal(false);
 
-        mainBodyLayout.setWidth(400);
-        mainBodyLayout.setHeight(290);
-        mainBodyLayout.setMargin(5);
-        mainBodyLayout.setMembersMargin(5);
+        VerticalPanel framLayout = new VerticalPanel();
+        framLayout.setWidth("400px");
+        framLayout.setHeight("330px");
 
+        VerticalPanel mainBodyLayout = new VerticalPanel();
+        mainBodyLayout.setWidth("398px");
+        mainBodyLayout.setHeight("308px");
+        mainBodyLayout.setStyleName("modalPanelBody");
+
+//        mainBodyLayout = new VLayout();
+//        popupPanel.setWidget(mainBodyLayout);
+//        mainBodyLayout.setStyleName("modalLayout");
+//        mainBodyLayout.setWidth(400);
+//        mainBodyLayout.setHeight(290);
+//        mainBodyLayout.setMargin(5);
+//        mainBodyLayout.setMembersMargin(5);
         HorizontalPanel topLayout = new HorizontalPanel();
-        mainBodyLayout.addMember(topLayout);
-        topLayout.setWidth(400 + "px");
+//        mainBodyLayout.addMember(topLayout);
+        topLayout.setWidth(398 + "px");
         topLayout.setHeight("18px");
         topLayout.setStyleName("whiteLayout");
-        topLayout.setSpacing(3);
+//        topLayout.setSpacing(3);
 
         Label title = new Label("Rank Product (Differential Expression)");
         topLayout.add(title);
         title.setStyleName("labelheader");
-        title.setWidth(300 + "px");
+        title.setWidth(220 + "px");
         topLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
+        topLayout.setCellVerticalAlignment(title, HorizontalPanel.ALIGN_TOP);
 
         Label closeBtn = new Label();
-
         closeBtn.addStyleName("close");
         closeBtn.setHeight("16px");
         closeBtn.setWidth("16px");
@@ -101,23 +108,25 @@ public final class RankPanel {
 
             @Override
             public void onClick(ClickEvent event) {
-                getPopupPanel().hide();
+                hide(true);
             }
         });
 
         topLayout.add(closeBtn);
         topLayout.setCellHorizontalAlignment(closeBtn, HorizontalPanel.ALIGN_RIGHT);
+        topLayout.setCellVerticalAlignment(closeBtn, HorizontalPanel.ALIGN_TOP);
 
         try {
 
             VerticalPanel groupsTableLayout = new VerticalPanel();
-            mainBodyLayout.addMember(groupsTableLayout);
-            groupsTableLayout.setWidth(400 + "px");
+            mainBodyLayout.add(groupsTableLayout);
+            groupsTableLayout.setWidth(398 + "px");
             groupsTableLayout.setHeight("100px");
             groupsTableLayout.setStyleName("whiteLayout");
-            groupsTableLayout.setSpacing(3);
+
             Label tableTitle = new Label("Column Groups (Max 2)");
             tableTitle.setHeight("20px");
+            tableTitle.setWidth("250px");
             tableTitle.setStyleName("secheadertitle");
             groupsTableLayout.add(tableTitle);
 
@@ -130,28 +139,29 @@ public final class RankPanel {
             groupsTableLayout.setCellHorizontalAlignment(selectionTable, VerticalPanel.ALIGN_CENTER);
 
             DynamicForm form = new DynamicForm();
-            mainBodyLayout.addMember(form);
+
             form.setIsGroup(false);
-            form.setWidth(400);
-            form.setMargin(5);
+            form.setWidth(398);
+            form.setLayoutAlign(Alignment.CENTER);
             form.setHeight("50px");
+
+            mainBodyLayout.add(form);
 
             radioGroupItem = new RadioGroupItem();
             radioGroupItem.setShowTitle(true);
             radioGroupItem.setHeight("50px");
-            radioGroupItem.setWidth("400px");
+            radioGroupItem.setWidth("398px");
             radioGroupItem.setTitle("Values ");
             radioGroupItem.setValueMap("Log 2", "Linear");
             radioGroupItem.setValue("Log 2");
             radioGroupItem.setShouldSaveValue(true);
             form.setFields(radioGroupItem);
-
+            form.draw();
             form2 = new DynamicForm();
-            mainBodyLayout.addMember(form2);
 
             form2.setIsGroup(false);
             form2.setHeight("60px");
-            form2.setWidth("400px");
+            form2.setWidth("398px");
             form2.setMargin(5);
             form2.setPadding(1);
             form2.setNumCols(3);
@@ -193,33 +203,34 @@ public final class RankPanel {
             defaultGroupSelectionItem.setTooltip("loaded by default on loading the dataset");
 
             form2.setFields(permutation, seed, btn, defaultGroupSelectionItem);
-
             form2.redraw();
+            mainBodyLayout.add(form2);
 
         } catch (Exception e) {
             Window.alert("error is ");
         }
 
-        HLayout hlo = new HLayout();
-        hlo.setWidth("400px");
+        HorizontalPanel hlo = new HorizontalPanel();
+        hlo.setWidth("398px");
         hlo.setHeight("20px");
 
         okBtn = new IButton("Process");
-        hlo.addMember(okBtn);
-
-        hlo.setMargin(10);
-        hlo.setMembersMargin(20);
-        hlo.setAlign(Alignment.CENTER);
-        mainBodyLayout.addMember(hlo);
+        hlo.add(okBtn);
+        hlo.setCellHorizontalAlignment(okBtn, HorizontalPanel.ALIGN_CENTER);
+        hlo.setCellVerticalAlignment(okBtn, HorizontalPanel.ALIGN_MIDDLE);
+        mainBodyLayout.add(hlo);
 
         errorlabl = new HTML("<p style='font-size: 10px;color:red;margin-left: 20px;height=20px;'>PLEASE CHECK YOUR DATA INPUT .. PLEASE NOTE THAT YOU CAN NOT SELECT MORE THAN 2 GROUPS</p>");
         errorlabl.setVisible(false);
         errorlabl.setHeight("50px");
-        errorlabl.setWidth("400px");
-        mainBodyLayout.addMember(errorlabl);
-        popupPanel.center();
-        popupPanel.show();
-        popupPanel.hide();
+        errorlabl.setWidth("398px");
+        mainBodyLayout.add(errorlabl);
+        framLayout.add(topLayout);
+        framLayout.add(mainBodyLayout);
+        this.setWidget(framLayout);
+        framLayout.setStyleName("modalPanelLayout");
+//        this.show();
+//        this.hide();
 
     }
 
@@ -261,7 +272,7 @@ public final class RankPanel {
 
     private void initSelectionTable() {
 
-        selectionTable.setWidth("400px");
+        selectionTable.setWidth("398px");
         selectionTable.setHeight("100px");
         selectionTable.setStyleName("borderless");
         selectionTable.setLeaveScrollbarGap(false);
@@ -320,9 +331,7 @@ public final class RankPanel {
         selectionTable.setData(records);
     }
 
-    public PopupPanel getPopupPanel() {
-        return popupPanel;
-    }
+    
 
     public boolean isDefaultRank() {
         return defaultRank;

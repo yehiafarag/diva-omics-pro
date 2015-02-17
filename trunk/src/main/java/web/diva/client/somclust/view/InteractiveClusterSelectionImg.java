@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
+import web.diva.shared.beans.InteractiveColumnsResults;
 
 /**
  *
@@ -18,13 +19,14 @@ import com.google.gwt.user.client.ui.Image;
  */
 public class InteractiveClusterSelectionImg extends Image implements MouseMoveHandler, MouseOutHandler {
 
+     private final int squareL;
     @Override
     public void onMouseMove(MouseMoveEvent event) {
         int y = 0;
         if (type == 1) {
-            y = event.getY() / 2;
+            y = event.getY() / squareL;
         }else{
-         y = event.getX() / 2;
+         y = event.getX() / squareL;
         }
         toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">"+ y +"</textarea>");
         toolTip.setVisible(true);
@@ -47,8 +49,9 @@ public class InteractiveClusterSelectionImg extends Image implements MouseMoveHa
     private final int type;
    
     
-    public InteractiveClusterSelectionImg(String url, String[] rowNames,HTML toolTip,int type) {
-        super(url);
+    public InteractiveClusterSelectionImg(InteractiveColumnsResults url, String[] rowNames,HTML toolTip,int type,int squareL) {
+        super(url.getInteractiveColumn());
+        this.squareL = squareL;
         this.addMouseMoveHandler(InteractiveClusterSelectionImg.this);
         this.addMouseOutHandler(InteractiveClusterSelectionImg.this);
        

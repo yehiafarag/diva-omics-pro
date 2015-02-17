@@ -16,6 +16,8 @@ public class SomClustTreeSelectionUpdate implements IsSerializable{
     private String treeImgUrl;
     private int[] selectedIndices;
 
+  
+
     public String getTreeImgUrl() {
         return treeImgUrl;
     }

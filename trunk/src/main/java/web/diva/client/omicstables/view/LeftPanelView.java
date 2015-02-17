@@ -36,6 +36,7 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.view.core.GroupPanel;
+import web.diva.client.view.core.Notification;
 import web.diva.client.view.core.RowGroupPanel;
 import web.diva.client.view.core.SaveAsPanel;
 import web.diva.client.view.core.SaveDatasetPanel;
@@ -100,6 +101,8 @@ public class LeftPanelView extends SectionStack {
         controlItem.setValueMap(controls);
         controlItem.setValue(rowControl);
 
+      
+        
         controlItemChangeHandlerReg = controlItem.addChangeHandler(new com.smartgwt.client.widgets.form.fields.events.ChangeHandler() {
 
             @Override
@@ -156,7 +159,7 @@ public class LeftPanelView extends SectionStack {
         colSelectionLayout.setHeight(30);
         colSelectionLayout.setAlign(VerticalAlignment.TOP);
 
-        omicsTable = new OmicsTableComponent(selectionManager, datasetInfos, datasetInfos.getRowsNumb(),rowSelectionSection);
+        omicsTable = new OmicsTableComponent(selectionManager, datasetInfos, datasetInfos.getRowsNumb(),rowSelectionSection,controlItem);
         rowSelectionLayout.addMember(omicsTable.getOmicsTableLayout());
 
         HorizontalPanel rowGBtnLayout = new HorizontalPanel();
@@ -201,6 +204,9 @@ public class LeftPanelView extends SectionStack {
                     updateActiveGroupPanelPanel();
                     activeGroupPanel.center();
                     activeGroupPanel.show();
+                    }else{
+                    Notification.notifi("","Only One Group Available");
+                    
                     }
 
                 }
@@ -240,9 +246,14 @@ public class LeftPanelView extends SectionStack {
                     if (subDsPanel == null) {
                         initSubDsPanel(datasetInfo.getRowGroupList());
                     }
+                    if(selectionManager.getSelectedRows() == null &&datasetInfo.getRowGroupList().size()==1 ){
+                        Notification.notifi("","You Need To Select Data or Create Row Group First ");
+                    }
+                    else{
                     updateSubDsPanel();
                     subDsPanel.center();
                     subDsPanel.show();
+                    }
                 } else if (event.getItem().getTitle().equalsIgnoreCase("Save Current Dataset")) {
                     if (saveDsPanel == null) {
                         initSaveDsPanel();
@@ -340,12 +351,24 @@ public class LeftPanelView extends SectionStack {
 
     private void updateAndShowGroupPanel(String type) {
         if (type.equalsIgnoreCase("col")) {
+             if (selectionManager.getSelectedColumns()== null) {
+                Notification.notifi("", "You Need To Select Data First");
+            } else {
             groupPanel.setCount(selectionManager.getSelectedColumns().getMembers().length);
+            groupPanel.center();
+                groupPanel.show();
+             }
         } else if (type.equalsIgnoreCase("row")) {
-            groupPanel.setCount(selectionManager.getSelectedRows().getMembers().length);
+            if (selectionManager.getSelectedRows() == null) {
+                Notification.notifi("", "You Need To Select Data First");
+            } else {
+                groupPanel.setCount(selectionManager.getSelectedRows().getMembers().length);
+                groupPanel.center();
+                groupPanel.show();
+            }
+
         }
-        groupPanel.center();
-        groupPanel.show();
+
 
     }
 
@@ -461,6 +484,7 @@ public class LeftPanelView extends SectionStack {
     }
 
     private void updateActiveGroupPanelPanel() {
+       
         activeGroupPanel.updateData(datasetInfo.getRowGroupList());
 
     }
@@ -495,9 +519,8 @@ public class LeftPanelView extends SectionStack {
                     }
 
                     @Override
-                    public void onSuccess(String result) {
-//                        Window.open(result, "downlod window", "status=0,toolbar=0,menubar=0,location=0");     
-                        sa.setResourceUrl(result);
+                    public void onSuccess(String result) {  
+                        SaveAsPanel sa = new SaveAsPanel("File",result);
                         SelectionManager.Busy_Task(false, true);
                         sa.center();
                         sa.show();
@@ -508,8 +531,6 @@ public class LeftPanelView extends SectionStack {
                 });
 
     }
-    private final SaveAsPanel sa = new SaveAsPanel("File");
-
     /**
      * This method is responsible for invoking create row group method
      *

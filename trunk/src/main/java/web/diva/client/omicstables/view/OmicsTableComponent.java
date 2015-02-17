@@ -4,7 +4,9 @@
  */
 package web.diva.client.omicstables.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.MouseEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -19,6 +21,7 @@ import com.smartgwt.client.widgets.events.DragStopEvent;
 import com.smartgwt.client.widgets.events.DragStopHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ButtonItem;
+import com.smartgwt.client.widgets.form.fields.RadioGroupItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.fields.events.BlurEvent;
@@ -64,8 +67,9 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     private final HandlerRegistration searchingFieldFocusReg, searchingFieldBlurReg, searchingFieldKeyPressReg, searchBtnReg;
     private HandlerRegistration omicsSelectionReg,omicsDargStartSelectionReg;
     private final SectionStackSection rowSelectionSection;
+    private final RadioGroupItem controlItem;
 
-    public OmicsTableComponent(SelectionManager selectionManager, DatasetInformation datasetInfo, int rowsNumber,SectionStackSection rowSelectionSection) {
+    public OmicsTableComponent(SelectionManager selectionManager, DatasetInformation datasetInfo, int rowsNumber,SectionStackSection rowSelectionSection,RadioGroupItem controlItem) {
         timer = new Timer() {
 
             @Override
@@ -73,6 +77,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 SC.dismissCurrentDialog();
             }
         };
+        this.controlItem = controlItem;
         this.rowSelectionSection = rowSelectionSection;
         infoSearchingMap = new String[rowsNumber];
 
@@ -318,6 +323,8 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 int[] selectedRows = sel.getMembers();
                 //update table selection             
                 if (selectedRows != null && selectedRows.length != 0) {
+                    sendOnChangeEvent(controlItem.getForm(), controlItem.getName(), controlItem.getValueAsString(), "Rows");
+                    controlItem.setValue("Rows");
                     ListGridRecord[] reIndexSelection = new ListGridRecord[selectedRows.length];
                     int i = 0;
                     for (int z : selectedRows) {
@@ -346,6 +353,8 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             if (sel != null) {
                 int[] selectedColumn = sel.getMembers();
                 if (selectedColumn != null && selectedColumn.length != 0 && colSelectionTable != null) {
+                     sendOnChangeEvent(controlItem.getForm(), controlItem.getName(), controlItem.getValueAsString(), "Columns");
+                    controlItem.setValue("Columns");
                     String[] values = new String[selectedColumn.length];
                     for (int x = 0; x < selectedColumn.length; x++) {
                         values[x] = "" + selectedColumn[x];
@@ -382,4 +391,13 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
         selectionManager.removeSelectionChangeListener(this);
         selectionManager = null;
     }
+    
+    
+    private native void sendOnChangeEvent(DynamicForm form, String formItemName, String oldValue, String newValue) /*-{
+		var formWidget = form.@com.smartgwt.client.widgets.form.DynamicForm::getOrCreateJsObj()();
+		var formItem = formWidget.getField(formItemName);
+		if (typeof formItem.change == "function") {
+			formItem.change(formItem.form, formItem, newValue, oldValue);
+		} 
+	}-*/;
 }
