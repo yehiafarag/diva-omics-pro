@@ -14,7 +14,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class InteractiveColumnsResults implements IsSerializable{
     
     private String navgUrl;
-    private String interactiveColumn;
+    private SplitedImg interactiveColumn;
 
     public String getNavgUrl() {
         return navgUrl;
@@ -24,11 +24,11 @@ public class InteractiveColumnsResults implements IsSerializable{
         this.navgUrl = navgUrl;
     }
 
-    public String getInteractiveColumn() {
+    public SplitedImg getInteractiveColumn() {
         return interactiveColumn;
     }
 
-    public void setInteractiveColumn(String interactiveColumn) {
+    public void setInteractiveColumn(SplitedImg interactiveColumn) {
         this.interactiveColumn = interactiveColumn;
     }
     

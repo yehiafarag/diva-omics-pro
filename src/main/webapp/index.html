@@ -15,13 +15,30 @@
         <meta name="keywords" content="diva omics " />
 
         <link href="divaStyle.css" rel="stylesheet" type="text/css" />
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" /> 
 
         <script>var isomorphicDir="diva/sc/";</script>
-
-
         <script type="text/javascript"  src="diva/diva.nocache.js"></script> 
-
         <script type="text/javascript"  src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script language=”JavaScript”>
+window.onload = maxWindow;
+function maxWindow()
+{
+window.moveTo(0,0);
+if (document.all)
+{
+top.window.resizeTo(screen.availWidth,screen.availHeight);
+}
+else if (document.layers||document.getElementById)
+{
+if (top.window.outerHeight<screen.availHeight||top.window.outerWidth<screen.availWidth)
+{
+top.window.outerHeight = screen.availHeight;
+top.window.outerWidth = screen.availWidth;
+}
+}
+}
+        </script>
     </head>
     <body>
         <noscript>
@@ -51,7 +68,7 @@
                 </div>
 
             </div>
-            <div id="diva_content_area" >
+             <div id="diva_content_area" >
                   <div id="welcomediva">
                     
                 </div>

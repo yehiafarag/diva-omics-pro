@@ -7,6 +7,7 @@ package web.diva.client.view.core;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -21,6 +22,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class SaveAsPanel extends PopupPanel {
 
     private final  HTML downloadLink,openLink;
+    HandlerRegistration reg1,reg2;
     public SaveAsPanel(String fileType, final String url) {
         this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
@@ -97,14 +99,15 @@ public class SaveAsPanel extends PopupPanel {
 
             @Override
             public void onClick(ClickEvent event) {
-
-                hide();
-                clear();
+                reg1.removeHandler();
+                reg2.removeHandler();
+                clear();                
+                hide(true);
 
             }
         }; 
-        downloadLink.addClickHandler(hideHandler);
-        openLink.addClickHandler(hideHandler);
+       reg1 =downloadLink.addClickHandler(hideHandler);
+       reg2= openLink.addClickHandler(hideHandler);
         closeBtn.addClickHandler(hideHandler);
 
         framLayout.add(topLayout);

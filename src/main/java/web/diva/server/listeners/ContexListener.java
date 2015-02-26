@@ -36,9 +36,18 @@ public class ContexListener implements ServletContextListener {
             if (f.getName().endsWith(".txt")) {
                 f.delete();
             }
+            else if(f.isDirectory()){
+                cleanFolder(f);
+                f.delete();             
+        
+        }
 
         }
         System.out.println("good bye :-)");
     }
-
+    private void cleanFolder(File folder){
+    for (File f : folder.listFiles()) {
+                f.delete();
+    }
+    }
 }

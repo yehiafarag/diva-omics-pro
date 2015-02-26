@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.TreeMap;
 import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.InteractiveColumnsResults;
+import web.diva.shared.beans.LineChartResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
@@ -26,7 +27,7 @@ public interface DivaService extends RemoteService {
 
     DatasetInformation setMainDataset(int datasetId);
 
-    String computeProfilePlot(double w, double h);
+    LineChartResults computeProfilePlot(double w, double h);
 
 //    SomClusteringResult computeSomClustering(int datasetId, int linkage, int distanceMeasure) throws IllegalArgumentException;
     SomClusteringResult computeSomClustering(int linkage, int distanceMeasure, boolean clusterColumns) throws IllegalArgumentException;
@@ -50,7 +51,11 @@ public interface DivaService extends RemoteService {
 
     String exportData(String rowGroup);
     
-    String exportImgAsPdf(String chartType);
+    String exportRankingData();
+    
+    String exportImgAsPdf(String chartType,String quality);
+    
+    String exportClusteringAsPdf(String quality);
 
     String saveDataset(String newName);
 
@@ -61,6 +66,8 @@ public interface DivaService extends RemoteService {
     String updatePCASelection(int[] selection);
 
     int[] getPCASelection(int startX, int startY, int endX, int endY);
+    
+    int[] getProfilePlotSelection(int startX, int startY);
 
     int[] indexToRank(int[] indexes, int type);
 

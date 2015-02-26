@@ -15,16 +15,14 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.TreeSet;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
 import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.beans.DivaDataset;
-import web.diva.shared.beans.PCAResults;
 import web.diva.shared.beans.RankResult;
 
 /**
@@ -50,8 +48,8 @@ public class FileSystemUtil implements Serializable{
 
     }
 
-    public HashSet<String> getAvailableComputingFileList(String fileFolderPath) {
-        HashSet<String> computingFileList = new HashSet<String>();
+    public TreeSet<String> getAvailableComputingFileList(String fileFolderPath) {
+        TreeSet<String> computingFileList = new TreeSet<String>();
         File appFolder = new File(fileFolderPath + "/computing");
         for (File datasetFile : appFolder.listFiles()) {
             if (datasetFile.getName().endsWith(".ser")) {

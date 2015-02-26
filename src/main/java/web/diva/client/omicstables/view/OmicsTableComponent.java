@@ -4,14 +4,10 @@
  */
 package web.diva.client.omicstables.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.MouseEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.user.client.ui.Label;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -86,7 +82,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
         this.colNumber = datasetInfo.getColNumb();
         this.records = getRecodList(datasetInfo);
         omicsTableLayout = new VLayout();
-        rowSelectionSection.setTitle("&nbsp;Selection ( 0 / " + rowsNumber + " )");
+        rowSelectionSection.setTitle("&nbsp;Selection (0 / " + rowsNumber + ")");
         omicsTableLayout.setHeight("70%");
         omicsTableLayout.setWidth("100%");
 
@@ -212,7 +208,11 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                 if (selectionRecord != null && selectionRecord.length > 0) {
                     SelectionManager.Busy_Task(true, false);
                     updateSelectionManagerOnTableSelection(selectionRecord);
+                } else {
+                    selfSelectionTag = true;
+                    updateSelectionManager(new int[]{});
                 }
+
             }
         });
         
@@ -293,6 +293,11 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             }
             selfSelectionTag = true;
             updateSelectionManager(selectedIndices);
+        }else{
+        
+            selfSelectionTag = true;
+            updateSelectionManager(new int[]{});
+        
         }
 
     }
@@ -301,9 +306,12 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
     public void selectionChanged(Selection.TYPE type) {
         if (selfSelectionTag) {
             selfSelectionTag = false;
-            if (type == Selection.TYPE.OF_ROWS && selectionManager.getSelectedRows().getMembers() != null && selectionManager.getSelectedRows().getMembers().length != 0 && omicsIdTable.isVisible()) {
+            if (((type != Selection.TYPE.OF_ROWS || selectionManager.getSelectedRows().getMembers() == null) || selectionManager.getSelectedRows().getMembers().length == 0) || !omicsIdTable.isVisible()) if (type == Selection.TYPE.OF_COLUMNS && selectionManager.getSelectedColumns().getMembers() != null && selectionManager.getSelectedColumns().getMembers().length != 0 && !omicsIdTable.isVisible()) {
 //                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
-                rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+                rowSelectionSection.setTitle("&nbsp;Selection (" + selectionManager.getSelectedColumns().getMembers().length + "/" + colNumber + ")");
+            } else {
+                //                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
+                rowSelectionSection.setTitle("&nbsp;Selection (" + selectionManager.getSelectedRows().getMembers().length + "/" + rowNumber + ")");
                 if (groupTable != null && !groupTable.isGroubTableSelection()) {
                     groupTable.deselectAllRecords();
                 } else {
@@ -311,10 +319,6 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                         groupTable.setGroubTableSelection(false);
                     }
                 }
-
-            } else if (type == Selection.TYPE.OF_COLUMNS && selectionManager.getSelectedColumns().getMembers() != null && selectionManager.getSelectedColumns().getMembers().length != 0 && !omicsIdTable.isVisible()) {
-//                header.setText("Selected Rows Number ( " + selectionManager.getSelectedRows().getMembers().length + " / " + rowNumber + " )");
-                rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedColumns().getMembers().length + " / " + colNumber + " )");
             }
 
         } else if (type == Selection.TYPE.OF_ROWS) {
@@ -322,7 +326,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
             if (sel != null) {
                 int[] selectedRows = sel.getMembers();
                 //update table selection             
-                if (selectedRows != null && selectedRows.length != 0) {
+                if (selectedRows != null ){// selectedRows.length != 0) {
                     sendOnChangeEvent(controlItem.getForm(), controlItem.getName(), controlItem.getValueAsString(), "Rows");
                     controlItem.setValue("Rows");
                     ListGridRecord[] reIndexSelection = new ListGridRecord[selectedRows.length];
@@ -332,7 +336,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                     }
                     omicsIdTable.setRecords(reIndexSelection);
 //                    header.setText("Selected Rows Number ( " + reIndexSelection.length + " / " + rowNumber + " )");
-                    rowSelectionSection.setTitle("&nbsp;Selection ( " + reIndexSelection.length + " / " + rowNumber + " )");
+                    rowSelectionSection.setTitle("&nbsp;Selection (" + reIndexSelection.length + "/" + rowNumber + ")");
                     try {
                         omicsIdTable.selectAllRecords();
                     } catch (Exception e) {
@@ -346,13 +350,20 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
                         }
 
                     }
+                }else
+                {
+                    omicsIdTable.deselectAllRecords();
+                    if (groupTable != null) {
+                            groupTable.deselectAllRecords();
+                        }
+                
                 }
             }
         } else if (type == Selection.TYPE.OF_COLUMNS) {
             Selection sel = selectionManager.getSelectedColumns();
             if (sel != null) {
                 int[] selectedColumn = sel.getMembers();
-                if (selectedColumn != null && selectedColumn.length != 0 && colSelectionTable != null) {
+                if (selectedColumn != null /*&& selectedColumn.length != 0 */&& colSelectionTable != null) {
                      sendOnChangeEvent(controlItem.getForm(), controlItem.getName(), controlItem.getValueAsString(), "Columns");
                     controlItem.setValue("Columns");
                     String[] values = new String[selectedColumn.length];
@@ -364,7 +375,7 @@ public final class OmicsTableComponent extends ModularizedListener implements Is
 
                 }
                 if (!omicsIdTable.isVisible() && selectedColumn != null) {
-                    rowSelectionSection.setTitle("&nbsp;Selection ( " + selectedColumn.length + " / " + colNumber + " )");
+                    rowSelectionSection.setTitle("&nbsp;Selection (" + selectedColumn.length + "/" + colNumber + ")");
                 }
 
             }

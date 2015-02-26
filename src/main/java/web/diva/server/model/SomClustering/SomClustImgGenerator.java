@@ -36,6 +36,7 @@ import web.diva.server.model.HeatmapColorFactory;
 import web.diva.shared.beans.ClientClusterNode;
 import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
+import web.diva.shared.beans.SplitedImg;
 
 /**
  *
@@ -53,6 +54,8 @@ public class SomClustImgGenerator {
     private final int LeftTreeWidth ;//= 350;
     private final int TopTreeHeight = 70;
     private int LeftTreeHeight,TopTreeWidth;   
+    
+   
 
     public int getLeftTreeHeight() {
         return LeftTreeHeight;
@@ -86,17 +89,16 @@ public class SomClustImgGenerator {
         LeftTreeWidth = 300;       
         
         }
-        else if(rowNumber <= 20000){
-        squareL = 4;
-        squareW = 12;
-        LeftTreeWidth = 500;       
-        
-        }
+//        else if(rowNumber <= 20000){
+//        squareL = 4;
+//        squareW = 12;
+//        LeftTreeWidth = 500;       
+//        
+//        }
         else {
         squareL = 2;
         squareW = 12;
-        LeftTreeWidth = 600;       
-            System.out.println("LeftTreeWidth "+LeftTreeWidth+"  squareL "+squareL);
+        LeftTreeWidth = 400;       
         }
 
     }
@@ -117,10 +119,10 @@ public class SomClustImgGenerator {
         return sideTree;
     }
 
-    public String generateSideTree(Node root) {
+    public BufferedImage generateSideTree(Node root) {
         int verticalItems = countgenes(root);
         root.mark = true;
-        sideTree = new TreeView(root, verticalItems, Color.WHITE, Color.black);//"#e3e3e3"Color.decode("#e3e3e3")
+        sideTree = new TreeView(root, verticalItems, Color.WHITE, Color.BLACK);//"#e3e3e3"Color.decode("#e3e3e3")
         sideTree.leafdist = squareL;
         sideTree.actualLength = verticalItems;
         sideTree.leftmargin = (int) Math.round(squareL / 2);
@@ -134,8 +136,8 @@ public class SomClustImgGenerator {
         sideTree.generatecoords();
         tooltipsSideNode = initToolTips(root, null);
         LeftTreeHeight = sideTree.getHeight();
-
-        return this.generateEncodedImg(sideTree.getImage());
+        sideTreeBImg = sideTree.getImage();
+        return (sideTreeBImg);
 
     }
 
@@ -156,19 +158,20 @@ public class SomClustImgGenerator {
         upperTree.treewidth = TopTreeHeight;
         upperTree.generatecoords();
         TopTreeWidth = upperTree.getWidth();
-        tooltipsUpperNode = initToolTips(toproot, null);        
-        return this.generateEncodedImg(upperTree.getImage());
+        tooltipsUpperNode = initToolTips(toproot, null);  
+        upperTreeBImg = upperTree.getImage();
+        return this.generateEncodedImg(upperTreeBImg);
 
     }
 
 
     private ClientClusterNode tooltipsUpperNode;
     private ClientClusterNode tooltipsSideNode;
-
-    public String generateHeatMap(Dataset dataset, boolean clustColumn) {
+    private  BufferedImage heatMapImg;
+    public BufferedImage generateHeatMap(Dataset dataset, boolean clustColumn) {
 
         colorFactory = new HeatmapColorFactory();
-        BufferedImage heatMapImg = null;
+        heatMapImg = null;
         if (clustColumn) {
             heatMapImg = new BufferedImage((upperTree.getWidth() + squareW), (sideTree.getHeight()), BufferedImage.TYPE_INT_ARGB);
         } else {
@@ -179,33 +182,32 @@ public class SomClustImgGenerator {
         Graphics g = heatMapImg.getGraphics();
         g.setFont(getTableFont(12));
         drawSquares(g, new Point(0, 0), null, dataset, clustColumn);
-        String defaultHeatMap = this.generateEncodedImg(heatMapImg);     
-        return defaultHeatMap;
+        return heatMapImg;
     }
 
     public String getNavgStringImg() {
         return navgStringImg;
     }
     private  String navgStringImg  ;
+    private BufferedImage interactiveColumnImg;
+    
      public InteractiveColumnsResults generateInteractiveColumn(Dataset dataset, int[] selection) {
 
-         BufferedImage interactiveColumnImg = null;
+         interactiveColumnImg = null;
          interactiveColumnImg = new BufferedImage(squareW+ squareW, (sideTree.getHeight()), BufferedImage.TYPE_INT_ARGB);
          
          BufferedImage navgBackGroungImg = new BufferedImage(400, 10, BufferedImage.TYPE_INT_ARGB);
          Graphics navGr = navgBackGroungImg.getGraphics();
          int navUnit =  (dataset.getDataLength()/200)+1;
          
-         System.out.println("nav unit us "+navUnit);
 
          Graphics g = interactiveColumnImg.getGraphics();
          g.setFont(getTableFont(5));
         drawTable(g,  new Point(0, 0), dataset,selection,navGr,navUnit);
-        navgBackGroungImg = rotateImage(navgBackGroungImg, 180);
-        String interactiveColumnImgUrl = this.generateEncodedImg(interactiveColumnImg);     
+        navgBackGroungImg = rotateImage(navgBackGroungImg, 180);   
         navgStringImg = this.generateEncodedImg(navgBackGroungImg);     
         InteractiveColumnsResults results = new InteractiveColumnsResults();
-        results.setInteractiveColumn(interactiveColumnImgUrl);
+        results.setInteractiveColumn(splitImage(interactiveColumnImg));
         results.setNavgUrl(navgStringImg);
         return results;
     }
@@ -252,6 +254,48 @@ public class SomClustImgGenerator {
         sc.paintComponent(scale);
         scale.setClip(bac);
         scale.translate(-st.x, -st.y);
+    }
+    
+//    public String exportToImgGraphics(boolean clustColumn){
+//        int totalWidth = sideTreeBImg.getWidth()+ heatMapImg.getWidth()+interactiveColumnImg.getWidth();
+//        int totalHeight = 0;
+//        totalHeight = sideTree.getImage().getHeight();
+//        if (clustColumn) {
+//            totalHeight += TopTreeHeight;
+//        }
+//
+//        BufferedImage clusteringImage = new BufferedImage(totalWidth, totalHeight, BufferedImage.TYPE_INT_ARGB);
+//        Graphics gg = clusteringImage.getGraphics();
+//        Graphics2D g2d = (Graphics2D)gg;
+//        g2d.setBackground(Color.WHITE);
+////        gg.translate(sideTree.getImage().getWidth(), 0);
+//        gg.drawImage(upperTreeBImg, sideTreeBImg.getWidth(), 0, null);
+//        gg.drawImage(sideTreeBImg, 0,upperTreeBImg.getHeight(), null);
+//        gg.drawImage(heatMapImg, sideTreeBImg.getWidth(), upperTreeBImg.getHeight(), null);
+//        gg.drawImage(interactiveColumnImg, sideTreeBImg.getWidth() + heatMapImg.getWidth(),upperTreeBImg.getHeight(), null);
+//        System.out.println("start the new drawer for clustering");
+//        try {
+//            ImageIO.write(clusteringImage, "PNG", new File("C:\\Users\\y-mok_000\\Desktop", "img.png"));
+//        } catch(Exception exp){exp.printStackTrace();}
+//        
+//        
+//        return "";
+//    }
+
+    public BufferedImage getHeatMapImg() {
+        return heatMapImg;
+    }
+
+    public BufferedImage getInteractiveColumnImg() {
+        return interactiveColumnImg;
+    }
+
+    public BufferedImage getSideTreeBImg() {
+        return sideTreeBImg;
+    }
+
+    public BufferedImage getUpperTreeBImg() {
+        return upperTreeBImg;
     }
 
     private void drawSquares(Graphics squares, Point start, Rectangle bounds, Dataset dataset,boolean clusterColumns) {
@@ -692,13 +736,13 @@ public class SomClustImgGenerator {
         return sideTreeBase64;
     }
 
+    private  BufferedImage sideTreeBImg;
     public SomClustTreeSelectionUpdate updateSideTreeSelection(int x, int y, double w, double h) {
-        BufferedImage bImage = sideTree.getImage();
+        sideTreeBImg = sideTree.getImage();
         SomClustTreeSelectionUpdate result = new SomClustTreeSelectionUpdate();
-        Node n = this.getNodeAt(x, y, rowNode);
-        
+        Node n = this.getNodeAt(x, y, rowNode);        
         if (n != null) {
-            sideTree.painttree(n, bImage.getGraphics(), Color.red);
+            sideTree.painttree(n, sideTreeBImg.getGraphics(), Color.red);
             Stack st = new Stack();
             Vector v = new Vector();
             n.fillMembers(v, st);
@@ -708,28 +752,31 @@ public class SomClustImgGenerator {
             }
             result.setSelectedIndices(sel);
         }
-        try {
-            byte[] imageData = ChartUtilities.encodeAsPNG(bImage);
-            String base64 = Base64.encodeBase64String(imageData);
-            base64 = "data:image/png;base64," + base64;
-            result.setTreeImgUrl(base64);
+//        try {
+//            byte[] imageData = ChartUtilities.encodeAsPNG(sideTreeBImg);
+//            String base64 = Base64.encodeBase64String(imageData);
+//            base64 = "data:image/png;base64," + base64;
+            SplitedImg si = this.splitImage(sideTreeBImg);
+            result.setTreeImg1Url(si.getImg1Url());
+            result.setTreeImg2Url(si.getImg2Url());
             System.gc();
             
             return result;
 
-        } catch (IOException e) {
-            System.err.println(e.getLocalizedMessage());
-        }
-        return null;
+//        } catch (IOException e) {
+//            System.err.println(e.getLocalizedMessage());
+//        }
+//        return null;
 
     }
 
+    private BufferedImage upperTreeBImg;
     public SomClustTreeSelectionUpdate updateUpperTreeSelection(int x, int y, double w, double h) {
-        BufferedImage bImage = upperTree.getImage();
+         upperTreeBImg = upperTree.getImage();
         Node n = this.getNodeAt(y, x, colNode);
         SomClustTreeSelectionUpdate result = new SomClustTreeSelectionUpdate();
         if (n != null) {
-            upperTree.painttree(n, bImage.getGraphics(), Color.red);
+            upperTree.painttree(n, upperTreeBImg.getGraphics(), Color.red);
             
             Stack st = new Stack();
             Vector v = new Vector();
@@ -741,10 +788,10 @@ public class SomClustImgGenerator {
             result.setSelectedIndices(sel);
         }
         try {
-            byte[] imageData = ChartUtilities.encodeAsPNG(bImage);
+            byte[] imageData = ChartUtilities.encodeAsPNG(upperTreeBImg);
             String base64 = Base64.encodeBase64String(imageData);
             base64 = "data:image/png;base64," + base64;
-            result.setTreeImgUrl(base64);
+            result.setTreeImg1Url(base64);
             
              System.gc();
             
@@ -854,6 +901,26 @@ public class SomClustImgGenerator {
         }
 
         return virtual;
+    }
+    
+    public SplitedImg splitImage(BufferedImage img){
+    int imgHeight = (img.getHeight()/2);
+    BufferedImage bf1 = img.getSubimage(0, 0, img.getWidth(), imgHeight);
+    
+    String str1 =this.generateEncodedImg(bf1);
+    
+     
+     int imgHeight2 = img.getHeight()-imgHeight;
+    BufferedImage bf2 = img.getSubimage(0,imgHeight, img.getWidth(), imgHeight2);
+    String str2 =this.generateEncodedImg(bf2);
+    SplitedImg si = new SplitedImg();
+    si.setHeight1(imgHeight);
+    si.setHeight2(imgHeight2);
+    si.setImg1Url(str1);
+    si.setImg2Url(str2);
+    
+    return si;
+    
     }
    
  

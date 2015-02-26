@@ -14,10 +14,10 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class SomClusteringResult implements IsSerializable{
     
-    private String sideTreeImgUrl;
+    private SplitedImg sideTreeImg;
     private String upperTreeImgUrl;
-    private String heatMapImgUrl;
-    private InteractiveColumnsResults interactiveRowImgUrl;
+    private SplitedImg heatMapImg;
+    private InteractiveColumnsResults interactiveRowImg;
     
     
     
@@ -37,15 +37,38 @@ public class SomClusteringResult implements IsSerializable{
     private int topTreeHeight;
     private int sideTreeHeight;
     
+    private int heatmapHeight;
+    private int heatmapWidth;
+    
     private int squareL;
      private int squareW;
 
-    public String getSideTreeImgUrl() {
-        return sideTreeImgUrl;
+    public int[] getReIndexer() {
+        return reIndexer;
     }
 
-    public void setSideTreeImgUrl(String sideTreeImgUrl) {
-        this.sideTreeImgUrl = sideTreeImgUrl;
+    public void setReIndexer(int[] reIndexer) {
+        this.reIndexer = reIndexer;
+    }
+     
+     private int[] reIndexer;
+
+    public int getInteractiveColumnWidth() {
+        return interactiveColumnWidth;
+    }
+
+    public void setInteractiveColumnWidth(int interactiveColumnWidth) {
+        this.interactiveColumnWidth = interactiveColumnWidth;
+    }
+     
+     private int interactiveColumnWidth;
+
+    public SplitedImg getSideTreeImg() {
+        return sideTreeImg;
+    }
+
+    public void setSideTreeImg(SplitedImg sideTreeImg) {
+        this.sideTreeImg = sideTreeImg;
     }
 
     public String getUpperTreeImgUrl() {
@@ -56,12 +79,12 @@ public class SomClusteringResult implements IsSerializable{
         this.upperTreeImgUrl = upperTreeImgUrl;
     }
 
-    public String getHeatMapImgUrl() {
-        return heatMapImgUrl;
+    public SplitedImg getHeatMapImg() {
+        return heatMapImg;
     }
 
-    public void setHeatMapImgUrl(String heatMapImgUrl) {
-        this.heatMapImgUrl = heatMapImgUrl;
+    public void setHeatMapImg(SplitedImg heatMapImgUrl) {
+        this.heatMapImg = heatMapImgUrl;
     }
 
     public String getScaleImgUrl() {
@@ -161,11 +184,11 @@ public class SomClusteringResult implements IsSerializable{
     }
 
     public InteractiveColumnsResults getInteractiveColumnImgUrl() {
-        return interactiveRowImgUrl;
+        return interactiveRowImg;
     }
 
-    public void setInteractiveRowImgUrl(InteractiveColumnsResults interactiveRowImgUrl) {
-        this.interactiveRowImgUrl = interactiveRowImgUrl;
+    public void setInteractiveRowImg(InteractiveColumnsResults interactiveRowImg) {
+        this.interactiveRowImg = interactiveRowImg;
     }
 
     public int getSquareL() {
@@ -182,6 +205,22 @@ public class SomClusteringResult implements IsSerializable{
 
     public void setSquareW(int squareW) {
         this.squareW = squareW;
+    }
+
+    public int getHeatmapHeight() {
+        return heatmapHeight;
+    }
+
+    public void setHeatmapHeight(int heatmapHeight) {
+        this.heatmapHeight = heatmapHeight;
+    }
+
+    public int getHeatmapWidth() {
+        return heatmapWidth;
+    }
+
+    public void setHeatmapWidth(int heatmapWidth) {
+        this.heatmapWidth = heatmapWidth;
     }
 
 

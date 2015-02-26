@@ -6,7 +6,6 @@
 package web.diva.client.omicstables.view;
 
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Timer;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.SelectionStyle;
@@ -34,9 +33,11 @@ public class GroupTable extends ListGrid {
 
     private SelectionManager selectionManager;
     private boolean dragStart;
+    private final String tableType;
 
-    public GroupTable(SelectionManager selectionManagerInst) {
+    public GroupTable(SelectionManager selectionManagerInst, String tableType) {
         this.selectionManager = selectionManagerInst;
+        this.tableType=tableType;
         this.setHeight("29%");
         setWidth("100%");
         this.setLeaveScrollbarGap(true);
@@ -47,16 +48,17 @@ public class GroupTable extends ListGrid {
         setCanRemoveRecords(false);
         setShowHeaderContextMenu(false);
         setShowEdges(false);
-        setShowAllRecords(false);
+        setShowAllRecords(true);
         setShowRollOver(false);
         setCanSort(true);
+        
         setCanDragSelect(true);
 
-        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 50);
+        ListGridField groupNameField = new ListGridField("groupName", "Group Name", 200);
         groupNameField.setAlign(Alignment.CENTER);
         groupNameField.setType(ListGridFieldType.TEXT);
         groupNameField.setAutoFitWidth(Boolean.TRUE);
-        groupNameField.setWidth("63px");
+        groupNameField.setWidth("200px");
 
         ListGridField colorField = new ListGridField("color", "");
         colorField.setAlign(Alignment.CENTER);
@@ -112,13 +114,13 @@ public class GroupTable extends ListGrid {
         });
     }
     private final HandlerRegistration handlerReg, clickHandlerReg, dargStartSelectionReg;
-    private List<DivaGroup> rowGroupsList;
+    private List<DivaGroup> groupsList;
 
-    public void updateRecords(List<DivaGroup> rowGroupsList) {
-        this.rowGroupsList = rowGroupsList;
-        ListGridRecord[] records = new ListGridRecord[rowGroupsList.size()];
+    public void updateRecords(List<DivaGroup> groupsList) {
+        this.groupsList = groupsList;
+        ListGridRecord[] records = new ListGridRecord[groupsList.size()];
         int index = 0;
-        for (DivaGroup rGr : rowGroupsList) {
+        for (DivaGroup rGr : groupsList) {
             ListGridRecord record = new ListGridRecord();
             record.setAttribute("groupName", rGr.getName());
             record.setAttribute("color", rGr.getColor());
@@ -140,7 +142,7 @@ public class GroupTable extends ListGrid {
             for (ListGridRecord record : selectionRecord) {
                 String groupName = record.getAttribute("groupName");
 
-                for (DivaGroup group : rowGroupsList) {
+                for (DivaGroup group : groupsList) {
                     if (group.getName().equalsIgnoreCase(groupName)) {
                         selectedIndices = group.getMembers();
                         break;
@@ -157,7 +159,7 @@ public class GroupTable extends ListGrid {
             for (ListGridRecord record : selectionRecord) {
                 String groupName = record.getAttribute("groupName");
 
-                for (DivaGroup group : rowGroupsList) {
+                for (DivaGroup group : groupsList) {
                     if (group.getName().equalsIgnoreCase(groupName)) {
                         for (int x : group.getMembers()) {
                             members.add(x);
@@ -186,8 +188,14 @@ public class GroupTable extends ListGrid {
 
     private void updateSelectionManager(int[] selectedIndices) {
         groubTableSelection = true;
-        Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
-        selectionManager.setSelectedRows(selection);
+        if (tableType.equalsIgnoreCase("col")) {
+            Selection selection = new Selection(Selection.TYPE.OF_COLUMNS, selectedIndices);
+            selectionManager.setSelectedColumns(selection);
+            this.deselectAllRecords();
+        } else {
+            Selection selection = new Selection(Selection.TYPE.OF_ROWS, selectedIndices);
+            selectionManager.setSelectedRows(selection);
+        }
     }
 
     public boolean isGroubTableSelection() {

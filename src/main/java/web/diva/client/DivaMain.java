@@ -4,7 +4,10 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
@@ -14,9 +17,13 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.util.Page;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.TreeMap;
+import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.omicstables.view.LeftPanelView;
 import web.diva.client.profileplot.view.ProfilePlotComponent;
@@ -25,7 +32,8 @@ import web.diva.client.pca.view.PCAPlotComponent;
 import web.diva.client.rank.view.RankTablesComponent;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.somclust.view.SomClustComponent;
-import web.diva.client.view.core.HeaderLayout;
+import web.diva.client.view.core.ImageScaler;
+import web.diva.shared.beans.LineChartResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClusteringResult;
@@ -46,7 +54,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
     private  SelectionManager selectionManager;
     private final String SERVER_ERROR = "An error occurred while attempting to contact the server";
-    private VLayout profilePlotLayout, PCAPlotLayout;
+//    private VLayout profilePlotLayout, PCAPlotLayout;
     private RankTablesComponent rankTables;
     private final TreeMap datasetsNames = new TreeMap();
     private LeftPanelView leftPanelView;
@@ -58,16 +66,28 @@ public class DivaMain implements EntryPoint, ChangeHandler {
     private DatasetInformation datasetInfo;
     private Label datasetTitle;
     private final HorizontalPanel welcomePage = new HorizontalPanel();
+    private boolean oldIE = false;
+    
+    private int masterWidth;
+    private int masterHeight;
 
     @Override
     public void onModuleLoad() {
+        if(Window.Navigator.getUserAgent().contains("MSIE"))
+            oldIE= true;
+        masterWidth= Page.getScreenWidth();
+        masterHeight=Page.getScreenHeight();
+        
         selectionManager = new SelectionManager();
         SelectionManager.Busy_Task(true, true);
         selectionManager.setMainAppController(this);
-        datasetTitle = new Label();
+        datasetTitle = new Label();   
+
         RootPanel.get("dataset_main_title").add(datasetTitle);
         this.initApplication();
     }
+
+   
 
     /**
      * This method is responsible for initializing the main DIVA layout
@@ -78,14 +98,14 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         selectDatasetLayout.setWidth("300px");
         selectDatasetLayout.setHeight("40px");
         selectDatasetList = new ListBox();
-        selectDatasetList.getElement().setAttribute("style", "border: 1px solid gray;font-weight: bold;border-radius: 5px;");
+        selectDatasetList.getElement().setAttribute("style", "border: 1px solid gray;height: 24px;font-weight: bold;width: 300px;border-radius: 5px;");
         selectDatasetList.setWidth("300px");
         selectDatasetList.addItem("Select Dataset");
         selectDatasetLayout.add(selectDatasetList);
         selectDatasetList.setVisible(false);
         
         selectSubDatasetList = new ListBox();
-        selectSubDatasetList.getElement().setAttribute("style", "border: 1px solid gray;font-weight: bold;border-radius: 5px;");
+        selectSubDatasetList.getElement().setAttribute("style", "border: 1px solid gray;height: 24px;font-weight: bold;width: 300px;border-radius: 5px;");
         selectSubDatasetList.setWidth("300px");
         selectSubDatasetList.addItem("Select Sub-Dataset");
         selectSubDatasetList.setVisible(false);
@@ -108,7 +128,8 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         initHomePage();
         welcomePage.setStyleName("welcomepagelayout");
         RootPanel.get("welcomediva").add(welcomePage);
-        initMiddleBodyLayout();
+        if(!oldIE)
+            initMiddleBodyLayout();
     }
 
     /**
@@ -252,7 +273,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
     private void initHomePage() {
         welcomePage.setSpacing(30);
         HTML welcomeLabel = new HTML("<h1 style='color:black;font-family:verdana; font-weight:bold;text-decoration:none;font-style:normal;'>Welcome to DiVA <font size='3'>omics </h1>");
-        welcomeLabel.setWidth("300px");
+        welcomeLabel.setWidth("400px");
         VerticalPanel leftSideLayout = new VerticalPanel();
         welcomePage.add(leftSideLayout);
         welcomePage.setCellVerticalAlignment(leftSideLayout, VerticalPanel.ALIGN_MIDDLE);
@@ -260,24 +281,36 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         leftSideLayout.add(welcomeLabel);
         leftSideLayout.setSpacing(10);
 
-        HTML infoLabel = new HTML("<p align=\"justify\" style=\"margin-left:0px;color:#585858;\"><font size=\"2\">start using DiVA by selecting dataset.</font></p>");
-        infoLabel.setWidth("300px");
-        leftSideLayout.add(infoLabel);
+        HTML ieErrorLabel = new HTML("<p align=\"left\" style=\"margin-left:0px;color:red;\"><font size=\"3\">It looks like you are using an old version of Internet Explorer. Unfortunatly Internet Explorer 6,7,8,9 and 10 are not supported in the curent version of DiVA. Please try other browsers.</font></p>");
+        ieErrorLabel.setWidth("400px");
+      
+        HTML infoLabel = new HTML("<p align=\"justify\" style=\"margin-left:0px;color:#585858;\"><font size=\"2\">Start using DiVA by selecting dataset</font></p>");
+        infoLabel.setWidth("400px");
+        
 
         HorizontalPanel selectionLayout = new HorizontalPanel();
-        leftSideLayout.add(selectionLayout);
-        selectionLayout.setWidth("100%");
-        selectionLayout.add(tempSelectDatasetList);
+        
+        
+        
+        if(oldIE)
+              leftSideLayout.add(ieErrorLabel);
+        else{
+            leftSideLayout.add(infoLabel);
+            leftSideLayout.add(selectionLayout);
+        selectionLayout.setWidth("400px");
+         selectionLayout.add(tempSelectDatasetList);
+        }
+           
 
-        tempSelectDatasetList.getElement().setAttribute("style", "border: 1px solid gray;height: 24px;font-weight: bold;border-radius: 5px;");
+        tempSelectDatasetList.getElement().setAttribute("style", "border: 1px solid gray;height: 24px;font-weight: bold;width: 400px;border-radius: 5px;");
 
         leftSideLayout.setCellVerticalAlignment(tempSelectDatasetList, VerticalPanel.ALIGN_MIDDLE);
         leftSideLayout.setCellHorizontalAlignment(tempSelectDatasetList, VerticalPanel.ALIGN_LEFT);
 
-        HTML info2Label = new HTML("<p align=\"justify\" style=\"margin-top:10px;margin-left:0px;color:#585858;\"><font size=\"2\">source of code and setup details and other supplementary information available at <a target=\"_blank\" href='" + "http://diva-omics-pro.googlecode.com/" + "'>Diva omics page</a>. </font></p>");
+        HTML info2Label = new HTML("<p align=\"justify\" style=\"margin-top:10px;margin-left:0px;color:#585858;\"><font size=\"2\">More information available at <a target=\"_blank\" href='" + "http://diva-omics-demo.googlecode.com/" + "'>DiVA omics page</a>. </font></p>");
         leftSideLayout.add(info2Label);
 
-        Image screenImg = new Image("images/divascreen.jpg");
+        Image screenImg = new Image("images/divascreen1.png");
         welcomePage.add(screenImg);
         welcomePage.setCellVerticalAlignment(screenImg, VerticalPanel.ALIGN_MIDDLE);
         welcomePage.setCellHorizontalAlignment(screenImg, VerticalPanel.ALIGN_CENTER);
@@ -296,51 +329,109 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         RootPanel.get("leftpanel").clear(true);
         RootPanel.get("leftpanel").add(leftPanelView);
 
-        midPanelLayout.setBorder("1px solid #E6E6E6");
-        midPanelLayout.setStyleName("diva_mid_panel_border");
+        
+        midPanelLayoutCanv.setBorder("1px solid #F6F5F5");
+//        midPanelLayoutCanv.setStyleName("diva_mid_panel_border");
     }
 
-    private VLayout rankLayout;
-    private VLayout midPanelLayout;
+    private VLayout rankLayoutCanv;
+    private VLayout midPanelLayoutCanv;
+    private VLayout topMidLayoutCanv;
+    private HorizontalPanel topMidLayout;
+    private int initRankWidth;
 
     private void initMiddleBodyLayout() {
-        midPanelLayout = new VLayout();
-        midPanelLayout.setMargin(2);
-        midPanelLayout.setWidth("50%");
-        midPanelLayout.setHeight("89%");
+        midPanelLayoutCanv = new VLayout();
+        midPanelLayoutCanv.setMargin(2);
+        midPanelLayoutCanv.setWidth("50%");
+        midPanelLayoutCanv.setHeight("89%");
         RootPanel.get("diva_mid_panel").clear();
-        RootPanel.get("diva_mid_panel").add(midPanelLayout);
+        RootPanel.get("diva_mid_panel").add(midPanelLayoutCanv);
+        midPanelLayoutCanv.setMatchElement(true);        
+        midPanelLayoutCanv.setMembersMargin(2);
 
         //pca and profile plot layout
-        HLayout topMedLayout = new HLayout();
-        topMedLayout.setWidth("100%");
-        topMedLayout.setHeight("46%");
-        topMedLayout.setStyleName("whitelayout");
-        rankLayout = new VLayout();
-        rankLayout.setWidth("100%");
-        rankLayout.setHeight("42%");
-        rankLayout.setStyleName("whitelayout");
+        topMidLayout = new HorizontalPanel();
+        final ImageScaler scaler = new ImageScaler();
+        int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 10;
+        int newHeight = scaler.reScale(newWidth, 700, 900) + 50;
+        topMidLayout.setHeight(newHeight + "px");     
+        topMidLayout.setWidth("100%");
+        topMidLayout.setStyleName("whitelayout");
+        
+        
+//        topMidLayoutCanv=new VLayout();
+      
+        
+//        topMidLayout.setHeight("50%");
+        rankLayoutCanv = new VLayout();        
+        midPanelLayoutCanv.addMember(topMidLayout);
+        midPanelLayoutCanv.setMinMemberSize(newHeight);
+        midPanelLayoutCanv.addMember(rankLayoutCanv);
+        rankLayoutCanv.setWidth("100%");
 
-        midPanelLayout.addMember(topMedLayout);
-        midPanelLayout.addMember(rankLayout);
+        rankLayoutCanv.setManagePercentBreadth(true);
+//        rankLayoutCanv.setStyleName("whitelayout");
 
-        profilePlotLayout = new VLayout();
-        PCAPlotLayout = new VLayout();
-        topMedLayout.addMember(profilePlotLayout);
-        topMedLayout.addMember(PCAPlotLayout);
+//        rankLayoutCanv.setRedrawOnResize(true);
+//        profilePlotLayout = new VLayout();
+//        PCAPlotLayout = new VLayout();
+//        
+//         
+//        topMidLayout.addMember(profilePlotLayout);
+//        profilePlotLayout.setAutoWidth();
+////        profilePlotLayout.setRedrawOnResize(true);
+//        
+//        topMidLayout.addMember(PCAPlotLayout);
+//         PCAPlotLayout.setAutoWidth();
+//         PCAPlotLayout.setRedrawOnResize(true);
+//        PCAPlotLayout.setWidth("100%");
+//        rankLayoutCanv.setRedrawOnResize(true);
+//        if (redrawTimer == null) {
+//            redrawTimer = new Timer() {
+//
+//                @Override
+//                public void run() {
+////                    double scale = Double.valueOf(initRankWidth)/Double.valueOf(RootPanel.get("diva_mid_panel").getOffsetWidth());
+////                    SC.say("scale is "+scale+"   "+initRankWidth+"  "+RootPanel.get("diva_mid_panel").getOffsetWidth());
+////                    
+////                   topMidLayout.getElement().setAttribute("style", "transform:sacle("+scale+")");
+////                    int width = (RootPanel.get("diva_mid_panel").getOffsetWidth() - 6);
+////                    topMidLayout.setWidth(width + "px");
+////                    int newWidth = (width / 2);
+////                    int newHeight = scaler.reScale(newWidth, 700, 900) + 22;
+////                    if (profilePlotComponent != null) {
+////                        profilePlotComponent.resize(newWidth, newHeight);
+////                    }
+////                    if (pcaPlotComponent != null) {
+////                        pcaPlotComponent.resize(newWidth, newHeight);
+////                        topMidLayout.setCellHorizontalAlignment(pcaPlotComponent.getPCAComponent(), HorizontalPanel.ALIGN_RIGHT);
+////                    }
+////
+////                    topMidLayout.setHeight(newHeight + "px");
+////                    topMidLayout.setWidth(width + "px");
+//////                   
+////                    midPanelLayoutCanv.resizeTo(RootPanel.get("diva_mid_panel").getOffsetWidth(), RootPanel.get("diva_mid_panel").getOffsetHeight());
+////                    rankLayoutCanv.resizeTo(RootPanel.get("diva_mid_panel").getOffsetWidth(), RootPanel.get("diva_mid_panel").getOffsetHeight() - newHeight + 5);
+////                    rankLayoutCanv.setTop(newHeight + 10);
+//                }
+//            };
+//
+//        }
+//        Window.addResizeHandler(new ResizeHandler() {
+//
+//            @Override
+//            public void onResize(ResizeEvent event) {
+//                initRankWidth = RootPanel.get("diva_mid_panel").getOffsetWidth();
+//                redrawTimer.schedule(500);
+//
+//            }
+//        });
 
-        profilePlotLayout.setWidth("100%");
-        profilePlotLayout.setHeight("100%");
-        profilePlotLayout.setStyleName("whitelayout");
-
-        PCAPlotLayout.setWidth("100%");
-        PCAPlotLayout.setHeight("100%");
-        PCAPlotLayout.setStyleName("whitelayout");
-
-//        topMedLayout.setCellHorizontalAlignment(profilePlotLayout, HorizontalPanel.ALIGN_LEFT);
-//        topMedLayout.setCellHorizontalAlignment(PCAPlotLayout, HorizontalPanel.ALIGN_LEFT);
     }
+    private Timer redrawTimer;
 
+   
     /**
      * This method is responsible for invoking clustering method
      *
@@ -363,10 +454,22 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
                     @Override
                     public void onSuccess(SomClusteringResult result) {
-                        SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService,true);
-                        RootPanel.get("SomClusteringResults").clear();                        
+                        final SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService, true);
+                        RootPanel.get("SomClusteringResults").clear();
                         RootPanel.get("SomClusteringResults").add(hierarchicalClustering.getSomclusteringLayout());
-                        SelectionManager.Busy_Task(false, true);
+                        Timer t = new Timer() {
+                            @Override
+                            public void run() {
+                                hierarchicalClustering.selectRootNode();
+                            }
+                        };
+                        // Schedule the timer to run once in 0.5 seconds.
+                        if (result.getRowNames().length < 5000) {
+//                            t.schedule(500);
+                             SelectionManager.Busy_Task(false, true);
+                        } else {
+                            SelectionManager.Busy_Task(false, true);
+                        }
                         init = false;
                     }
                 });
@@ -394,7 +497,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
      */
     private void processProfilePlot() {
         DivaClientService.computeProfilePlot(212, 250,
-                new AsyncCallback<String>() {
+                new AsyncCallback<LineChartResults>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Window.alert(SERVER_ERROR);
@@ -403,16 +506,23 @@ public class DivaMain implements EntryPoint, ChangeHandler {
                     }
 
                     @Override
-                    public void onSuccess(String result) {
-                        if (profilePlotComponent != null) {                           
-                            profilePlotLayout.removeMember(profilePlotComponent.getLayout()); 
+                    public void onSuccess(LineChartResults result) {
+                        if (profilePlotComponent != null) {  
+                            topMidLayout.remove(profilePlotComponent.getLayout());
+                            profilePlotComponent.getLayout().removeFromParent();
                             profilePlotComponent.remove();
                         }
+                        if (pcaPlotComponent != null) {  
+                            topMidLayout.remove(pcaPlotComponent.getPCAComponent());
+                            pcaPlotComponent.getPCAComponent().removeFromParent();
+                            pcaPlotComponent.remove();
+                        }
 
-                        profilePlotComponent = new ProfilePlotComponent(result, selectionManager, DivaClientService);
-//                        profilePlotLayout.clear();                    
-                        
-                        profilePlotLayout.addMember(profilePlotComponent.getLayout());
+                        profilePlotComponent = new ProfilePlotComponent(result.getUrl(), selectionManager, DivaClientService,result.getImgHeight(),result.getImgWidth());
+//                        profilePlotLayout.clear();          
+                        topMidLayout.setHeight(profilePlotComponent.getProfilePlotPanelHeight()+"px");
+                       
+                        topMidLayout.add(profilePlotComponent.getLayout());
 //                        profilePlotComponent.getLayout().setMargin(0);
                         if (!init) {
                             SelectionManager.Busy_Task(false, true);
@@ -445,18 +555,20 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
                     @Override
                     public void onSuccess(PCAImageResult result) {
-                        if (pcaPlotComponent != null) {
-                             PCAPlotLayout.removeMember(pcaPlotComponent.getPCAComponent());
-                            pcaPlotComponent.remove();
-                        }
+//                        if (pcaPlotComponent != null) {
+//                             PCAPlotLayout.removeMember(pcaPlotComponent.getPCAComponent());
+//                            pcaPlotComponent.remove();
+//                        }
                         pcaPlotComponent = new PCAPlotComponent(result, selectionManager, DivaClientService, datasetInfo.getColNumb(), datasetInfo.getDatasetInfo());
-                        PCAPlotLayout.addMember(pcaPlotComponent.getPCAComponent());
-                        pcaPlotComponent.getPCAComponent().setMargin(0);
+                        topMidLayout.add(pcaPlotComponent.getPCAComponent());
+                        topMidLayout.setCellHorizontalAlignment(pcaPlotComponent.getPCAComponent(),HorizontalPanel.ALIGN_RIGHT);
+//                        pcaPlotComponent.getPCAComponent().setMargin(0);
                         if (!init) {
                             SelectionManager.Busy_Task(false, true);
                         }
                         if (init) {
-                            
+                          
+
 //                            SelectionManager.Busy_Task(false, true);
                             viewRankTables();
                         }
@@ -475,8 +587,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
      */
     private void viewRankTables() {
 //        selectionManager.Busy_Task(true, true);
-        DivaClientService.getDefaultRank(
-                new AsyncCallback<RankResult>() {
+        DivaClientService.getDefaultRank(new AsyncCallback<RankResult>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Window.alert(SERVER_ERROR);
@@ -487,17 +598,16 @@ public class DivaMain implements EntryPoint, ChangeHandler {
                     public void onSuccess(RankResult result) {
 
                         if(rankTables != null){
-                        rankLayout.removeMember(rankTables.getMainRankLayout());
+                        rankLayoutCanv.removeMember(rankTables.getMainRankLayout());
                         rankTables.remove();
                         }
-//                        rankLayout.clear();
+//                        rankLayoutCanv.clear();
                         rankTables = new RankTablesComponent(DivaClientService, selectionManager, result, datasetInfo.getColGroupsList());
-                        rankLayout.addMember(rankTables.getMainRankLayout());
+                        rankLayoutCanv.addMember(rankTables.getMainRankLayout());
                         if (!init) {
                             SelectionManager.Busy_Task(false, true);
                         }
-                        if (init) {
-//                             SelectionManager.Busy_Task(false, true);
+                        if (init) { 
                             runSomClustering(2, 1, true);
                         }
                     }

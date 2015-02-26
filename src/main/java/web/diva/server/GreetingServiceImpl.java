@@ -13,6 +13,7 @@ import web.diva.shared.beans.RankResult;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.InteractiveColumnsResults;
+import web.diva.shared.beans.LineChartResults;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 import web.diva.shared.beans.SomClusteringResult;
@@ -26,7 +27,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
 
     @Override
     public String processCall(String payload) throws SerializationException {
-        System.out.println("payload- is "+payload);
         return super.processCall(payload);
     }
 
@@ -72,7 +72,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getPCASelection(startX,startY,endX, endY);
     }
 
-    
+    @Override
+    public int[] getProfilePlotSelection(int startX, int startY) {
+         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getProfilePlotSelection(startX,startY);
+
+    }
 
     @Override
     public TreeMap<Integer, String> getAvailableDatasets(int userTabId) {
@@ -156,7 +160,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     }
 
     @Override
-    public String computeProfilePlot(double w, double h) {
+    public LineChartResults computeProfilePlot(double w, double h) {
       return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).computeProfilePlot(w, h);
         
     }
@@ -195,16 +199,31 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements DivaSer
     }
     
      @Override
-    public String exportImgAsPdf(String chartType) {
-         System.out.println("requested export image");
+    public String exportImgAsPdf(String chartType,String quality) {
         String appPath = this.getServletContext().getRealPath("/");
         String url = this.getThreadLocalRequest().getRequestURL().toString();
-        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportImgAsPdf(chartType, appPath, getThreadLocalRequest().getSession().getId(), url.substring(0, (url.length() - 10)));
+        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportImgAsPdf(chartType, appPath, getThreadLocalRequest().getSession().getId(), url.substring(0, (url.length() - 10)), quality);
     }
 
     @Override
     public List<DivaGroup> getColGroups() {
         return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).getColGroups();
+    }
+
+    @Override
+    public String exportRankingData() {
+        String appPath = this.getServletContext().getRealPath("/");
+        String url = this.getThreadLocalRequest().getRequestURL().toString();
+    return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportRankTableToTextFile(appPath, getThreadLocalRequest().getSession().getId(), url.substring(0, (url.length() - 10)));
+        
+    }
+
+    @Override
+    public String exportClusteringAsPdf(String quality) {
+        String appPath = this.getServletContext().getRealPath("/");
+        String url = this.getThreadLocalRequest().getRequestURL().toString();
+        return ((Computing) getThreadLocalRequest().getSession().getAttribute("computing")).exportClusteringAsPdf(appPath, getThreadLocalRequest().getSession().getId(), url.substring(0, (url.length() - 10)), quality);
+    
     }
 
     

@@ -26,6 +26,9 @@ public class PCAImageResult implements IsSerializable {
     private String pcax;
     private String pcay;
     
+    private int imgHeight;
+    private int imgWidth;
+    
     private String[] pcaLabelData;
 
     private PCAPoint[] indexeMap;
@@ -166,6 +169,22 @@ public class PCAImageResult implements IsSerializable {
 
     public void setPcay(String pcay) {
         this.pcay = pcay;
+    }
+
+    public int getImgHeight() {
+        return imgHeight;
+    }
+
+    public void setImgHeight(int imgHeight) {
+        this.imgHeight = imgHeight;
+    }
+
+    public int getImgWidth() {
+        return imgWidth;
+    }
+
+    public void setImgWidth(int imgWidth) {
+        this.imgWidth = imgWidth;
     }
 
 }

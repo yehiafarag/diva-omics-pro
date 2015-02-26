@@ -11,15 +11,17 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import web.diva.shared.beans.ClientClusterNode;
+import web.diva.shared.beans.SplitedImg;
 
 /**
  *
  * @author Yehia Farag
  */
-public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutHandler {
+public class MaxmizedSplitSideTreeImg extends VerticalPanel implements MouseMoveHandler, MouseOutHandler {
 
-    private  int squareL ;
+    private  final int squareL ;
     private ClientClusterNode mainNode;
     private final int type;
     private final HTML toolTip;
@@ -34,34 +36,10 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
         int x = ((int) (event.getX()));
         ClientClusterNode node = null;
         y = (int)((double)y/scale);
-        x = this.getHeight()-((int)((double) x/scale));
-
-//            int modX = this.getHeight()- ((event.getClientX() - this.getAbsoluteLeft())/2);
-//            int modY = event.getClientY() - (this.getAbsoluteTop()/2);
-//            
-//            
-//            
-//               
-//        switch (type) {
-//            case 1:
-//
-//                node = getTooltipAt(y, x, mainNode);
-//                break;
-//            case 2:
-//                node = getTooltipAt(x, y, mainNode);
-//                break;
-//
-//        }
-//            toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">" + " x " + x + " y " + y + "   x " + modX + " relative y " + modY+" node is null "+(node==null)+" layout eidth "+this.getHeight()+"</textarea>");
-//            toolTip.setVisible(true);
-            
-            
-            
-            
+        x = this.getOffsetHeight()-((int)((double) x/scale));
             
         switch (type) {
             case 1:
-
                 node = getTooltipAt(y, x, mainNode);
                 break;
             case 2:
@@ -107,16 +85,39 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
         }
         return ret;
     }
-
-    public MaxmizeTreeImg(String url, ClientClusterNode node, int type,HTML toolTip,int squareL) {
-        super(url);
+ private final Image topImage;
+    private final Image bottomImage;
+    private final String defaultTopUrl;
+    private final String defaultBottomUrl;
+    public MaxmizedSplitSideTreeImg(SplitedImg sideTreeeImg, ClientClusterNode node, int type,HTML toolTip,int squareL,int width) {
+      
         this.squareL= squareL;
         this.toolTip = toolTip ;
         toolTip.setVisible(false);
-        this.addMouseMoveHandler(MaxmizeTreeImg.this);
-        this.addMouseOutHandler(MaxmizeTreeImg.this);
+          this.setWidth(width+"px");
+        this.addDomHandler(MaxmizedSplitSideTreeImg.this,MouseMoveEvent.getType());
+        this.addDomHandler(MaxmizedSplitSideTreeImg.this,MouseOutEvent.getType());        
+        
+        
+        
+        topImage = new Image(sideTreeeImg.getImg1Url());
+        topImage.setWidth(width + "px");
+        topImage.setHeight(sideTreeeImg.getHeight1() + "px");
+        bottomImage = new Image(sideTreeeImg.getImg2Url());
+        bottomImage.setWidth(width + "px");
+        bottomImage.setHeight(sideTreeeImg.getHeight2() + "px");        
         this.mainNode = node;
         this.type = type;
+        
+         this.setSpacing(0);
+        this.add(topImage);             
+        this.add(bottomImage);
+        
+        this.setCellHorizontalAlignment(topImage, VerticalPanel.ALIGN_CENTER); 
+        this.setCellHorizontalAlignment(bottomImage, VerticalPanel.ALIGN_CENTER);
+        this.setCellVerticalAlignment(bottomImage, VerticalPanel.ALIGN_TOP);
+        this.defaultTopUrl = sideTreeeImg.getImg1Url();
+        this.defaultBottomUrl= sideTreeeImg.getImg2Url();
          this.setStyleName("clusterTreeOver");
       
         
@@ -141,6 +142,17 @@ public class MaxmizeTreeImg extends Image implements MouseMoveHandler, MouseOutH
 
     public int getYcor() {
         return ycor;
+    }
+     public void setUrl(String img1,String img2){
+    topImage.setUrl(img1);
+    bottomImage.setUrl(img2);
+    
+    }
+    public void clearSelection(){
+      topImage.setUrl(defaultTopUrl);
+    bottomImage.setUrl(defaultBottomUrl);
+    
+    
     }
 
    

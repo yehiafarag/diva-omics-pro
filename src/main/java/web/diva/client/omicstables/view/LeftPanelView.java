@@ -17,6 +17,8 @@ import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.IButton;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.RadioGroupItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
@@ -58,7 +60,8 @@ public class LeftPanelView extends SectionStack {
     private OmicsTableComponent omicsTable = null;
     private IButton colGroupBtn;
     private GroupPanel groupPanel;
-    private GroupTable groupTable;
+    private GroupTable rowGroupTable;
+     private GroupTable colGroupTable;
 
     private SaveDatasetPanel saveDsPanel;
     private final SectionStackSection rowSelectionSection;
@@ -72,12 +75,12 @@ public class LeftPanelView extends SectionStack {
         this.GWTClientService = GWTClientService;
         this.datasetInfo = datasetInfos;
 
-        this.setBorder("1px solid #E6E6E6");
+        this.setBorder("1px solid #F6F5F5");
         this.setWidth("20%");
         this.setHeight("89%");
         this.setMargin(2);
         this.setScrollSectionIntoView(false);
-        rowSelectionSection = new SectionStackSection("&nbsp;Selection ( " +  0+ " / " + datasetInfo.getRowsNumb() + " )");     
+        rowSelectionSection = new SectionStackSection("&nbsp;Selection (" +  0+ "/" + datasetInfo.getRowsNumb() + ")");     
 
         rowSelectionSection.setControls();
         rowSelectionSection.setCanCollapse(false);
@@ -110,9 +113,9 @@ public class LeftPanelView extends SectionStack {
                 if (event.getValue().toString().equalsIgnoreCase(rowControl)) {
 
                      if (selectionManager.getSelectedRows()!= null && selectionManager.getSelectedRows().getMembers()!= null) {
-                        rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedRows().getMembers().length + " / " + datasetInfo.getRowsNumb()+ " )");
+                        rowSelectionSection.setTitle("&nbsp;Selection (" + selectionManager.getSelectedRows().getMembers().length + "/" + datasetInfo.getRowsNumb()+ ")");
                     } else {
-                        rowSelectionSection.setTitle("&nbsp;Selection ( " + 0 + " / " + datasetInfo.getRowsNumb()+ " )");
+                        rowSelectionSection.setTitle("&nbsp;Selection (" + 0 + "/" + datasetInfo.getRowsNumb()+ ")");
                     }
                     rowSelectionLayout.setVisible(true);
                     colSelectionLayout.setVisible(false);
@@ -124,9 +127,9 @@ public class LeftPanelView extends SectionStack {
                     colSelectionLayout.setHeight("2%");
 
                     if (selectionManager.getSelectedColumns() != null && selectionManager.getSelectedColumns().getMembers()!= null) {
-                        rowSelectionSection.setTitle("&nbsp;Selection ( " + selectionManager.getSelectedColumns().getMembers().length + " / " + datasetInfo.getColNumb() + " )");
+                        rowSelectionSection.setTitle("&nbsp;Selection (" + selectionManager.getSelectedColumns().getMembers().length + "/" + datasetInfo.getColNumb() + ")");
                     } else {
-                        rowSelectionSection.setTitle("&nbsp;Selection ( " + 0 + " / " + datasetInfo.getColNumb() + " )");
+                        rowSelectionSection.setTitle("&nbsp;Selection (" + 0 + "/" + datasetInfo.getColNumb() + ")");
                     }
                     colSelectionTable.setWidth(omicsTable.getOmicsTableLayout().getWidth());
                     gBtnLayout.setWidth("100%");
@@ -178,44 +181,56 @@ public class LeftPanelView extends SectionStack {
         };
 
         /* new group and ds  layout*/
-        MenuItem createRowGroupMenuItem = new MenuItem("Create Row Groups");
-        MenuItem activateRowGroupMenuItem = new MenuItem("Activate Row Groups");
+//        MenuItem createRowGroupMenuItem = new MenuItem("Create Row Groups");
+//        MenuItem activateRowGroupMenuItem = new MenuItem("Activate Row Groups");
 
-        Menu rowGroupMenu = new Menu();
-        rowGroupMenu.setCanSelectParentItems(true);
-        rowGroupMenu.setData(createRowGroupMenuItem, activateRowGroupMenuItem);
-        rowGroupMenu.setWidth(100);
+//        Menu rowGroupMenu = new Menu();
+//        rowGroupMenu.setCanSelectParentItems(true);
+//        rowGroupMenu.setData(createRowGroupMenuItem, activateRowGroupMenuItem);
+//        rowGroupMenu.setWidth(100);
+//
+//        rowGroupMenu.addItemClickHandler(new ItemClickHandler() {
+//            @Override
+//            public void onItemClick(ItemClickEvent event) {
+//
+//                if (event.getItem().getTitle().equalsIgnoreCase("Create Row Groups")) {
+//                    if (groupPanel == null) {
+//                        groupPanel = new GroupPanel();
+//                        createRowGroupHandlerReg = groupPanel.getOkBtn().addClickHandler(createRowGroupHandler);
+//                    }
+//                    updateAndShowGroupPanel("row");
+//                } else {
+//                    if (activeGroupPanel == null) {
+//                        initActiveGroupPanel(datasetInfo.getRowGroupList());
+//                    }
+//                    if(datasetInfo.getRowGroupList().size()>1){
+//                    updateActiveGroupPanelPanel();
+//                    activeGroupPanel.center();
+//                    activeGroupPanel.show();
+//                    }else{
+//                    Notification.notifi("","Only One Group Available");
+//                    
+//                    }
+//
+//                }
+//            }
+//        });
+//
+//        IMenuButton rowGroupBtn = new IMenuButton("Row Groups", rowGroupMenu);
+////        rowGroupBtn.setShowMenuButtonImage(false);
 
-        rowGroupMenu.addItemClickHandler(new ItemClickHandler() {
+        IButton rowGroupBtn = new IButton("Create Row Group");
+        rowGroupBtn.addClickHandler(new ClickHandler() {
+
             @Override
-            public void onItemClick(ItemClickEvent event) {
-
-                if (event.getItem().getTitle().equalsIgnoreCase("Create Row Groups")) {
-                    if (groupPanel == null) {
+            public void onClick(ClickEvent event) {
+                 if (groupPanel == null) {
                         groupPanel = new GroupPanel();
                         createRowGroupHandlerReg = groupPanel.getOkBtn().addClickHandler(createRowGroupHandler);
                     }
                     updateAndShowGroupPanel("row");
-                } else {
-                    if (activeGroupPanel == null) {
-                        initActiveGroupPanel(datasetInfo.getRowGroupList());
-                    }
-                    if(datasetInfo.getRowGroupList().size()>1){
-                    updateActiveGroupPanelPanel();
-                    activeGroupPanel.center();
-                    activeGroupPanel.show();
-                    }else{
-                    Notification.notifi("","Only One Group Available");
-                    
-                    }
-
-                }
             }
         });
-
-        IMenuButton rowGroupBtn = new IMenuButton("Row Groups", rowGroupMenu);
-//        rowGroupBtn.setShowMenuButtonImage(false);
-
         rowGBtnLayout.add(rowGroupBtn);
         rowGroupBtn.setWidth("9%");
         rowGroupBtn.setAlign(Alignment.CENTER);
@@ -289,11 +304,11 @@ public class LeftPanelView extends SectionStack {
         rowSelectionLayout.setAlign(Alignment.CENTER);
 
         /* end of new  group and ds  layout*/
-        groupTable = new GroupTable(selectionManager);
-        groupTable.updateRecords(datasetInfo.getRowGroupList());
-        rowSelectionLayout.addMember(groupTable);
+        rowGroupTable = new GroupTable(selectionManager,"row");
+        rowGroupTable.updateRecords(datasetInfo.getRowGroupList());
+        rowSelectionLayout.addMember(rowGroupTable);
 
-        omicsTable.setGroupTable(groupTable);
+        omicsTable.setGroupTable(rowGroupTable);
         this.expandSection(rowSelectionSection.getID());
         this.redraw();
 
@@ -345,6 +360,9 @@ public class LeftPanelView extends SectionStack {
                 updateAndShowGroupPanel("col");
             }
         });
+         colGroupTable = new GroupTable(selectionManager,"col");
+        colGroupTable.updateRecords(datasetInfo.getColGroupsList());
+        colSelectionLayout.addMember(colGroupTable);
 
     }
     private HLayout gBtnLayout;
@@ -423,21 +441,21 @@ public class LeftPanelView extends SectionStack {
         });
 
     }
-
-    private void initActiveGroupPanel(List<DivaGroup> rowGroupList) {
-        activeGroupPanel = new RowGroupPanel(rowGroupList, "Activate Row Group", SelectionStyle.SIMPLE);
-        activeGroupPanelReg = activeGroupPanel.getOkBtn().addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
-
-            @Override
-            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
-                String[] gnames = activeGroupPanel.getSelectRowGroups();
-                if (gnames != null && gnames.length != 0) {
-                    activateGroups(gnames);
-                }
-            }
-        });
-
-    }
+//
+//    private void initActiveGroupPanel(List<DivaGroup> rowGroupList) {
+//        activeGroupPanel = new RowGroupPanel(rowGroupList, "Activate Row Group", SelectionStyle.SIMPLE);
+//        activeGroupPanelReg = activeGroupPanel.getOkBtn().addClickHandler(new com.smartgwt.client.widgets.events.ClickHandler() {
+//
+//            @Override
+//            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
+//                String[] gnames = activeGroupPanel.getSelectRowGroups();
+//                if (gnames != null && gnames.length != 0) {
+//                    activateGroups(gnames);
+//                }
+//            }
+//        });
+//
+//    }
 
     private void initSubDsPanel(List<DivaGroup> rowGroupList) {
         subDsPanel = new RowGroupPanel(rowGroupList, "Create Sub-Dataset", SelectionStyle.SINGLE);
@@ -483,11 +501,11 @@ public class LeftPanelView extends SectionStack {
 
     }
 
-    private void updateActiveGroupPanelPanel() {
-       
-        activeGroupPanel.updateData(datasetInfo.getRowGroupList());
-
-    }
+//    private void updateActiveGroupPanelPanel() {
+//       
+//        activeGroupPanel.updateData(datasetInfo.getRowGroupList());
+//
+//    }
 
     private void updateSubDsPanel() {
         DivaGroup dg = new DivaGroup();
@@ -635,45 +653,44 @@ public class LeftPanelView extends SectionStack {
 
                     @Override
                     public void onSuccess(DatasetInformation result) {
-                        SelectionManager.Busy_Task(false, true);
-                        groupPanel.hide(true);
+                         groupPanel.hide(true);
                         selectionManager.updateAllModules(result);
                     }
                 });
 
     }
 
-    /**
-     * This method is responsible for invoking activate rows groups method
-     *
-     * @param datasetId - datasetId
-     * @param rowGroups row groups indexes to activate
-     * @param colGroups column groups indexes to activate
-     * @param colGropNames selected ranking columns indexes
-     */
-    private void activateGroups(String[] rowGroups) {
-
-        SelectionManager.Busy_Task(true, true);
-        GWTClientService.activateGroups(rowGroups,
-                new AsyncCallback<DatasetInformation>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        Window.alert("ERROR IN SERVER CONNECTION");
-                        SelectionManager.Busy_Task(false, true);
-                    }
-                    @Override
-                    public void onSuccess(DatasetInformation result) {
-                        activeGroupPanel.hide(true);
-                        selectionManager.updateAllModules(result);
-
-                    }
-                });
-
-    }
+//    /**
+//     * This method is responsible for invoking activate rows groups method
+//     *
+//     * @param datasetId - datasetId
+//     * @param rowGroups row groups indexes to activate
+//     * @param colGroups column groups indexes to activate
+//     * @param colGropNames selected ranking columns indexes
+//     */
+//    private void activateGroups(String[] rowGroups) {
+//
+//        SelectionManager.Busy_Task(true, true);
+//        GWTClientService.activateGroups(rowGroups,
+//                new AsyncCallback<DatasetInformation>() {
+//                    @Override
+//                    public void onFailure(Throwable caught) {
+//                        Window.alert("ERROR IN SERVER CONNECTION");
+//                        SelectionManager.Busy_Task(false, true);
+//                    }
+//                    @Override
+//                    public void onSuccess(DatasetInformation result) {
+//                        activeGroupPanel.hide(true);
+//                        selectionManager.updateAllModules(result);
+//
+//                    }
+//                });
+//
+//    }
 
     public void remove() { 
         omicsTable.remove();
-        groupTable.remove();
+        rowGroupTable.remove();
         controlItemChangeHandlerReg.removeHandler();
         if (createRowGroupHandlerReg != null) {
             createRowGroupHandlerReg.removeHandler();
@@ -706,7 +723,7 @@ public class LeftPanelView extends SectionStack {
         GWTClientService = null;
        
         omicsTable = null;
-        groupTable = null;
+        rowGroupTable = null;
 
     }
 

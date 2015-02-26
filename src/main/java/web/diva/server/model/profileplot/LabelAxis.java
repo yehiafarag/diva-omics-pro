@@ -18,26 +18,20 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import no.uib.jexpress_modularized.core.visualization.charts.ChartLabel;
 import no.uib.jexpress_modularized.core.visualization.charts.RotChartLabel;
 
 /**
  *
- * @author y-mok_000
+ * @author Yehia Farag
  */
-public class LabelAxis extends Object implements Serializable{
+public class LabelAxis extends Object implements Serializable {
 
-    //double[][] values={{0.0003,0.0005},{0.00042,0.00035},{-0.000275,0.000334},{0.00034,0.00023},{0.00042,0.000126},{0.00079,0.00023},{0.00023,0.00057},{0.00026,0.00024}};
     String[][] labels;
     boolean[] visibleLabels;
     Component drawer;
     boolean temp = true;
-    private double SetMin = 0.0;
-    private double SetMax = 0.0;
-    private  double DEG2RAD = Math.PI / 180;
-    private  double RAD2DEG = 180 / Math.PI;
+    private double DEG2RAD = Math.PI / 180;
     public int rotation = 0;
     int offset = 10;
     public Font font = new Font("ARIAL", 0, 10);
@@ -47,13 +41,6 @@ public class LabelAxis extends Object implements Serializable{
     public int minSpace = 0;
     public int minimumSize = 300;
     Color[] groupColors;
-    /*
-     *
-     ***************************
-     *
-     ** Public Static Values      *
-     *************************
-     */
     public boolean dropFirstGridLine = false;
     public boolean dropLastGridLine = false;
     /**
@@ -61,41 +48,37 @@ public class LabelAxis extends Object implements Serializable{
      * Constant flagging Horizontal Axis
      *
      */
-     final int HORIZONTAL = 0;
+    final int HORIZONTAL = 0;
     /**
      *
      * Constant flagging Vertical Axis
      *
      */
-     final int VERTICAL = 1;
+    final int VERTICAL = 1;
     /**
      *
-     * Constant flagging Axis position on the graph.      *
-     * Left side => Vertical
+     * Constant flagging Axis position on the graph. * Left side => Vertical
      *
      */
-    public  final int LEFT = 2;
+    public final int LEFT = 2;
     /**
      *
-     * Constant flagging Axis position on the graph.      *
-     * Right side => Vertical
+     * Constant flagging Axis position on the graph. * Right side => Vertical
      *
      */
-    public  final int RIGHT = 3;
+    public final int RIGHT = 3;
     /**
      *
-     * Constant flagging Axis position on the graph.      *
-     * Top side => Horizontal
+     * Constant flagging Axis position on the graph. * Top side => Horizontal
      *
      */
-    public  final int TOP = 4;
+    public final int TOP = 4;
     /**
      *
-     * Constant flagging Axis position on the graph.      *
-     * Bottom side => Horizontal
+     * Constant flagging Axis position on the graph. * Bottom side => Horizontal
      *
      */
-    public  final int BOTTOM = 5;
+    public final int BOTTOM = 5;
     /**
      *
      * The first guess on the number of Labeled Major tick marks.
@@ -251,8 +234,8 @@ public class LabelAxis extends Object implements Serializable{
     protected int position;
     /**
      *
-     * The width of the Axis. Where width for a horizontal axis is really      *
-     * the height
+     * The width of the Axis. Where width for a horizontal axis is really * the
+     * height
      *
      */
     protected int width = 0;
@@ -342,7 +325,7 @@ public class LabelAxis extends Object implements Serializable{
      */
     protected boolean manualRange = true;
 
-    public void setLabels(String[][] labels, boolean[] visibleLabels) {
+    public final void setLabels(String[][] labels, boolean[] visibleLabels) {
 
         this.labels = labels;
 
@@ -362,8 +345,6 @@ public class LabelAxis extends Object implements Serializable{
 
         this.visibleLabels = visibleLabels;
 
-
-
         visiblelabs = visibleLabelCount();
 
     }
@@ -380,12 +361,12 @@ public class LabelAxis extends Object implements Serializable{
      *
      * Instantiate the class. The defalt type is a Horizontal axis
      *
-     * positioned at the bottom of the graph.
+     * @param drawer
+     * @param labels
+     * @param visibleLabels positioned at the bottom of the graph.
      *
      */
     public LabelAxis(Component drawer, String[][] labels, boolean[] visibleLabels) {
-
-
 
         this.drawer = drawer;
 
@@ -424,11 +405,14 @@ public class LabelAxis extends Object implements Serializable{
      * Instantiate the class. Setting the position.
      *
      * @param p Set the axis position. Must be one of Axis.BOTTOM,
+     * @param drawer
+     * @param labels
+     * @param visibleLabels
      *
      * Axis.TOP, Axis.LEFT, Axis.RIGHT, Axis.HORIZONTAL or Axis.VERTICAL.
      *
-     * If one of the latter two are used then Axis.BOTTOM or      *
-     * Axis.LEFT is assumed.
+     * If one of the latter two are used then Axis.BOTTOM or * Axis.LEFT is
+     * assumed.
      *
      */
     public LabelAxis(int p, Component drawer, String[][] labels, boolean[] visibleLabels) {
@@ -436,22 +420,13 @@ public class LabelAxis extends Object implements Serializable{
         NUMBER_OF_TICS = labels.length;
 
         //this.labels=labels;
-
         setLabels(labels, visibleLabels);
 
-
-
         title.setFont(new Font("TIMES NEW ROMAN", 1, 12));
-
-
-
-
 
         this.drawer = drawer;
 
         setPosition(p);
-
-
 
         switch (position) {
 
@@ -475,10 +450,6 @@ public class LabelAxis extends Object implements Serializable{
                 break;
 
         }
-
-
-
-
 
     }
 
@@ -518,15 +489,13 @@ public class LabelAxis extends Object implements Serializable{
      *
      * Axis.TOP, Axis.LEFT, Axis.RIGHT, Axis.HORIZONTAL or Axis.VERTICAL.
      *
-     * If one of the latter two are used then Axis.BOTTOM or      *
-     * Axis.LEFT is assumed.
+     * If one of the latter two are used then Axis.BOTTOM or * Axis.LEFT is
+     * assumed.
      *
      */
-    public void setPosition(int p) {
+    public final void setPosition(int p) {
 
         position = p;
-
-
 
         switch (position) {
 
@@ -541,8 +510,6 @@ public class LabelAxis extends Object implements Serializable{
                 orientation = VERTICAL;
 
                 break;
-
-
 
             case TOP:
 
@@ -725,17 +692,13 @@ public class LabelAxis extends Object implements Serializable{
     }
 
     /**
-     *
-     * If the Axis is Vertical return <i>true</i>.
+     * @return horizontal or vertical If the Axis is Vertical return
+     * <i>true</i>.
      *
      */
     public boolean isVertical() {
 
-        if (orientation == HORIZONTAL) {
-            return false;
-        } else {
-            return true;
-        }
+        return orientation != HORIZONTAL;
 
     }
 
@@ -776,7 +739,7 @@ public class LabelAxis extends Object implements Serializable{
      *
      * ret=(int)(ret*Math.cos(DEG2RAD*rotation));
      *
-     * return ret+offset+fm.getHeight();
+     * return ret+tempOffset+fm.getHeight();
      *
      * }
      *
@@ -790,32 +753,19 @@ public class LabelAxis extends Object implements Serializable{
 
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-
-
         FontMetrics fm = g.getFontMetrics(font);
 
-        for (int i = 0; i < labels.length; i++) {
-
+        for (String[] label1 : labels) {
             for (int j = 0; j < labels[0].length; j++) {
-
-                if (visibleLabels[j + 1] && fm.stringWidth(labels[i][j]) > ret) {
-                    ret = fm.stringWidth(labels[i][j]);
+                if (visibleLabels[j + 1] && fm.stringWidth(label1[j]) > ret) {
+                    ret = fm.stringWidth(label1[j]);
                 }
-
             }
-
         }
-
-
 
         int titleHeight = title.getHeight(g);
 
         //Font f = title.getFont();
-
-
-
-
-
         if (ret > 0) {
             ret = (int) (ret * Math.sin(DEG2RAD * rotation));
         } else {
@@ -823,27 +773,18 @@ public class LabelAxis extends Object implements Serializable{
         }
 
         //System.out.print("width: "+(ret*Math.sin(DEG2RAD*rotation)));
-
-
-
         return ret + offset + fm.getHeight() + titleHeight;
 
         //return titleHeight ;
-
     }
 
     public int predictLength() {
 
         AffineTransform aft = new AffineTransform();
 
-
-
-
         FontRenderContext fr = new FontRenderContext(aft, true, false);
 
         int labelWidth = (int) font.getStringBounds("tTSM", fr).getHeight();
-
-
 
         int visibleLab = 0;
 
@@ -853,18 +794,11 @@ public class LabelAxis extends Object implements Serializable{
             }
         }
 
-
-
         int labellenght = visibleLab * (labels.length - 1) * labelWidth + ((int) ((labels.length - 1) * (labelWidth * spaceBetween)));
 
         labellenght = Math.max(labellenght, minimumSize);
 
-
-
         // int additionalLength=Integer.MIN_VALUE;
-
-
-
         int x0 = (int) (labellenght / labels.length - 1);
 
         labellenght = x0 * (labels.length - 1);
@@ -881,11 +815,8 @@ public class LabelAxis extends Object implements Serializable{
          * labellenght+=sin;
          *
          */
-
         // System.out.print("\n"+(labels.length*2));
         // System.out.print("\n"+(labellenght));
-
-
         return Math.max(labels.length * 2, labellenght);
 
     }
@@ -947,32 +878,19 @@ public class LabelAxis extends Object implements Serializable{
      */
     public int endLength() {
 
-
-
         if (visiblelabs == 0) {
             return 2;
         }
-
-
 
         AffineTransform aft = new AffineTransform();
 
         FontRenderContext fr = new FontRenderContext(aft, true, false);
 
-
-
         int additionalLength = Integer.MIN_VALUE;
 
         // FontMetrics fm = g.getFontMetrics(font);
-
         // int labelWidth=fm.getHeight();
-
-
-
         //System.out.print("\nLabelslength: "+labels[labels[0].length-1].length);
-
-
-
         for (int i = 0; i < labels[0].length; i++) {
 
             if (visibleLabels[i + 1] && (int) font.getStringBounds(labels[labels.length - 1][i], fr).getWidth() > additionalLength) {
@@ -981,21 +899,11 @@ public class LabelAxis extends Object implements Serializable{
 
         }
 
-
-
         double sin = (int) (additionalLength * Math.cos(DEG2RAD * rotation));
-
-
 
         sin += font.getStringBounds("sdf", fr).getHeight();
 
-
-
-
-
         return (int) sin;
-
-
 
     }
 
@@ -1004,88 +912,10 @@ public class LabelAxis extends Object implements Serializable{
      * Return the Height! of the axis.
      *
      * @param g graphics context.
-     *
+     * @return max axis width
      */
     public int getAxisWidth(Graphics g) {
-
-        //System.out.print(getMaxLabelWidth(g));
-
         return getMaxLabelWidth(g);
-
-
-
-
-
-
-
-        /*
-         *
-         * int i;
-         *
-         * width = 0;
-         *
-         *
-         *
-         *
-         *
-         *
-         *
-         * if( orientation == HORIZONTAL ) {
-         *
-         *
-         *
-         * width = 8+label.getRHeight(g) + label.getLeading(g);          *
-         * width += Math.max(title.getRHeight(g),exponent.getRHeight(g));
-         *
-         *
-         *
-         * }          *
-         *
-         *
-         * for(i=0; i<labels.length; i++) {
-         *
-         * for(int j=0; j<labels[i].length; j++) {
-         *
-         * label.setText(" "+labels[i][j]);
-         *
-         * width = Math.max(label.getRWidth(g),width);
-         *
-         * }
-         *
-         *
-         *
-         *
-         *
-         *
-         *
-         * max_label_width = width;
-         *
-         * width = 0;
-         *
-         *
-         *
-         * if(!title.isNull() ) {
-         *
-         * width = Math.max(width,title.getRWidth(g)+
-         *
-         * title.charWidth(g,' '));
-         *
-         * }
-         *
-         *
-         *
-         * width += max_label_width;
-         *
-         * }
-         *
-         *
-         *
-         *
-         *
-         * return width;
-         *
-         */
-
     }
 
     /**
@@ -1096,13 +926,13 @@ public class LabelAxis extends Object implements Serializable{
      *
      * @param xmin The minimum X pixel
      *
-     * @param xmax The maximum X pixel. These should be equal if the axis      *
-     * is vertical
+     * @param xmax The maximum X pixel. These should be equal if the axis * is
+     * vertical
      *
      * @param ymin The minimum Y pixel
      *
-     * @param ymax The maximum Y pixel. These should be equal if the axis      *
-     * is horizontal
+     * @param ymax The maximum Y pixel. These should be equal if the axis * is
+     * horizontal
      *
      * @return <i>true</i> if there are no inconsistencies.
      *
@@ -1113,8 +943,6 @@ public class LabelAxis extends Object implements Serializable{
 
         amax = null;
 
-
-
         if (orientation == HORIZONTAL && ymin != ymax) {
             return false;
         }
@@ -1123,13 +951,9 @@ public class LabelAxis extends Object implements Serializable{
             return false;
         }
 
-
-
         amin = new Point(xmin, ymin);
 
         amax = new Point(xmax, ymax);
-
-
 
         return true;
 
@@ -1146,45 +970,24 @@ public class LabelAxis extends Object implements Serializable{
 
         Graphics lg;
 
-
-
-
-
         //System.out.print("\n\nmaximum before:"+maximum);
-
         //System.out.print("\nminimum before:"+minimum);
-
-
-
         if (!redraw) {
             return;
         }
 
-
-
         // if( amin.equals(amax) ) return;
-
         if (width == 0) {
             width = getAxisWidth(g);
         }
 
-
-
         lg = g.create();
-
-
-
-
 
         title.setDrawingComponent(drawer);
 
         label.setDrawingComponent(drawer);
 
         exponent.setDrawingComponent(drawer);
-
-
-
-
 
         if (orientation == HORIZONTAL) {
 
@@ -1197,11 +1000,7 @@ public class LabelAxis extends Object implements Serializable{
         }
 
         //System.out.print("\nmaximum after:"+maximum);
-
         //System.out.print("\nminimum after:"+minimum);
-
-
-
     }
 
     /**
@@ -1235,7 +1034,7 @@ public class LabelAxis extends Object implements Serializable{
      *
      * Set the font of the title
      *
-     * @param c Title font.
+     * @param f Title font.
      *
      */
     public void setTitleFont(Font f) {
@@ -1381,12 +1180,9 @@ public class LabelAxis extends Object implements Serializable{
         ylocations = new int[labels.length];
 
         //System.out.print("\nlabelslength: "+labels.length);
-
-
-
         for (int i = 0; i < labels.length; i++) {
 
-            ylocations[i] = amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i);;
+            ylocations[i] = amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i);
 
         }
 
@@ -1404,11 +1200,8 @@ public class LabelAxis extends Object implements Serializable{
 
         int direction;
 
-        //int offset;
-
+        //int tempOffset;
         double minor_step;
-
-
 
         if (position == TOP) {
             direction = 1;
@@ -1416,65 +1209,33 @@ public class LabelAxis extends Object implements Serializable{
             direction = -1;
         }
 
-
-
         Color c;
-
-
-
-
 
         double val;
 
         double minor;
 
-
-
-
-
         if (axiscolor != null) {
             g.setColor(axiscolor);
         }
 
-
-
         g.drawLine(amin.x, amin.y, amax.x, amax.y);
 
-
-
         //System.out.print("\ndrawing til x: "+amax.x); 
-
-
-
         minor_step = label_step / (minor_tic_count + 1);
 
         val = label_start;
 
-
-
         ylocations = new int[labels.length];
-
-
 
         for (i = 0; i < labels.length; i++) {
 
             //if( val >= vmin && val <= vmax ) {
-
             y0 = amin.y;
 
             //x0 = amin.x + (int)( ( val - minimum ) * scale);
-
-
-
-
-
             //x0 = amin.x + (int)(( (amax.x - amin.x - endLength(g))/( labels[0].length-1 ))*i);
-
             x0 = amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i);
-
-
-
-
 
             if (paintGrid) {
 
@@ -1483,8 +1244,6 @@ public class LabelAxis extends Object implements Serializable{
                 if (gridcolor != null) {
                     g.setColor(gridcolor);
                 }
-
-
 
                 if (transparency != 255) {
 
@@ -1518,12 +1277,7 @@ public class LabelAxis extends Object implements Serializable{
 
             ylocations[i] = x0;
 
-
-
             //}
-
-
-
             minor = val + minor_step;
 
             /*
@@ -1564,83 +1318,46 @@ public class LabelAxis extends Object implements Serializable{
              * }
              *
              */
-
             val += label_step;
 
         }
-
-
 
         /*
          *
          * if(position == TOP ) {
          *
-         * offset = - label.getLeading(g) - label.getDescent(g);
+         * tempOffset = - label.getLeading(g) - label.getDescent(g);
          *
          * } else {
          *
-         * offset = + label.getLeading(g) + label.getAscent(g);
+         * tempOffset = + label.getLeading(g) + label.getAscent(g);
          *
          * }
          *
          */
-
-
-
-
-
-
-
-
-
         val = label_start;
 
-
-
-
-
         g.setFont(font);
-
-
 
         Graphics2D g2D = (Graphics2D) g;
 
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-
 
         FontMetrics fm = g.getFontMetrics(font);
 
         int labelWidth = fm.getHeight();
 
         //       int labelWidth=16;
-
         //System.out.print("\n"+labelWidth);
-
-
-
         // int additionalSpace = 0;
-
         // if(rotation=40) additionalSpace = 
-
-
-
         //         double height = Math.sin(DEG2RAD*rotation)*labelWidth;
-
-
-
 //          double additionalSpace = labelWidth/Math.sin(DEG2RAD*(rotation));
-
-
-
         double additionalSpace = 0;
 
         int height = 0;
 
 //          
-
-
-
         int visibleLabs = 0;
 
         for (int k = 1; k < labels[0].length; k++) {
@@ -1650,8 +1367,6 @@ public class LabelAxis extends Object implements Serializable{
             }
 
         }
-
-
 
         int beg = (visibleLabs * labelWidth) - (4 * (visibleLabs - 1));
 
@@ -1664,48 +1379,22 @@ public class LabelAxis extends Object implements Serializable{
             if (groupColors != null) {
                 g.setColor(groupColors[i]);
             } else {
-                g.setColor(new Color(180, 180, 180));
+                g.setColor(Color.GRAY);//new Color(180, 180, 180));
             }
-
-
 
             y0 = amin.y + offset;
 
             //x0 = amin.x + (int)(( (amax.x - amin.x)/( labels[0].length))*i);
-
-
-
             x0 = amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i);
 
             //x0 = amin.x + (int)(( (amax.x - amin.x - endLength(g))/( labels[0].length-1 ))*i);
-
-
-
-
-
             //int labellength =((int)((amax.x - amin.x)/( labels[0].length)))*labels[0].length ;
-
             // int endpoint = amin.x +endLength(g)+labellength;
-
-
-
             // g.drawLine( endpoint,y0-4,endpoint,y0+4 );
-
-
-
             x0 = x0 - beg;
 
-
-
-
-
             // x0=x0-beg;
-
-
-
             for (j = 0; j < labels[0].length; j++) {
-
-
 
                 if (visibleLabels[j + 1]) {
 
@@ -1715,29 +1404,15 @@ public class LabelAxis extends Object implements Serializable{
 
                 }
 
-
-
             }
 
         }
 
-
-
         g.setColor(before);
 
-
-
         //Graphics2D g2=(Graphics2D)g;
-
         //g2.rotate(45); 
-
-
-
-
-
         if (!title.isNull()) {
-
-
 
             if (position == TOP) {
 
@@ -1755,75 +1430,43 @@ public class LabelAxis extends Object implements Serializable{
 
             }
 
-
-
             x0 = amin.x + (amax.x - amin.x) / 2;
 
-
-
-
-
             // y0=amax.y+width+3;
-
-
-
             y0 = amax.y + this.getMaxLabelWidth(g) + 6 - (title.getHeight(g));
 
-
-
             // Graphics2D g2D = (Graphics2D) g;
-
             // g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON); 
-
             //title.setFont(null);
-
-
-
             if (axiscolor != null) {
                 title.setColor(axiscolor);
             }
 
             title.draw(g, x0, y0, ChartLabel.CENTER);
 
-
-
         }
-
-
 
     }
 
     public int getLeftLabel(int xcor) {
 
-
-
-
-
         int ret = 0;
 
         int x0 = 0;
 
-
-
         for (int i = 0; i < labels.length; i++) {
-
-
 
             x0 = ((int) amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i));
 
             //System.out.print(" "+x0);
-
             if (x0 > xcor) {
                 ret = i;
                 break;
             }
 
-
-
         }
 
         //System.out.print("\nretuen: "+ret);
-
         return ret;
 
     }
@@ -1834,15 +1477,9 @@ public class LabelAxis extends Object implements Serializable{
 
         int x0 = 0;
 
-
-
         for (int i = 0; i < labels.length; i++) {
 
-
-
             x0 = ((int) amin.x + (int) (((amax.x - amin.x) / (labels.length - 1)) * i));
-
-
 
             if (x0 > xcor) {
                 break;
@@ -1851,8 +1488,6 @@ public class LabelAxis extends Object implements Serializable{
             }
 
         }
-
-
 
         return ret;
 
@@ -1877,7 +1512,7 @@ public class LabelAxis extends Object implements Serializable{
 
         int direction;
 
-        int offset = 0;
+        int tempOffset = 0;
 
         double minor_step;
 
@@ -1885,51 +1520,26 @@ public class LabelAxis extends Object implements Serializable{
 
         Color c;
 
-
-
-        FontMetrics fm;
-
-        Color gc = g.getColor();
-
-        Font gf = g.getFont();
-
-
-
         double vmin = minimum * 1.001;
 
         double vmax = maximum * 1.001;
-
-
 
         double scale = (amax.y - amin.y) / (maximum - minimum);
 
         double val;
 
-
-
 //          System.out.println("Drawing Vertical Axis!");
-
-
-
-
-
         if (axiscolor != null) {
             g.setColor(axiscolor);
         }
 
-
-
         g.drawLine(amin.x, amin.y, amax.x, amax.y);
-
-
 
         if (position == RIGHT) {
             direction = -1;
         } else {
             direction = 1;
         }
-
-
 
         minor_step = label_step / (minor_tic_count + 1);
 
@@ -1993,11 +1603,7 @@ public class LabelAxis extends Object implements Serializable{
                     g.drawLine(x0 + data_window.width * direction - major_tic_size, y0, x0 + data_window.width * direction, y1);
                 }
 
-
-
             }
-
-
 
             minor = val + minor_step;
 
@@ -2029,10 +1635,6 @@ public class LabelAxis extends Object implements Serializable{
 
                         }
 
-
-
-
-
                         g.drawLine(x0, y0, x0 + data_window.width * direction, y0);
 
                         g.setColor(c);
@@ -2059,22 +1661,16 @@ public class LabelAxis extends Object implements Serializable{
 
         }
 
-
-
-
-
         val = label_start;
 
         for (i = 0; i < label_count; i++) {
 
             if (val >= vmin && val <= vmax) {
 
-                x0 = amin.x + offset;
+                x0 = amin.x + tempOffset;
 
                 y0 = amax.y - (int) ((val - minimum) * scale)
                         + label.getAscent(g) / 2;
-
-
 
                 if (position == RIGHT) {
 
@@ -2095,10 +1691,6 @@ public class LabelAxis extends Object implements Serializable{
             val += label_step;
 
         }
-
-
-
-
 
         /*
          *
@@ -2133,14 +1725,9 @@ public class LabelAxis extends Object implements Serializable{
          * }
          *
          */
-
         if (!title.isNull()) {
 
-
-
             y0 = amin.y + (amax.y - amin.y) / 2;
-
-
 
             if (title.getRotation() == 0 || title.getRotation() == 180) {
 
@@ -2178,21 +1765,11 @@ public class LabelAxis extends Object implements Serializable{
 
             }
 
-
-
         }
-
-
-
-
 
         if (!exponent.isNull()) {
 
-
-
             y0 = amin.y + exponent.getWidth(g);
-
-
 
             if (title.getRotation() == 0 || title.getRotation() == 180) {
 
@@ -2212,8 +1789,6 @@ public class LabelAxis extends Object implements Serializable{
 
             } else {
 
-
-
                 if (position == RIGHT) {
 
                     x0 = amin.x + max_label_width - title.getLeftEdge(g)
@@ -2225,8 +1800,6 @@ public class LabelAxis extends Object implements Serializable{
                             - title.charWidth(g, ' ');
 
                 }
-
-
 
                 exponent.setBackground(Color.red);
 
@@ -2240,66 +1813,32 @@ public class LabelAxis extends Object implements Serializable{
 
                 exponent.draw(g, x0, y0);
 
-
-
             }
 
-
-
         }
-
-
-
-
-
-
-
-
 
     }
 
     public void drawRotatedLabel(String s, Graphics gr, boolean antialias, int x, int y, int deg) {
 
-
-
         Graphics2D g2D = (Graphics2D) gr;
-
-
 
         g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         FontMetrics fm = gr.getFontMetrics(font);
 
-
-
         int labelWidth = fm.getHeight();
-
-
-
-
-
-
 
         g2D.translate(x, y);
 
         g2D.rotate(Math.PI / 4);
 
-
-
         g2D.drawString(s, 0, 0);
-
-
 
         g2D.rotate(-Math.PI / 4);
 
         g2D.translate(-x, -y);
 
-
-
-
-
-
-
     }
 
-    }
+}
