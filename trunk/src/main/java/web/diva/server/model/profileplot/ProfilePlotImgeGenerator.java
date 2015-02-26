@@ -5,26 +5,29 @@
  */
 package web.diva.server.model.profileplot;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import javax.imageio.ImageIO;
-import org.apache.commons.codec.binary.Base64;
-import org.jfree.chart.ChartUtilities;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import net.iharder.Base64;
+import no.uib.jexpress_modularized.core.dataset.Group;
+import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.fop.svg.PDFTranscoder;
 import org.jfree.chart.encoders.ImageEncoder;
 import org.jfree.chart.encoders.ImageEncoderFactory;
 import org.jfree.chart.encoders.ImageFormat;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.svg.SVGDocument;
 import web.diva.server.model.beans.DivaDataset;
 
 /**
@@ -33,23 +36,22 @@ import web.diva.server.model.beans.DivaDataset;
  */
 public class ProfilePlotImgeGenerator extends ProfilePlot {
 
-    ChartUtilities cu = new ChartUtilities() {
-};
+    private final DivaDataset dataset;
     private boolean aalias = false;
-    private boolean[] members;
-    private  int width;
-    private  int height;
+    private final boolean[] members;
+    private int width;
+    private int height;
 
     public ProfilePlotImgeGenerator(final DivaDataset dataset, boolean[] members) {
+        this.dataset = dataset;
         this.members = members;
         updateDataset(dataset);
-        
 
     }
-    
-    public final void updateDataset(DivaDataset dataset){
-    
-    int cnt = 0;
+
+    public final void updateDataset(DivaDataset dataset) {
+
+        int cnt = 0;
         if (members == null) {
             cnt = dataset.getDataLength();
         } else {
@@ -59,7 +61,7 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
                 }
             }
         }
-        int autoalias = 1000;
+        int autoalias = 6000;
         if (cnt < autoalias) {
             aalias = true;
         }
@@ -68,62 +70,145 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
             this.setAntialias(aalias);
         }
         int over = 0;
-        for(String str:dataset.getColumnIds()){
-            if(str.length() > over)
+        for (String str : dataset.getColumnIds()) {
+            if (str.length() > over) {
                 over = str.length();
+            }
         }
-      getXaxis().minimumSize=900;
-   
-        width = getXaxis().predictLength() + getYaxis().predictWidth() + getXaxis().endLength() + (over*4);
+        getXaxis().minimumSize = 900;
+
+        width = getXaxis().predictLength() + getYaxis().predictWidth() + getXaxis().endLength() + (over * 4);
         height = 700;
         super.setDsize(new Dimension(width, height));
         setSize(new Dimension(getDsize().width, getDsize().height));
         setDraw(getDataSelection(new int[]{}));
-         setForeground(new Color(0, 51, 153));
-        forceFullRepaint();       
-    
+        setForeground(Color.GRAY);//new Color(0, 51, 153));
+        forceFullRepaint();
+
     }
     private BufferedImage image;
 
+    @Override
     public BufferedImage getImage() {
         return image;
     }
 
     @Override
+    public int getWidth() {
+        return super.Width();
+    }
+
+    @Override
+    public int getHeight() {
+        return super.Height();
+    }
+
+    private final ImageEncoder in = ImageEncoderFactory.newInstance(ImageFormat.PNG, new Float(0.084666f));
+
     public String toImage() {
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
-        graphics.setPaint(Color.WHITE);
-
+        graphics.setPaint(Color.WHITE);     
         super.forceFullRepaint();
         super.paint(graphics);
         byte[] imageData = null;
         try {
-            ImageEncoder in = ImageEncoderFactory.newInstance(ImageFormat.PNG, 0);
+            
             imageData = in.encode(image);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getLocalizedMessage());
         }
-        String base64 = Base64.encodeBase64String(imageData);
+        String base64 = Base64.encodeBytes(imageData);
         base64 = "data:image/png;base64," + base64;
         return base64;
 
     }
 
-    public byte[] BufferedImageToByteArray(BufferedImage orImage) {
+    public String toPdfFile(File userFolder, String url) {
         try {
- 
-  ByteArrayOutputStream baos=new ByteArrayOutputStream();
-  ImageIO.write(orImage, "png", baos );
-     
-  byte[] imageBytes=baos.toByteArray();
-  return imageBytes;
-  //do something with the byte array
-  
-  }catch(IOException ie){}
-  return null;
- }
+            BufferedImage pdfImage = image;
 
-   
+//            DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
+              DOMImplementation domImpl = new SVGDOMImplementation();
+            String svgNS = "http://www.w3.org/2000/svg";
+            SVGDocument svgDocument = (SVGDocument) domImpl.createDocument(svgNS, "svg", null);
+            // Create an instance of the SVG Generator
+            SVGGraphics2D svgGenerator = new SVGGraphics2D(svgDocument);
+            svgGenerator.setSVGCanvasSize(new Dimension(pdfImage.getWidth(), pdfImage.getHeight()));
+            svgGenerator.setPaint(Color.WHITE);
+            svgGenerator.drawImage(pdfImage,0,0,null);
+            
+//            super.forceFullRepaint();
+//            super.paint(svgGenerator);
+            System.out.println("paint new image size is done ");
+            File pdfFile = new File(userFolder,dataset.getName()+ "_Profile_Plot" + ".pdf");
+            if (!pdfFile.exists()) {
+                pdfFile.createNewFile();
+            } else {
+                pdfFile.delete();
+                pdfFile.createNewFile();
+            }
+            // write the svg file
+            File svgFile = new File(pdfFile.getAbsolutePath() + ".temp");
+            OutputStream outputStream = new FileOutputStream(svgFile);
+            BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+            Writer out = new OutputStreamWriter(bos, "UTF-8");
+            
+            svgGenerator.stream(out, true /* use css */);
+            outputStream.flush();
+            outputStream.close();
+            bos.close();
+            System.out.println("temp file is done ");
+            System.gc();
+            String svgURI = svgFile.toURI().toString();
+            TranscoderInput svgInputFile = new TranscoderInput(svgURI);
+
+            OutputStream outstream = new FileOutputStream(pdfFile);
+            bos = new BufferedOutputStream(outstream);
+            TranscoderOutput output = new TranscoderOutput(bos);
+//             write as pdf
+            Transcoder pdfTranscoder = new PDFTranscoder();
+            pdfTranscoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 0.084666f);
+            pdfTranscoder.transcode(svgInputFile, output);
+            outstream.flush();
+            outstream.close();
+            bos.close();
+            System.gc();
+            return url + userFolder.getName() + "/" + pdfFile.getName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+
+    }
+
+    public void updateColumnGroupColors() {
+        if (dataset.getColumnGroups().size() > 1) {
+            Color[] columnLabelColor = new Color[dataset.getColumnIds().length];
+            for (int x = 0; x < columnLabelColor.length; x++) {
+                columnLabelColor[x] = Color.BLACK;
+            }
+
+            for (int x = 0; x < columnLabelColor.length; x++) {
+                for (Group g : dataset.getColumnGroups()) {
+                    if (!g.getName().equalsIgnoreCase("All") && g.hasMember(x)) {
+                        columnLabelColor[x] = g.getColor();
+                        break;
+                    }
+
+                }
+            }
+            getXaxis().setGroupColors(columnLabelColor);
+        }
+
+    }
+
+    public int[] getProfilePlotSelection(int x, int y) {
+//    Point p = getProfilerPointAt(x, y);
+//    if(p!=null)
+//        System.out.println("p.x "+p.x+"  p.y "+p.y);
+    return new int[]{1,3,5};
+    }
+
 }

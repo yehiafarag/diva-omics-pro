@@ -9,6 +9,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.smartgwt.client.types.ListGridFieldType;
+import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.types.SortDirection;
 import com.smartgwt.client.widgets.events.ClickEvent;
@@ -45,6 +46,10 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
             selectionTag = false;
         } else {
             this.deselectAllRecords();
+            if (selection.length == 0) {
+                selectedRows=new ListGridRecord[]{};
+                return;
+            }
             ListGridRecord[] reIndexSelection = new ListGridRecord[selection.length];
             int i = 0;
 
@@ -98,6 +103,7 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
 
     public RankTableLayout(SelectionManager selectionManager, int datasetId, RankResult results) {
        
+        this.setOverflow(Overflow.HIDDEN);
         this.selectionManager = selectionManager;
         initGrid(results.getHeaders());
         this.updateRecords(results);
@@ -176,6 +182,9 @@ public class RankTableLayout extends ListGrid implements  IsSerializable {
                 selectedIndices[index] = rec.getAttributeAsInt("index");
             }
             updateSelectionManager(selectedIndices);
+        }
+        else{
+            updateSelectionManager(new int[]{});
         }
 
     }

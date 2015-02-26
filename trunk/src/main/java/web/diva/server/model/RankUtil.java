@@ -107,14 +107,16 @@ public class RankUtil {
             headers[index++] = jResults.get(1).getColumnName(x);
         }
         headers[0] = "Pos " + headers[0];
-        for(int x = 6;x<headersCount;x++){
-        headers[x] = "Neg " + headers[x];
+        for (int x = 6; x < headersCount; x++) {
+            if (!headers[x].contains("Neg")) {
+                headers[x] = "Neg " + headers[x];
+            }
         }
-        index=0;              
-        for (int rowIndex = 0; rowIndex < jResults.get(0).getRowCount(); rowIndex++) {   
-            int dataColumnReindex =0;
-            for (int columnIndex = 0; columnIndex <  jResults.get(0).getColumnCount(); columnIndex++) {
-                    switch (columnIndex) {
+        index = 0;
+        for (int rowIndex = 0; rowIndex < jResults.get(0).getRowCount(); rowIndex++) {
+            int dataColumnReindex = 0;
+            for (int columnIndex = 0; columnIndex < jResults.get(0).getColumnCount(); columnIndex++) {
+                switch (columnIndex) {
                         case 0:
                             posRank[rowIndex] = (Integer) jResults.get(0).getValueAt(rowIndex, columnIndex);
                             break;

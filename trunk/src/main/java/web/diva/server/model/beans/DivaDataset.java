@@ -5,6 +5,7 @@
  */
 package web.diva.server.model.beans;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 import java.io.Serializable;
 import java.util.Map;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
@@ -13,7 +14,7 @@ import no.uib.jexpress_modularized.core.dataset.Dataset;
  *
  * @author Yehia Farag
  */
-public class DivaDataset extends Dataset implements Serializable {
+public class DivaDataset extends Dataset implements Serializable,IsSerializable {
 
     private Map<Integer, String> geneIndexNameMap;
     private Map<String, Integer> geneNameIndexMap;

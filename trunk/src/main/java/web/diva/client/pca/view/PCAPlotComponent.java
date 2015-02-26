@@ -16,10 +16,12 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Cursor;
 import com.smartgwt.client.types.KnobType;
 import com.smartgwt.client.widgets.IconButton;
+import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.drawing.DrawImage;
 import com.smartgwt.client.widgets.drawing.DrawPane;
 import com.smartgwt.client.widgets.events.DrawEvent;
@@ -29,6 +31,7 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
+import web.diva.client.view.core.ImageScaler;
 import web.diva.client.view.core.SaveAsPanel;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.UpdatedTooltip;
@@ -50,7 +53,7 @@ public class PCAPlotComponent extends ModularizedListener {
     private VLayout mainThumbPCALayout;
     private final HTML tooltipLabel = new HTML();
     private HorizontalPanel tooltipViewPortLayout;
-    private final Image thumbChart; //maxmizePlotImage,
+    private final Img thumbChartImg; //maxmizePlotImage,
     private final PopupPanel pcaPopup;
     private final DrawImage mainPCAImage = new DrawImage();
 
@@ -65,7 +68,7 @@ public class PCAPlotComponent extends ModularizedListener {
             Selection sel = selectionManager.getSelectedRows();
             if (sel != null && !zoom && !selectAll) {
                 selectedRows = sel.getMembers();
-                if (selectedRows != null && selectedRows.length != 0) {
+                if (selectedRows != null ){//&& selectedRows.length != 0) {
                     updateSelection(selectedRows);
                 }
             }
@@ -74,6 +77,9 @@ public class PCAPlotComponent extends ModularizedListener {
     private final String datasetInfo;
     private DrawPane pcaImageDrawPan = null;
     private final HandlerRegistration minLabelReg, imagereg, showAllReg, zoomInReg, zoomoutReg, settingBtnReg, saveBtnReg, maxmizeBtnReg;
+    private int pcaPlotPanelWidth;
+    private int pcaPlotPanelHeight;
+    private final PCAImageResult results;
 
     public PCAPlotComponent(final PCAImageResult results, SelectionManager selectionManager, DivaServiceAsync greetingService, final int colNumber, String datasetInfo) {
 
@@ -84,14 +90,23 @@ public class PCAPlotComponent extends ModularizedListener {
         this.selectionManager.addSelectionChangeListener(PCAPlotComponent.this);
         this.tooltipInformationData = results.getTooltipInformatinData();
         this.datasetInfo = datasetInfo;
+        this.results=results;
+        
+        scaler = new ImageScaler();
+        int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
+        int newHeight = scaler.reScale(newWidth, results.getImgHeight(),results.getImgWidth());
+        pcaPlotPanelWidth = newWidth+10;
+        pcaPlotPanelHeight= newHeight+20;
 
         mainThumbPCALayout = new VLayout();
         mainThumbPCALayout.setStyleName("pca");
-        mainThumbPCALayout.setHeight("100%");
-        mainThumbPCALayout.setWidth("100%");
-        HorizontalPanel topLayout = new HorizontalPanel();
+         mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
+        mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px");
+        
+        
+        topLayout = new HorizontalPanel();
         mainThumbPCALayout.addMember(topLayout);
-        topLayout.setWidth("100%");
+        topLayout.setWidth(pcaPlotPanelWidth+"px");
         topLayout.setHeight("18px");
         topLayout.setStyleName("whiteLayout");
         Label title = new Label("PCA Plot");
@@ -104,13 +119,35 @@ public class PCAPlotComponent extends ModularizedListener {
         maxmizeBtn.setHeight("16px");
         maxmizeBtn.setWidth("16px");
         topLayout.add(maxmizeBtn);
-        thumbChart = new Image();
-        thumbChart.setTitle("To Activate the PCA Selection Use Maximized Mode");
-        thumbChart.ensureDebugId("cwBasicPopup-thumb");
-        thumbChart.addStyleName("clickableImg");
-        mainThumbPCALayout.addMember(thumbChart);
-        thumbChart.setHeight("100%");
-        thumbChart.setWidth("100%");
+        thumbChartImg = new Img(results.getImgString());
+        thumbChartImg.setMaxHeight(700);
+        thumbChartImg.setMaxWidth(900);
+        thumbChartImg.setTitle("To Activate the PCA Selection Use Maximized Mode");
+        thumbChartImg.ensureDebugId("cwBasicPopup-thumb");
+        thumbChartImg.addStyleName("clickableImg");
+        thumbImageLayout = new VLayout();
+
+//        thumbImageLayout.setStyleName("imagesborder");
+        int width = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
+
+        mainThumbPCALayout.addMember(thumbImageLayout);
+        thumbImageLayout.setHeight(newHeight + "px");
+        thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
+        thumbImageLayout.addMember(thumbChartImg);
+
+
+        thumbChartImg.setWidth(width + "px");
+        thumbChartImg.setHeight(newHeight + "px");
+//        thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
+//        thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
+
+
+        
+//        mainThumbPCALayout.addMember(thumbChartImg);
+        
+        
+//        thumbChartImg.setHeight("100%");
+//        thumbChartImg.setWidth("100%");
 
         /* the end of thumb layout*/
         pcaPopup = new PopupPanel(false, true);
@@ -217,10 +254,10 @@ public class PCAPlotComponent extends ModularizedListener {
 
             @Override
             public void onClick(ClickEvent event) {
-//                Window.open(thumbChart.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
+//                Window.open(thumbChartImg.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
                 SelectionManager.Busy_Task(true, false);
 //                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
-                GWTClientService.exportImgAsPdf("PCA_Plot", new AsyncCallback<String>() {
+                GWTClientService.exportImgAsPdf("PCA_Plot","high", new AsyncCallback<String>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Window.alert("ERROR IN SERVER CONNECTION");
@@ -243,6 +280,7 @@ public class PCAPlotComponent extends ModularizedListener {
             @Override
             public void onClick(ClickEvent event) {
                 zoom = false;
+                zoomInBtn.setValue(false);
                 pcaPopup.hide();
             }
         };
@@ -261,9 +299,9 @@ public class PCAPlotComponent extends ModularizedListener {
         mainPcaPopupBodyLayout.addMember(tooltipViewPortLayout);
         tooltipViewPortLayout.add(tooltipLabel);
         tooltipLabel.setStyleName("tooltip");
-        ClickHandler maxmizeClickHandler = new com.google.gwt.event.dom.client.ClickHandler() {
+        com.smartgwt.client.widgets.events.ClickHandler maxmizeClickHandler = new com.smartgwt.client.widgets.events.ClickHandler() {
             @Override
-            public void onClick(com.google.gwt.event.dom.client.ClickEvent event) {
+            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
                 pcaPopup.center();
                 pcaPopup.show();
                 if (pcaImageDrawPan == null) {
@@ -289,14 +327,80 @@ public class PCAPlotComponent extends ModularizedListener {
           variationPanel.add(l3);
         
 
-        imagereg = thumbChart.addClickHandler(maxmizeClickHandler);
+        imagereg = thumbChartImg.addClickHandler(maxmizeClickHandler);
 
-        maxmizeBtnReg = maxmizeBtn.addClickHandler(maxmizeClickHandler);
+        maxmizeBtnReg = maxmizeBtn.addClickHandler(new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent event) {
+                  pcaPopup.center();
+                pcaPopup.show();
+                if (pcaImageDrawPan == null) {
+                    pcaImageDrawPan = createDrawPane();
+                    updatedMmaxmizePlotImgLayout.addMember(pcaImageDrawPan);
+                }
+            }
+        });
         pcaPopup.setWidget(mainPcaPopupBodyLayout);
         mainPcaPopupBodyLayout.setStyleName("modalLayout");
         updateWithSelection();
-    }
+        
+        
+         
+          
+//         Window.addResizeHandler(new ResizeHandler() {
+//
+//            @Override
+//            public void onResize(ResizeEvent event) {
+//               
+//                if (redrawTimer == null) {
+//                    redrawTimer = new Timer() {
+//
+//                        @Override
+//                        public void run() {
+//                            int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
+//                            int newHeight = scaler.reScale(newWidth, results.getImgHeight(),results.getImgWidth());
+//                            pcaPlotPanelWidth = newWidth + 10;
+//                            pcaPlotPanelHeight = newHeight + 20;
+//                            mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px" );
+//                            mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
+//                             topLayout.setWidth(pcaPlotPanelWidth+"px");
+//                            thumbImageLayout.setHeight(newHeight + "px");
+//                            thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
+//                            thumbChartImg.setHeight(newHeight + "px");
+//                            thumbChartImg.setWidth(newWidth + "px");
+//                            thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
+//                            thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
+////                            mainThumbPCALayout.redraw();
+//                        }
+//                    };
+//                    
+//                }
+//                redrawTimer.schedule(200);
+//
+//            }
+//        });
 
+    }
+    
+     private   final VLayout thumbImageLayout;
+   private    final HorizontalPanel topLayout;
+   private final ImageScaler scaler;
+    public void resize(int newWidth,int newHeight){
+                            pcaPlotPanelWidth = newWidth;
+                            pcaPlotPanelHeight = newHeight;
+                            mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px" );
+                            mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
+                             topLayout.setWidth(pcaPlotPanelWidth+"px");
+                            thumbImageLayout.setHeight(newHeight + "px");
+                            thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
+                            thumbChartImg.setHeight((newHeight-20) + "px");
+                            thumbChartImg.setWidth(newWidth + "px");
+//                            thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
+//                            thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
+    
+    }
+//    private Timer redrawTimer ; 
     private void updateWithSelection() {
         Selection sel = selectionManager.getSelectedRows();
         if (sel != null) {
@@ -319,7 +423,7 @@ public class PCAPlotComponent extends ModularizedListener {
             @Override
             public void onSuccess(PCAImageResult result) {
                 mainPCAImage.setSrc(result.getImgString());
-                thumbChart.setUrl(result.getImgString());
+                thumbChartImg.setSrc(result.getImgString());
                 tooltipInformationData = result.getTooltipInformatinData();
 
                 if (zoom) {
@@ -341,7 +445,7 @@ public class PCAPlotComponent extends ModularizedListener {
             @Override
             public void onSuccess(PCAImageResult result) {
                 mainPCAImage.setSrc(result.getImgString());
-                thumbChart.setUrl(result.getImgString());
+                thumbChartImg.setSrc(result.getImgString());
                 tooltipInformationData = result.getTooltipInformatinData();
                 zoom = false;
             }
@@ -364,7 +468,7 @@ public class PCAPlotComponent extends ModularizedListener {
             @Override
             public void onSuccess(String result) {
                 mainPCAImage.setSrc(result);
-                thumbChart.setUrl(result);
+                thumbChartImg.setSrc(result);
 
             }
         });
@@ -391,7 +495,7 @@ public class PCAPlotComponent extends ModularizedListener {
     }
 
     private void updateSelectedList(int[] selIndex) {
-        if (selIndex != null && selIndex.length > 0) {
+        if (selIndex != null){// && selIndex.length > 0) {
             SelectionManager.Busy_Task(true, false);
             Selection selection = new Selection(Selection.TYPE.OF_ROWS, selIndex);
             selectionManager.setSelectedRows(selection);
@@ -413,7 +517,7 @@ public class PCAPlotComponent extends ModularizedListener {
                 @Override
                 public void onSuccess(String result) {
                     mainPCAImage.setSrc(result);
-                    thumbChart.setUrl(result);
+                    thumbChartImg.setSrc(result);
 
                     if (zoom) {
                         zoomoutBtn.enable();

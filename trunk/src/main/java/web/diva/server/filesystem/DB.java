@@ -16,12 +16,12 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import no.uib.jexpress_modularized.core.dataset.Dataset;
 import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.somclust.model.ClusterResults;
 import web.diva.server.model.DivaUtil;
 import web.diva.server.model.beans.DivaDataset;
-import web.diva.shared.beans.PCAResults;
 import web.diva.shared.beans.RankResult;
 
 /**
@@ -104,9 +104,9 @@ public class DB implements Serializable{
      * @param fileFolderPath - divaFiles folder path
      * @return computingFileList
      */
-    public HashSet<String> getAvailableComputingFileList(String fileFolderPath) {
+    public TreeSet<String> getAvailableComputingFileList(String fileFolderPath) {
 
-        HashSet<String> computingFileList = databaseUtil.getAvailableComputingFileList(fileFolderPath);
+        TreeSet<String> computingFileList = databaseUtil.getAvailableComputingFileList(fileFolderPath);
         return computingFileList;
     }
 

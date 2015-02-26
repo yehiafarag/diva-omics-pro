@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ColorPickerItem;
@@ -35,13 +36,12 @@ public class GroupPanel extends PopupPanel {
         this.setAnimationEnabled(true);
         this.ensureDebugId("cwBasicPopup-imagePopup");
         this.setModal(false);
+//        this.getElement().setAttribute("style", "overflow: visible; visibility: visible; margin-left: 40%; margin-top: auto; position: absolute; left:0px; top:0px; background: none;width: 230px;height: 170px; clip:auto;");
 
         framLayout = new VLayout();
         framLayout.setWidth(230);
         framLayout.setHeight(170);
-        
-        
-        
+
         mainBodyLayout = new VLayout();
         mainBodyLayout.setWidth(228);
         mainBodyLayout.setHeight(148);
@@ -53,9 +53,8 @@ public class GroupPanel extends PopupPanel {
             topLayout.setWidth("228px");
             topLayout.setHeight("20px");
             topLayout.setSpacing(3);
-            framLayout.addMember(topLayout);            
-            
-            
+            framLayout.addMember(topLayout);
+
             Label title = new Label("Create Group");
             title.setStyleName("labelheader");
             topLayout.add(title);
@@ -99,7 +98,9 @@ public class GroupPanel extends PopupPanel {
         description.setRequired(true);
         colorPicker = new ColorPickerItem("groupColor", "Group Color");
         colorPicker.setRequired(Boolean.TRUE);
-
+//        colorPicker.getPicker().setZIndex(framLayout.getZIndex()+1000);
+//       colorPicker.setValue("red");
+//        SC.say(colorPicker.getPicker().getScClassName()+"  "+colorPicker.getPicker().getZIndex());
         members = new TextItem();
         members.setTitle("Memebers");
         members.setRequired(true);
@@ -116,9 +117,8 @@ public class GroupPanel extends PopupPanel {
         hlo.setHeight("20px");
         okBtn = new IButton("Process");
         hlo.add(okBtn);
-        hlo.setCellHorizontalAlignment(okBtn,HorizontalPanel.ALIGN_CENTER);
-        hlo.setCellVerticalAlignment(okBtn,HorizontalPanel.ALIGN_MIDDLE);
-
+        hlo.setCellHorizontalAlignment(okBtn, HorizontalPanel.ALIGN_CENTER);
+        hlo.setCellVerticalAlignment(okBtn, HorizontalPanel.ALIGN_MIDDLE);
 
         this.setWidget(framLayout);
         framLayout.setStyleName("modalPanelLayout");

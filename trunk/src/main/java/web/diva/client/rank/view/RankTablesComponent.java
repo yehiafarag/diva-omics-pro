@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.List;
 import web.diva.client.DivaServiceAsync;
@@ -23,6 +22,7 @@ import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.unused.RankPanel;
+import web.diva.client.view.core.SaveAsPanel;
 import web.diva.shared.beans.DivaGroup;
 import web.diva.shared.beans.RankResult;
 
@@ -36,7 +36,7 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
     public final void selectionChanged(Selection.TYPE type) {
         if (type == Selection.TYPE.OF_ROWS) {
             Selection sel = selectionManager.getSelectedRows();
-            if (sel != null && sel.getMembers().length > 0) {
+            if (sel != null){// && sel.getMembers().length > 0) {
                 minRankTable.updateTable(sel.getMembers());
                 if (maxRankTable != null) {
                     maxRankTable.updateTable(sel.getMembers());
@@ -81,8 +81,8 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
     private DivaServiceAsync GWTClientService;
     private SelectionManager selectionManager;
     private final RankPanel rankPanel;
-    private final HandlerRegistration maxmizeReg, minmizReg, maxSettingsReg, minSettingsReg, showSelectedReg;
-    private HandlerRegistration  maxShowASelectedReg;
+    private final HandlerRegistration minSaveReg, maxmizeReg, minmizReg, maxSettingsReg, minSettingsReg, showSelectedReg;
+    private HandlerRegistration  maxShowASelectedReg,maxSaveReg;
     private  CheckBox maxShowSelectedOnlyBtn,showSelectedOnlyBtn;
 
     public RankTablesComponent(DivaServiceAsync greetingService, final SelectionManager selectionManager, final RankResult results, List<DivaGroup> colGroupsList) {
@@ -97,6 +97,7 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
         mainRankLayout = new VLayout();
         mainRankLayout.setHeight("100%");
         mainRankLayout.setWidth("100%");
+      
         mainRankLayout.setStyleName("rank");
         mainRankLayout.setMargin(0);
 
@@ -114,15 +115,33 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
         topLayout.setCellVerticalAlignment(title, HorizontalPanel.ALIGN_TOP);
 
         HorizontalPanel btnsLayout = new HorizontalPanel();
-        btnsLayout.setWidth("34px");
+        btnsLayout.setWidth("52px");
         btnsLayout.setHeight("18px");
         topLayout.add(btnsLayout);
         topLayout.setCellHorizontalAlignment(btnsLayout, HorizontalPanel.ALIGN_RIGHT);
         topLayout.setCellVerticalAlignment(btnsLayout, HorizontalPanel.ALIGN_TOP);
 
-        minSettingBtn = new RankSettingBtn(GWTClientService,rankPanel);
+        minSettingBtn = new RankSettingBtn(GWTClientService, rankPanel);
         btnsLayout.add(minSettingBtn);
         btnsLayout.setCellHorizontalAlignment(minSettingBtn, HorizontalPanel.ALIGN_LEFT);
+
+        Label minSaveBtn = new Label();
+        minSaveBtn.addStyleName("save");
+        minSaveBtn.setHeight("16px");
+        minSaveBtn.setWidth("16px");
+
+        btnsLayout.add(minSaveBtn);
+        btnsLayout.setCellHorizontalAlignment(minSaveBtn, HorizontalPanel.ALIGN_RIGHT);
+
+        final ClickHandler exportRankHandler = new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent event) {
+                exportRank();
+            }
+        };
+        minSaveReg = minSaveBtn.addClickHandler(exportRankHandler);
+        
         maxBtn = new Label();
         btnsLayout.add(maxBtn);
         maxBtn.addStyleName("maxmize");
@@ -157,10 +176,19 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
                     Label title = new Label();
                     title.setText("Rank Product (Differential Expression)");
                     title.setStyleName("labelheader");
-                    title.setWidth((maxRankTable.getOffsetWidth() - 44) + "px");
+                    title.setWidth((maxRankTable.getOffsetWidth() - 66) + "px");
 
                     maxTopLayout.add(title);
                     maxTopLayout.add(maxSettingsBtn);
+                    Label maxSaveBtn = new Label();
+                    maxSaveBtn.addStyleName("save");
+                    maxSaveBtn.setHeight("16px");
+                    maxSaveBtn.setWidth("16px");
+
+                    maxTopLayout.add(maxSaveBtn);
+                    maxTopLayout.setCellHorizontalAlignment(maxSaveBtn, HorizontalPanel.ALIGN_RIGHT);
+                       maxSaveReg = maxSaveBtn.addClickHandler(exportRankHandler);
+
                     maxTopLayout.add(minBtn);
                     maxTopLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
                     maxTopLayout.setCellHorizontalAlignment(minBtn, HorizontalPanel.ALIGN_RIGHT);
@@ -305,6 +333,27 @@ public class RankTablesComponent extends ModularizedListener implements IsSerial
                     }
                 });
 
+    }
+    private void exportRank(){
+      SelectionManager.Busy_Task(true, true);
+        GWTClientService.exportRankingData(new AsyncCallback<String>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Window.alert("An error occurred while attempting to contact the server");
+                        SelectionManager.Busy_Task(false, true);
+                    }
+
+                    @Override
+                    public void onSuccess(String result) {
+                       SaveAsPanel sa = new SaveAsPanel("Rank Product File ",result);
+                        SelectionManager.Busy_Task(false, true);
+                        sa.center();
+                        sa.show();
+                        SelectionManager.Busy_Task(false, true);
+
+                    }
+                });
+    
     }
 
 }

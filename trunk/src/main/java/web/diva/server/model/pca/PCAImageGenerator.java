@@ -10,15 +10,29 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Vector;
 import javax.swing.border.Border;
 import no.uib.jexpress_modularized.pca.computation.PcaResults;
 import no.uib.jexpress_modularized.pca.model.ArrayUtils;
+import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.transcoder.Transcoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.fop.svg.PDFTranscoder;
 import org.jfree.chart.ChartUtilities;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.svg.SVGDocument;
 import web.diva.server.model.beans.DivaDataset;
 import web.diva.shared.beans.UpdatedTooltip;
 
@@ -356,6 +370,7 @@ public class PCAImageGenerator implements Serializable{
                 return new boolean[divaDataset.getDataLength()];
             }
             boolean[] ret = ArrayUtils.toBooleanArray(divaDataset.getDataLength(), sel);
+            System.out.println("ret boolean is "+ret.length);
             return ret;
 //        }
         
@@ -408,9 +423,19 @@ public class PCAImageGenerator implements Serializable{
     public BufferedImage getImage() {
         return image;
     }
+    public int getImageHeight(){
+        return image.getHeight();
     
+    }
+    public int getImageWidth(){
+        return image.getWidth();
+    
+    }
+    
+    @SuppressWarnings("CallToPrintStackTrace")
    public String toImage(){
-        image = (BufferedImage)plot.getImage();
+        image = (BufferedImage)plot.getImage();   
+        
         byte[] imageData = null;
         try{
         imageData = ChartUtilities.encodeAsPNG(image);
@@ -470,6 +495,73 @@ public class PCAImageGenerator implements Serializable{
     public PcaPlot getPlot() {
         return plot;
     }
+     public String toPdfFile(File userFolder, String url) {
+        try {
+            BufferedImage pdfImage = image;
+
+//            DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
+              DOMImplementation domImpl = new SVGDOMImplementation();
+            String svgNS = "http://www.w3.org/2000/svg";
+            SVGDocument svgDocument = (SVGDocument) domImpl.createDocument(svgNS, "svg", null);
+            // Create an instance of the SVG Generator
+            SVGGraphics2D svgGenerator = new SVGGraphics2D(svgDocument);
+            svgGenerator.setSVGCanvasSize(new Dimension(pdfImage.getWidth(), pdfImage.getHeight()));
+            svgGenerator.setPaint(Color.WHITE);
+            svgGenerator.drawImage(pdfImage,0,0,null);
+            
+//            super.forceFullRepaint();
+//            super.paint(svgGenerator);
+            System.out.println("paint new image size is done ");
+            File pdfFile = new File(userFolder,divaDataset.getName()+ "_PCA_PLOT" + ".pdf");
+            if (!pdfFile.exists()) {
+                pdfFile.createNewFile();
+            } else {
+                pdfFile.delete();
+                pdfFile.createNewFile();
+            }
+            // write the svg file
+            File svgFile = new File(pdfFile.getAbsolutePath() + ".temp");
+            OutputStream outputStream = new FileOutputStream(svgFile);
+            BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+            Writer out = new OutputStreamWriter(bos, "UTF-8");
+            
+            System.out.println("just before streaming ");
+            
+            
+            svgGenerator.stream(out, true /* use css */);
+            outputStream.flush();
+            outputStream.close();
+            bos.close();
+            System.out.println("temp file is done ");
+            System.gc();
+            String svgURI = svgFile.toURI().toString();
+            TranscoderInput svgInputFile = new TranscoderInput(svgURI);
+
+            OutputStream outstream = new FileOutputStream(pdfFile);
+            bos = new BufferedOutputStream(outstream);
+            TranscoderOutput output = new TranscoderOutput(bos);
+
+            System.out.println("transcoder output ");
+
+//             write as pdf
+            Transcoder pdfTranscoder = new PDFTranscoder();
+            pdfTranscoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 0.084666f);
+            pdfTranscoder.transcode(svgInputFile, output);
+            System.out.println("transcode done  ");
+            outstream.flush();
+            outstream.close();
+            bos.close();
+            System.gc();
+            System.out.println("process is done  is done");
+            return url + userFolder.getName() + "/" + pdfFile.getName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
+
+    }
+    
     public UpdatedTooltip getTooltipsInformationData() {
 //        if(tooltips !=null){
 //            return tooltips;
@@ -785,7 +877,7 @@ public class PCAImageGenerator implements Serializable{
              return arr;
          }
 
-         return null;
+         return new int[]{};
     }
      
      private double[] getZoomedSelectionRecatangle(int startX, int startY, int endX, int endY) {
@@ -891,7 +983,6 @@ public class PCAImageGenerator implements Serializable{
          double modEndY = plot.yaxis.maximum - (minYM * yUnitPix);
          selectionRect[3]=modEndY;
          
-         System.out.println("selection rectangele is "+ modStartX+"  "+modEndX);
          return selectionRect;
      
      }

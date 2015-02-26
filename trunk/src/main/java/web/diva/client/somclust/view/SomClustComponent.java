@@ -5,7 +5,6 @@
  */
 package web.diva.client.somclust.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ScrollEvent;
@@ -20,8 +19,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.smartgwt.client.types.VerticalAlignment;
-import com.smartgwt.client.util.SC;
+import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.Slider;
 import com.smartgwt.client.widgets.events.ValueChangedEvent;
 import com.smartgwt.client.widgets.events.ValueChangedHandler;
@@ -30,6 +28,7 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
+import web.diva.client.view.core.SaveAsPanel;
 import web.diva.shared.beans.InteractiveColumnsResults;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 import web.diva.shared.beans.SomClusteringResult;
@@ -46,17 +45,16 @@ public class SomClustComponent extends ModularizedListener {
     }
 
     private SelectionManager selectionManager;
-    private String defaultSideTreeImgURL;
     private String defaultTopTreeImgURL;
     private boolean update = true;
     private boolean clustColumn = true;
 
-    private final DivaServiceAsync DivaClientService;
-
-    private final TreeImg sideTreeImg;
-    private TreeImg upperTreeImg;
-    private final HeatmapImg heatMapImg;
-    private final InteractiveClusterSelectionImg interactiveColImage;
+    private final DivaServiceAsync GWTClientService;
+    
+    private final SplitSideTreeImg sideTreeImg;
+    private TopTreeImg upperTreeImg;    
+    private final SplitHeatmapImg heatMapImg;    
+    private final SplitInteractiveClusterColumnSelectionImg interactiveColImage;   
     private final Image scaleImg;
     private final VerticalPanel clusterLayout = new VerticalPanel();
     private final HorizontalPanel topClusterLayout = new HorizontalPanel();
@@ -73,10 +71,10 @@ public class SomClustComponent extends ModularizedListener {
     private final  HorizontalPanel tooltipViewPortLayout;
     private final  HTML maxmizeTooltip = new HTML();
     
-       private  MaxmizeTreeImg maxSideTreeImg;
-    private MaxmizeTreeImg maxUpperTreeImg;
-    private final  HeatmapImg maxHeatMapImg;
-    private final  InteractiveClusterSelectionImg maxInteractiveColImage;
+       private  MaxmizedSplitSideTreeImg maxSideTreeImg;
+    private MaxmizedTopTreeImg maxUpperTreeImg;
+    private final  SplitHeatmapImg maxHeatMapImg;
+    private final  SplitInteractiveClusterColumnSelectionImg maxInteractiveColImage;
     private final  Image maxScaleImg;
     private  VerticalPanel maxClusterLayout = new VerticalPanel();
     private final  HorizontalPanel maxTopClusterLayout = new HorizontalPanel();
@@ -85,26 +83,26 @@ public class SomClustComponent extends ModularizedListener {
     private final  HorizontalPanel maxBottomClusterLayout = new HorizontalPanel();
     
     private  HandlerRegistration uperTreeReg,maxUpperTreeReg;
-    private final HandlerRegistration sideTreeReg,maxSideTreeReg,minSettingBtnReg,clusteringProcessBtnReg,maxmizeBtnReg,settingBtnReg,saveBtnReg,minmizeBtnReg;
+    private final HandlerRegistration sideTreeReg,maxSideTree1Reg,minSettingBtnReg,clusteringProcessBtnReg,maxmizeBtnReg,settingBtnReg,saveBtnReg,minmizeBtnReg;
     private final VLayout mainClusteringPopupBodyLayout ;
     public SomClustComponent(SomClusteringResult somClusteringResults, SelectionManager selectionManager, DivaServiceAsync DivaClientService,boolean clusterColumn) {
         this.clustColumn = clusterColumn;
-        this.DivaClientService = DivaClientService;
+        this.GWTClientService = DivaClientService;
         
-        tooltip.setStyleName("clustertooltip");
-        
+        tooltip.setStyleName("clustertooltip");        
         mainThumbClusteringLayout = new VLayout();
         mainThumbClusteringLayout.setStyleName("somclustering");
+        mainThumbClusteringLayout.setOverflow(Overflow.HIDDEN);
         mainThumbClusteringLayout.setHeight("89%");
         mainThumbClusteringLayout.setWidth("29%");
-        mainThumbClusteringLayout.setMargin(2);
+        mainThumbClusteringLayout.setMargin(0);
         mainThumbClusteringLayout.setMembersMargin(0);
         
 
         HorizontalPanel topLayout = new HorizontalPanel();
         mainThumbClusteringLayout.addMember(topLayout);
         topLayout.setWidth("100%");
-        topLayout.setHeight("18px");
+        topLayout.setHeight("20px");
         topLayout.setStyleName("whiteLayout");
         Label title = new Label("Hierarchical Clustering");
         title.setStyleName("labelheader");
@@ -147,25 +145,52 @@ public class SomClustComponent extends ModularizedListener {
         tooltipPanel.setStyleName("whiteLayout");
         tooltipPanel.add(tooltip);
         tooltipPanel.setCellHorizontalAlignment(tooltip, HorizontalPanel.ALIGN_CENTER);
-        tooltipPanel.setCellVerticalAlignment(tooltip, HorizontalPanel.ALIGN_TOP);
+        tooltipPanel.setCellVerticalAlignment(tooltip, HorizontalPanel.ALIGN_BOTTOM);
         tooltip.setWidth("350px");
         tooltip.setHeight("24px");
-        sideTreeImg = new TreeImg(somClusteringResults.getSideTreeImgUrl(), somClusteringResults.getRowNode(), 2, tooltip,somClusteringResults.getSquareL());//"data:sideTreeImg/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAMPCAIAAAAfPw1YAAAUM0lEQVR42u3d2XYjqRIFUP//T/u+3nZpSCACAtgsP3S7pJy0fQhQDj+/mpbQfkpshHZeKwLLn7jEAkt78RH++QFLC8IksbQwWP/+t8TSBju7v7D++0uwtPZ8evcbiaW1JdOrKur346cGlvaMy0tY73/A0nphfV4MWNpTWC0/YGlDySSxtCmwJJYWCcs8lva9chrhKLG0t5MIA0GlxtKCYP37Loml9cB62W/+80uwwGqH9fnFEkt7BOvzSQ3vFgzWpUO/518t//nNu7NlzLyLpbZ8+gDrwzrBAqvt7b4r1FJgPVwnWGANlWgSC6yoNJJY2gNYOT9g3Q0rb51ggRW/OokFVqwn3xWCFcfo1RfSYIEVtMz//gYssOJgGRWCFdD3GRWCFb+Qb+c4gAVWL6yP6QUWWMMLeZVeYB3h5utPyAIfvl5i3RJIHbC6FyKxwEqBpcYCKx6WUSFYPbBaijmwwIobRUossDoHgGossJ7C6lugM0jBSoElscAKgNU+WQoWWM9gvfvfN+bAAqsL1ocL8CUWWJ2wHvwTWGA9G/Q1jhDBAitiFRILrBhY5rHAioHlnHew4mF9fqPEuhdW1MmlT2YcJNYtsJLe+zG9wAIrYgPMvIMVD+sVMrDAytkosMAKjyuJBVbQqNA572CFwZJYYI2+18w7WFmwJBZYk2CpscBqrsH7vvmRWGBlrwIssEJXIbHAilmFq3TAyirFJBZY09YOFlgpYQZWeTThtxids+FgbZ9Gy4+exAIrS5LEAit+q5zzDlYWLPNYYMUMIL69GCyw2pfvjn5gTYVlVAjWKCznY4E1YxskFliRpboaC6zUUt2oEKwgWN/KLLDA6oUlscBKGQOqscCKHwNKLLDSYamxwIqE9bJblFhghS3N+VhgjVflD5cD1t2w0vIPLLCiYUkssLI6VokF1tDSXhZnEgusAFhv3ggWWI1L+zaDJbHAGn6E/fsXgwVWKCyJdQus1ps+NN0qwvlYV8OKjbpnjsECK2GTJNa0HexrEgusnB2sCetBBQYWWNF9t8QCK3GXwToBVt+NJAMPu/OxDoTVvYTYGktigRU/KpRYYDX0oQPnLoN1MaxMqWCBFVRjuT8WWHn7KbHASt5lsM6HteIHrNNhrdplsMDKKLPAAiu6q5VYYMXAklhg5UWUGgus6IiSWGDl9X1qLLBS+j6JBVZo3/fuTWCBFQlLYoH1qNf7t+9zlQ5YMavzLB2w1sNSY90LK+M2Ic5uAGvOBWFggRW0OokFVmcv2XL1DlhgpZRuYJWHlfEzYZfBum4HJRZYdWGpsezgEKzn/anEAivgxZ4JbQdHBwRdCwHLDqYUZGDZwZT5DrDsYM4uO+52MHA3/+8W9Y67HYzC5P5YdjBK0n8wSSw7GLUvP66EPnUHf6a3R2sH6wBYBfcFLLAiVyexwMrqeSUWWJnswAIrZavAAktigVX06KmxwMoq4SUWWPEr/fG8QrCiUurLHARYYHWs6Mc572DNhCWxwGouz9+eIWPmHayRxT5ZkcQCKwWWGgusHlidJ22BBVbUYsE6E1b4maLNJT9Yp8Kauc1GhWAFbPOnWQaJBdYIrO+/AQus57H0Lo+MCsGatDtg7bGDrcO3VbAk1n6wSiWW7wrBmr2nEguszF0GK6lHiB0kSay7YEms3zenLIMFVuRxkFhgRXb6aiyw4vdUYoGVBUuNBVb6nkossBI/ILDAelStN9f1YIH19e2tax9NrKQb8YJVGdbTc7MqJA1Ye8F6+U9/qIEF1iis16e9gwXWCKy3bwELrCewvhbEkVUzWJfA6lgyWGD1ry5rnA8WWBILrLDVPbrAEKzLYY10ZS+7RYkF1ujb/7UosY6CNVI9R/Wk5rFOg5WxbX2wjArByq39JRZY/bASz1cB63JYEgusAFgP73IjscBqhvXuf4Ov0gHrclhZ9yAF62BYTRV58D1IwToVVusrjQrBmrQXYIEV+UqJBVbPK59fyQcWWDk3PALrHlgzrxYG6y5Y4dvmu0Kwss6QkVhgxZ/T9/ISe4kFVgCsl5bAAqvn1Kt3y5FYYLXBej7klFhgRcL6m21ggRUIS40F1ttffp2WSr9HI1iBr4z9pAZhBYwcwaoDq05ijeypxAIrBpazG8Dqh/Wwm5ZYYIVVVPFP/wILrLd5BtapsJ4+WDDnDC2wzoQ1spCRdUkssGLW5Zx3sLJgSSywYmA5gxSsLFjv/ltigRUG6/VMKVhgPZyqaHucDlhgZSwHLLDCliOxwIpcjhoLrLDP68vt/CQWWEmLBat5QBT1WJGTYDm7IXJLwDIqBGvScZZYYGX1hhLrRlh5TWLdC2vmcQMLrJyBIVhgGRWCVRuTxJoPa3C6tSws52OthDW+tMqwJBZYKZMUaiyw0jdMYoEVtmGuKwSrs+/reS9YYH3t3XoWAhZYTbCCT1UDC6ymLQELrMcDvQePHJdYYH3q17rZSSyw3i62b35BYoE1BOvhi8ECa/QgGBWCFQ/LqBCsdFgS60ZYg/dRbp0WBesiWBN2QWKBlXvkwQIrIa4kFliBRZvE2hJW1MXKgYuVWNvDKrj8L38JYIEVO38hscDKXB1YYKWkF1j3wJpwGyOJdR2s2WrBAkuNdTisoxpYRWAd1sACKyd0wQIr0JPEAiuyEJRYYMUfH8/SASsLllEhWKMdn1EhWPFHo+GkMbDAGoHlKp3bYcV8tfz5kq+zE2vaVxHbwcp4y0X3bhi8QACsVli3jArBmgnrolEhWIGwnN0AVq2tBQssiQXWGAI1FljxWz4HlsQCK3IHr3iWDlgdL+i7L/ddT7EHqw/WyFuuuK4QrDxYj74llFhgdcB6ukCw7oEVcvespwsE6xJYIW+/+gxSsFJhmXmfActF7RJrvxAqmFgNf1dggfUbdOKyxAIrZY0SC6yYNd71LB2wFm6DxAIreXvAAitlSgUssDIWC9Y5sBbOu0qsY2HNDMJL7/MO1oQglFhgrSm8wAIrp54DC6wUfGCBlZJkYIEV2CdKLLBiSiuJBVb8gf1wuMACq2HQ1zA8BAushweh7YIAsMB6DsvZDWB1dnbjKiTW1bDyDqDEAivgILx9xBxYYA3VUu+msorAKnJN8AGwJtTWjyr9OrAk1rTdjz3apUeFYG0Kq/qoEKytYUkssFKK2rrnvINVYfclViKsA1oJ32BdNUc1L7TAAisq1CUWWPHLl1hgjdaaaiyw4hfy9KJ7sM6DlTq0NI+lzTuGEkubdAzB0nL6U7C0FJpgacc+gAWsA2YoJJb26IhJLLACKIQfRrD0aL+BsCQWWGGwSl9XCNZesL4/KBossHoeR/jtcfZggdWztO+PswcLrIdLa5IDFlgNsL6uS2KBFQzLqBCsLFgSC6zOoeLDf5VYYAWPEyUWWPGw1FhgZS1fYoGVu3ywwBoq552PBdbcjQELrJRgAwus8I5SYoEVWXVJLLDi12jmHaz4lPqteX+s3zm3tL+grU2pcon162LA2sew6avoYxMLrFUpJbHAGoK1zcw7WPXr1OYlgAXW10V13DkSLLBGYUkssPphNTyeSWKBNb6ov9/klPquEKytYdX9rhCstccwpPiu+F0hWMthjS/KqBCsFFhGhWAlwpJYYEXCKnpHP7C2g/Wu2JdYYI3C+rIEsC6B1TN7/vgtviu8Glbgwd/jjn5g7QjL+VhgxcP6vjFggRV7tZXEOhBW92Oeo1YqseRZ2xjwiVeJBVb6YsECK6f/BQuslNWBpbQ/9pnQYB3oGCwtJQXB0kYMSSwt/gP6dI4DWNoILDPvWvoHJLG0nskIo0It/vhLLG0qLDWWNgrL2Q1ac/0UeIWPxJJGAcffzDtYU49/IVjawlMNAu4CUjOxtOWJFcsXLLBy+hywwEpZKVimG04+g1Q7TTNYWkqwgWXKI+Nxh2AJYIkFVj4siQVW7dDySYBlVAiWxALr7iMAVvDumLOQWFmwJJbEAkuNBZZRoRpLA0tiSSywNirOHMTwXuwiPR8e8wTWnwN3VWJF/c1ILLD6t7btxWCBlRJvYB0Gq0hFeA6sIqV3BVixL759HivqIvHbYCUhAetqWIMLlFhbwioykdY5AQFWZVjFPxSJBdb0jwMssFKG2GCdB6vEtAtY4bBqXvMefjAl1l2JNXNAKrHAmo4PLLCMCsEqH1QSawtY+14nAVZdWFuWVhILLDUWWBuGFlhXwZr3DBWwboOVtBCJBVZW7EmsdJ2X3HNbYim9Z+8gWGDl9Ixg3QZrTvcK1l2w5mEFCyw1Flj7dKZg3QzL2Q1gVTloEusQWLvOl4JVH1blhUsssLLiUGKBNZEmWEl7dMBlq2qsorD2SixPpgArC4rEAiv+jcH3mAQLrL6Ek1jL6ozlpc/Kggys4om16QaABVZOgoJ1MCz3bgBrmyaxwFr6cYCVB8szocESMxILrC3GAWDpvzKcgKVJLLDUWGDdHl1gaU16JJYWfyQf3ctPYl1dXPc9N9XdZmTMtKVJLLDmLQ0ssHI6VrDAStkksM6ovsttP1gHbPy8m2w/lg0WWAFLllhgNfe8aiyw4l//5YniRoVgdcPqnKMH6wxY5a7SBmvtNMGS+YIJqwOrxEoPgCWxwJrxRB2wboQ1AytYYKmxam1M7PBq43AyKgQrqvaSWNvA2ujCVIm1DazzjiFYYOUEJ1hgGRVWhKVJrO3XKLFOhrX745PUWHVhHdwVSqwSsCSWxAJLjaUrNCq8GZYmsUxfSSyJJbHA0n7dHwusvBogPrGOnNw7ElbeEa54+xuJtdHxaXsaOVhgpWQeWDvC2uBia7A2hbV2syUWWM1vCck/sMDqeaXEAqunLFNj7Q2r5qRdTKcJ1lpYBXc25qk7YIGVQhAssFKOElhgpaQXWDMr7rC7qJc/tw+szg/1mJkLiQXWVh8HWGCllAdggRVSxkkssOK3TWKVg3XsFVxgLYS19fF0dgNYWWl6UWIddkXQxvLOgyWxSnwcYIGVMp4A67ChXBESYB01+bRk7yQWWFl5LLHAmmURLLCMCsHap+sEC6zBSktinQlr7aSDxDoZVsFlggVWTgqCteSDPP4bcbCWwVq4PU7/ACsLlsQCKyV+0tcI1u6wktY+yAasZTVNfVjP/0liValplsMauvfVhdcVgrVkNyUWWJOqQLDAihxsSiywko8SWHP+lIPz4JJLMq6Ctd2slcQ6GZZnQoMlsSSWxJJYEktigQXWcCqDdQks93kHa8ttkFh7f6i71NNg7QerQmIZFYLV/EbPhAYrqw+VWGAV3Vqw9hvq77G1YEkso0Kwdni2qsQCK6pnlFgnwKp2poLEOgHWLhsPFlg5GQkWWEaFG8NyBilYmsQCq2yCgnVnRyaxSsA6L7GMCsFa3xVKLLDWxJvEAisr3iQWWFPwgQWWUSFYdQt8ibUS1j1zXWDNhiWxwLoalhoLrJIhBxZYgX2lxAIroMCSWGDFb+fn14A1e45gl4He6NLAuiexmm44Y1QI1hpYFyVW0h5VgzWhIx5f2tXnRu4Lq8LBuSWxwCrVEYMFlsSaPjUQfpTWbs/Mw3ImrPopeMD23JhYYK3fSLDAciU0WFkOJBZY6yNQYoGVFYESC6xFEMECy6gQrH26S7DugTVz5AhWIViVr0GVWHvD2nr5EuteWO6aDJZR4QWwLvk7l1hTYc3c+OVEJBZY8YuKvNoCLLD6ck5igbWiGgOr2sYfMg4A68i2/tsCsMAaDFGJdReslQ+EllhaUvKBpeUkH1iaUSFY+wQbWFpIzyixtPhaXmJpowW7GkuLn2L4/E8SSyB1zhU8fxdYAqn5BRJLGnV+SxOwJWBdlUYPE8s572DFw4rZErAuhOW6wtth7fuBgrV9As3v5h65BwuskciUWGDFb4DEughWkSocrKNgzd8AibXlEG+L24RIrP3ip/5fvsQCa+7OggVWSi8JFljdtaDEWlZ6D/4Zr4IlsabCWpJYS5oa63BYW3TZEgusrJi8JbFqdhCnnigmsSTWxA8CrJmwLmpgyRuJtf08lsQCS5NYYBUcfYOl9QGSWFr8kOXFndYkltbUqT1/18mJZV4g9nD1Pw8MLLAyDiZYYPVeOXjVqBCsIocLrNtr86znBYN1eSCNHK4PRsECa+g50BILrABYz98LFlj9Qz2jwnsL81UPMAfr8D3NGvSZxwJrzbaBBVZKeoEFVp8eiQVW/PKvOx/rAFixJXLSJRHOxzp5+7P3tG1+QWKBNWH5YIGV042CBVbKXoAFVkqqgbU1rLIX04Nl+yXWhh/MtYUvWOU2RmKBVQ6WGgusLFgSC6wTYKmxwJobYGCBFdshSiywIksriQVW/H69OO8PrIKwqp1V0HYNtMQ6b2Om3ePeOe9gxefTr6t0wJqTTxILrEd5E1D2gXUnrPTYAwuskG2WWIfDCngAfcRMB1i/GYe4+J9uxlZJrKmLugeWGgus32Wn/4F1NqwZnwJYYKUEIVhgZXSAYIEVtpESC6z82QewwEo5JwKsk2BNmxww834drNh39Z8BARZYTTexfbgisMDqhGXmHayhysyoEKz41bUuUGKBFbbA11euggXW+PyFxFoAq8LdquYfcLAK5c2mG2xUCNbELQELrJTQAguskKpRYoE1OuaQWGDFL+fpNbFHwrr2YpPAx6WMHl6JdWdiZd++AazTYK29yl5inQmrzq6BdS8sV0KDteGnABZYKeEHFljjvafEAmuo5JJYYMXvadPRAAusBlhGhWA1azAqBCt+F/ov85JYYHW/zDOhz4eVNAcef7IDWNvBmr8LnqUDVhYs3xWCVWIXwDof1poG1ipYZ39kYK2EdfJAFSywxvNVYoHV3zVLrFqPlYutllJhRQ4awNprO1dBNyo8HNYu2wOW7czJQrBsZ8regXVIQlRrYGkSC6x9QtTR0TI8+OPWJJa2T/sfzLKROygb1PEAAAAASUVORK5CYII=");
-        heatMapImg = new HeatmapImg(somClusteringResults.getHeatMapImgUrl(), somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues(), tooltip,1,somClusteringResults.getSquareL(),somClusteringResults.getSquareW());
-        interactiveColImage = new InteractiveClusterSelectionImg(somClusteringResults.getInteractiveColumnImgUrl(),somClusteringResults.getRowNames(),tooltip,1,somClusteringResults.getSquareL());
+        
+        sideTreeImg = new SplitSideTreeImg(somClusteringResults.getSideTreeImg(), somClusteringResults.getRowNode(), 2, tooltip,somClusteringResults.getSquareL(),somClusteringResults.getSideTreeWidth(),somClusteringResults.getSideTreeHeight());        
+        heatMapImg = new SplitHeatmapImg(somClusteringResults.getHeatMapImg(), somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues(), tooltip,1,somClusteringResults.getSquareL(),somClusteringResults.getSquareW(),somClusteringResults.getHeatmapWidth(),somClusteringResults.getReIndexer(),selectionManager);
+        interactiveColImage = new SplitInteractiveClusterColumnSelectionImg(somClusteringResults.getInteractiveColumnImgUrl().getInteractiveColumn(),somClusteringResults.getRowNames(),tooltip,1,somClusteringResults.getSquareL(),somClusteringResults.getInteractiveColumnWidth(),somClusteringResults.getReIndexer(),selectionManager);
+       
         scaleImg = new Image(somClusteringResults.getScaleImgUrl());
         
         mainClusterPanelLayout.setWidth("100%");
-        mainClusterPanelLayout.setHeight("95%");
+        mainClusterPanelLayout.setHeight("96%");
         mainClusterPanelLayout.setStyleName("whiteLayout");
         mainClusterPanelLayout.setAlwaysShowScrollBars(false);
-        
+          if (clusterColumn) {
+            topClusterLayout.setHeight(70 + "px");
+            topClusterLayout.setWidth("20%");
+            upperTreeImg = new TopTreeImg(somClusteringResults.getUpperTreeImgUrl(), somClusteringResults.getColNode(), 1, tooltip,somClusteringResults.getSquareL());
+            spacer.setSize((somClusteringResults.getSideTreeWidth()+ "px"), (70 + "px"));
+            spacer.setStyleName("borderless");
+
+            spacer2.setSize((somClusteringResults.getInteractiveColumnWidth()+ "px"), (70 + "px"));
+            spacer2.setStyleName("borderless");
+
+            topClusterLayout.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
+            topClusterLayout.add(spacer);
+            topClusterLayout.setCellHorizontalAlignment(spacer, HorizontalPanel.ALIGN_LEFT);
+            topClusterLayout.setCellWidth(spacer, spacer.getWidth() + "px");
+
+            topClusterLayout.add(upperTreeImg);
+            topClusterLayout.setCellHorizontalAlignment(upperTreeImg, HorizontalPanel.ALIGN_LEFT);
+            topClusterLayout.setCellWidth(upperTreeImg, somClusteringResults.getTopTreeWidth()  + "px");
+            topClusterLayout.add(spacer2);
+            topClusterLayout.setCellHorizontalAlignment(spacer2, HorizontalPanel.ALIGN_LEFT);
+            topClusterLayout.setCellWidth(spacer2, somClusteringResults.getInteractiveColumnWidth()+"px");
+        } else{
+            topClusterLayout.setHeight(0 + "px");
+        }
+
        
 
         mainClusterPanelLayout.add(clusterLayout);
         clusterLayout.setWidth("100%");
-        clusterLayout.setHeight("100%");
+        clusterLayout.setHeight("99%");
         clusterLayout.setSpacing(0);
+        clusterLayout.getElement().setAttribute("style", "overflow:hidden;");
 
         clusterLayout.add(topClusterLayout);
         clusterLayout.setCellHorizontalAlignment(topClusterLayout, VerticalPanel.ALIGN_CENTER);
@@ -180,42 +205,20 @@ public class SomClustComponent extends ModularizedListener {
         clusterLayout.setCellVerticalAlignment(bottomClusterLayout, VerticalPanel.ALIGN_MIDDLE);
        
         
-        if (clusterColumn) {
-            topClusterLayout.setHeight(70 + "px");
-            topClusterLayout.setWidth("20%");
-            upperTreeImg = new TreeImg(somClusteringResults.getUpperTreeImgUrl(), somClusteringResults.getColNode(), 1, tooltip,somClusteringResults.getSquareL());
-            spacer.setSize((sideTreeImg.getWidth() + "px"), (70 + "px"));
-            spacer.setStyleName("borderless");
-
-            spacer2.setSize((interactiveColImage.getWidth() + "px"), (70 + "px"));
-            spacer2.setStyleName("borderless");
-
-            topClusterLayout.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
-            topClusterLayout.add(spacer);
-            topClusterLayout.setCellHorizontalAlignment(spacer, HorizontalPanel.ALIGN_LEFT);
-            topClusterLayout.setCellWidth(spacer, spacer.getWidth() + "px");
-
-            topClusterLayout.add(upperTreeImg);
-            topClusterLayout.setCellHorizontalAlignment(upperTreeImg, HorizontalPanel.ALIGN_LEFT);
-            topClusterLayout.setCellWidth(upperTreeImg, upperTreeImg.getWidth() + "px");
-            topClusterLayout.add(spacer2);
-            topClusterLayout.setCellHorizontalAlignment(spacer2, HorizontalPanel.ALIGN_LEFT);
-            topClusterLayout.setCellWidth(spacer2, spacer2.getWidth()+"px");
-        } else{
-            topClusterLayout.setHeight(0 + "px");
-        }
-
+      
 
        
         initThumLayout(somClusteringResults);
-        clustInfoLabel.setWidth(sideTreeImg.getWidth() + "px");
+        clustInfoLabel.setWidth(somClusteringResults.getSideTreeWidth()+ "px");
         clustInfoLabel.setHeight("20px");
         clustInfoLabel.setStyleName("info");       
         bottomClusterLayout.add(clustInfoLabel);
         bottomClusterLayout.add(scaleImg);
         Image spacer3 = new Image("images/w.png");
-        spacer3.setWidth(interactiveColImage.getWidth()+"px");
+        spacer3.setWidth(somClusteringResults.getInteractiveColumnWidth()+"px");
+        spacer3.setHeight("20px");
           bottomClusterLayout.add(spacer3);
+          
         if (upperTreeImg != null) {
            uperTreeReg= upperTreeImg.addClickHandler(new ClickHandler() {
                 @Override
@@ -225,22 +228,47 @@ public class SomClustComponent extends ModularizedListener {
                     if (upperTreeImg.isSelectedNode()) {
                         updateUpperTreeSelection(x, y);
                     }
+                    else{
+                     Selection selection = new Selection(Selection.TYPE.OF_COLUMNS, new int[]{});
+                    SomClustComponent.this.selectionManager.setSelectedColumns(selection);
+                    
+                    }
                 }
             });
         }
 
-       sideTreeReg=  sideTreeImg.addClickHandler(new ClickHandler() {
+//       sideTreeReg=  sideTreeImg1.addClickHandler(new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                int y = (int) (event.getY());
+//                int x = ((int) (event.getX()));
+//                if (sideTreeImg1.isSelectedNode()) {
+//                    updateSideTreeSelection(x, y);
+//                }else{
+//                     Selection selection = new Selection(Selection.TYPE.OF_ROWS, new int[]{});
+//                    SomClustComponent.this.selectionManager.setSelectedRows(selection);
+//                    
+//                    }
+//
+//            }
+//
+//        });
+         sideTreeReg=  sideTreeImg.addDomHandler( new ClickHandler() {
+
             @Override
             public void onClick(ClickEvent event) {
-                int y = (int) (event.getY());
+                 int y = (int) (event.getY());
                 int x = ((int) (event.getX()));
                 if (sideTreeImg.isSelectedNode()) {
                     updateSideTreeSelection(x, y);
-                }
-
+                }else{
+                     Selection selection = new Selection(Selection.TYPE.OF_ROWS, new int[]{});
+                    SomClustComponent.this.selectionManager.setSelectedRows(selection);
+                    
+                    }
             }
-
-        });
+        },ClickEvent.getType());
+         
         this.selectionManager = selectionManager;
         this.selectionManager.addSelectionChangeListener(SomClustComponent.this);
         classtype= 4;
@@ -251,6 +279,16 @@ public class SomClustComponent extends ModularizedListener {
             @Override
             public void onClick(ClickEvent event) {
                 if (clusteringPopup.isShowing()) {
+                    maxClusterLayout.getElement().setAttribute("style", "overflow-y: auto; -ms-transform: rotate(90deg) scale(" + 1 + "); -webkit-transform:rotate(90deg) scale(" + 1 + ");  transform: rotate(90deg) scale(" + 1 + "); position: absolute;  top:" + top + "px;   left:" + 100 + "px; ");
+                    maxSideTreeImg.setScale(1);                    
+                maxHeatMapImg.setScale(1);
+                maxInteractiveColImage.setScale(1);     
+                
+                    zoomSlider.setValue(1.0);
+                    nvigatorSlider.setValue(0.0);
+                    if (clustColumn) {
+                        maxUpperTreeImg.setScale(1);
+                    }
                     clusteringPopup.hide(true);
                 }
                 clusteringSettingPanel.center();
@@ -279,7 +317,9 @@ public class SomClustComponent extends ModularizedListener {
 //                maxClusterLayout.getElement().setAttribute("style", "position: relative;" + ("top:" + (-maxClusterLayout.getOffsetHeight()) + "px ;"));
 
                  maxClusterLayout.getElement().setAttribute("style", "overflow-y: auto; -ms-transform: rotate(90deg) scale(" + 1 + "); -webkit-transform:rotate(90deg) scale(" + 1 + ");  transform: rotate(90deg) scale(" + 1 + "); position: absolute;  top:" + top + "px;   left:" + 100 + "px; ");
-                maxSideTreeImg.setScale(1);
+                maxSideTreeImg.setScale(1);                
+                maxHeatMapImg.setScale(1);
+                maxInteractiveColImage.setScale(1);
                 zoomSlider.setValue(1.0);
                 if (clustColumn) {
                     maxUpperTreeImg.setScale(1);
@@ -347,25 +387,46 @@ public class SomClustComponent extends ModularizedListener {
         maxTopBtnLayout.add(minmizeBtn);
         maxTopBtnLayout.setCellHorizontalAlignment(minmizeBtn, HorizontalPanel.ALIGN_RIGHT);
 
-       saveBtnReg =  saveBtn.addClickHandler(new ClickHandler() {
+      ClickHandler saveHandler = new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
-//                Window.open(thumbChart.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
+                SelectionManager.Busy_Task(true, false);
+//                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
+                String quality ="normal";
+                GWTClientService.exportClusteringAsPdf(quality, new AsyncCallback<String>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Window.alert("ERROR IN SERVER CONNECTION");
+                        SelectionManager.Busy_Task(false, false);
+                    }
 
+                    @Override
+                    public void onSuccess(String result) {
+                        SaveAsPanel sa = new SaveAsPanel("Hierarchical Clustering", result);
+                        sa.center();
+                        sa.show();
+                        SelectionManager.Busy_Task(false, false);
+                    }
+                });
             }
-        });
+        };
+      saveBtnReg =  saveBtn.addClickHandler(saveHandler);
         minmizeBtnReg = minmizeBtn.addClickHandler(new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
                 maxClusterLayout.getElement().setAttribute("style", "overflow-y: auto; -ms-transform: rotate(90deg) scale(" + 1 + "); -webkit-transform:rotate(90deg) scale(" + 1 + ");  transform: rotate(90deg) scale(" + 1 + "); position: absolute;  top:" + top + "px;   left:" + 100 + "px; ");
-                maxSideTreeImg.setScale(1);
+                maxSideTreeImg.setScale(1);                
+                maxHeatMapImg.setScale(1);
+                maxInteractiveColImage.setScale(1);
                 zoomSlider.setValue(1.0);
+                nvigatorSlider.setValue(0.0);
                 if (clustColumn) {
                     maxUpperTreeImg.setScale(1);
                 }
                 clusteringPopup.hide (true);
+                
             }
 
             
@@ -399,16 +460,20 @@ public class SomClustComponent extends ModularizedListener {
             
         
        
-        framMaxMainClusterPanelLayout.setWidth("100%");//(RootPanel.get("diva_content_area").getOffsetHeight()-100)+"px");//((sideTreeImg.getWidth()+heatMapImg.getWidth()+10)+"px");
+        framMaxMainClusterPanelLayout.setWidth("100%");//(RootPanel.get("diva_content_area").getOffsetHeight()-100)+"px");//((sideTreeImg1.getWidth()+heatMapImg.getWidth()+10)+"px");
         framMaxMainClusterPanelLayout.setHeight("100%");//((heatMapImg.getHeight()+70+50)+"px");        
         framMaxMainClusterPanelLayout.setAlwaysShowScrollBars(false);
         
-        maxSideTreeImg = new MaxmizeTreeImg(somClusteringResults.getSideTreeImgUrl(), somClusteringResults.getRowNode(), 1,maxmizeTooltip,somClusteringResults.getSquareL());//"data:sideTreeImg/png;base64,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");
-
-        maxHeatMapImg = new HeatmapImg(somClusteringResults.getHeatMapImgUrl(), somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues(), maxmizeTooltip, 2,somClusteringResults.getSquareL(),somClusteringResults.getSquareW());
-        maxInteractiveColImage = new  InteractiveClusterSelectionImg(somClusteringResults.getInteractiveColumnImgUrl(),somClusteringResults.getRowNames(),maxmizeTooltip,2,somClusteringResults.getSquareL());
+        maxSideTreeImg = new MaxmizedSplitSideTreeImg(somClusteringResults.getSideTreeImg(), somClusteringResults.getRowNode(), 1,maxmizeTooltip,somClusteringResults.getSquareL(),somClusteringResults.getSideTreeWidth());//"data:sideTreeImg1/png;base64,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");
+        
+        maxHeatMapImg = new SplitHeatmapImg(somClusteringResults.getHeatMapImg(), somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues(), maxmizeTooltip, 2,somClusteringResults.getSquareL(),somClusteringResults.getSquareW(),somClusteringResults.getHeatmapWidth(),somClusteringResults.getReIndexer(),selectionManager);
+       
+       maxInteractiveColImage = new  SplitInteractiveClusterColumnSelectionImg(somClusteringResults.getInteractiveColumnImgUrl().getInteractiveColumn(),somClusteringResults.getRowNames(),maxmizeTooltip,2,somClusteringResults.getSquareL(),somClusteringResults.getInteractiveColumnWidth(),somClusteringResults.getReIndexer(),selectionManager);
+        
         maxScaleImg = new Image(somClusteringResults.getScaleImgUrl());
-        final int maxClusterheight = sideTreeImg.getWidth()+ heatMapImg.getWidth()+interactiveColImage.getWidth();
+        
+      
+        final int maxClusterheight = somClusteringResults.getSideTreeWidth()+ somClusteringResults.getHeatmapWidth()+somClusteringResults.getInteractiveColumnWidth();
      
         framMaxMainClusterPanelLayout.setStylePrimaryName("scrolx");
         framMaxMainClusterPanelLayout.getElement().setAttribute("style","overflow-y: auto; position: relative; zoom: 1; width: 100%; height:100%;");
@@ -418,7 +483,7 @@ public class SomClustComponent extends ModularizedListener {
         int toptreewidth = 0;
         if(clustColumn)
             toptreewidth = 70;
-        top = (toptreewidth+sideTreeImg.getHeight()-(sideTreeImg.getWidth()+heatMapImg.getWidth()+interactiveColImage.getWidth())+sideTreeImg.getWidth())*-1;
+        top = (toptreewidth+somClusteringResults.getSideTreeHeight()-(somClusteringResults.getSideTreeWidth()+somClusteringResults.getHeatmapWidth()+somClusteringResults.getInteractiveColumnWidth())+somClusteringResults.getSideTreeWidth())*-1;
             
 
 
@@ -443,26 +508,26 @@ public class SomClustComponent extends ModularizedListener {
         //top clustering layout include spacer 1 and rotated side tree
         if (clusterColumn) {
             maxTopClusterLayout.setHeight(70 + "px");
-            maxTopClusterLayout.setWidth("10%");//(sideTreeImg.getWidth()+upperTreeImg.getWidth()+interactiveColImage.getWidth())+"px");
-            maxUpperTreeImg = new MaxmizeTreeImg(somClusteringResults.getUpperTreeImgUrl(), somClusteringResults.getColNode(), 2, maxmizeTooltip, somClusteringResults.getSquareL());
-            maxSpacer.setSize((sideTreeImg.getWidth() + "px"), (70 + "px"));
+            maxTopClusterLayout.setWidth("10%");//(sideTreeImg1.getWidth()+upperTreeImg.getWidth()+interactiveColImage.getWidth())+"px");
+            maxUpperTreeImg = new MaxmizedTopTreeImg(somClusteringResults.getUpperTreeImgUrl(), somClusteringResults.getColNode(), 2, maxmizeTooltip, somClusteringResults.getSquareL());
+            maxSpacer.setSize((somClusteringResults.getSideTreeWidth() + "px"), (70 + "px"));
             maxSpacer.setStyleName("borderless");
 
-            maxSpacer2.setSize((interactiveColImage.getWidth() + "px"), (70 + "px"));
+            maxSpacer2.setSize((somClusteringResults.getInteractiveColumnWidth() + "px"), (70 + "px"));
             maxSpacer2.setStyleName("borderless");
 
             maxTopClusterLayout.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
 
             maxTopClusterLayout.add(maxSpacer);
             maxTopClusterLayout.setCellHorizontalAlignment(maxSpacer, HorizontalPanel.ALIGN_LEFT);
-            maxTopClusterLayout.setCellWidth(maxSpacer, sideTreeImg.getWidth() + "px");
+            maxTopClusterLayout.setCellWidth(maxSpacer, somClusteringResults.getSideTreeWidth() + "px");
 
             maxTopClusterLayout.add(maxUpperTreeImg);
             maxTopClusterLayout.setCellHorizontalAlignment(maxUpperTreeImg, HorizontalPanel.ALIGN_LEFT);
-            maxTopClusterLayout.setCellWidth(maxUpperTreeImg, maxUpperTreeImg.getWidth() + "px");
+            maxTopClusterLayout.setCellWidth(maxUpperTreeImg, somClusteringResults.getTopTreeWidth() + "px");
             maxTopClusterLayout.add(maxSpacer2);
             maxTopClusterLayout.setCellHorizontalAlignment(maxSpacer2, HorizontalPanel.ALIGN_LEFT);
-            maxTopClusterLayout.setCellWidth(maxSpacer2, interactiveColImage.getWidth() + "px");
+            maxTopClusterLayout.setCellWidth(maxSpacer2, somClusteringResults.getInteractiveColumnWidth() + "px");
         } else {
             maxTopClusterLayout.setHeight(0 + "px");
         }
@@ -547,10 +612,12 @@ public class SomClustComponent extends ModularizedListener {
 
                 maxClusterLayout.getElement().setAttribute("style", "overflow-y: auto; -ms-transform: rotate(90deg) scale("+event.getValue()+"); -webkit-transform:rotate(90deg) scale("+event.getValue()+");  transform: rotate(90deg) scale("+event.getValue()+"); position: absolute;  top:"+top+"px;   left:"+ 100+"px; ");
                 maxSideTreeImg.setScale(event.getValue());
+                maxHeatMapImg.setScale(event.getValue());
+                maxInteractiveColImage.setScale(event.getValue());
                 if(clustColumn)
                     maxUpperTreeImg.setScale(event.getValue());
 //            maxSideTreeImg.onZoom();
-//            maxSideTreeImg.setHeight((sideTreeImg.getHeight()*event.getValue())+"px");
+//            maxSideTreeImg.setHeight((sideTreeImg1.getHeight()*event.getValue())+"px");
             
             
             
@@ -580,19 +647,27 @@ public class SomClustComponent extends ModularizedListener {
         if (maxUpperTreeImg != null) {
            maxUpperTreeReg= maxUpperTreeImg.addClickHandler(new ClickHandler() {
                 @Override
-                public void onClick(ClickEvent event) {
-                    int y = (int) (event.getY());
-                    int x = ((int) (event.getX()));
-                    
+                public void onClick(ClickEvent event) {                 
                     if (maxUpperTreeImg.isSelectedNode()) {
-                        x = upperTreeImg.getHeight()-x;
+                         int x = maxUpperTreeImg.getXcor(); 
+                        int y = maxUpperTreeImg.getYcor();
+                        
                         updateUpperTreeSelection(y, x);
+                    }
+                    else{
+                     Selection selection = new Selection(Selection.TYPE.OF_COLUMNS, new int[]{});
+                    SomClustComponent.this.selectionManager.setSelectedColumns(selection);
+                    
                     }
                 }
             });
         }
 
-       maxSideTreeReg= maxSideTreeImg.addClickHandler(new ClickHandler() {
+     
+               
+               
+               
+      ClickHandler sideTreeClickHandler =     new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 if (maxSideTreeImg.isSelectedNode()) {
@@ -600,10 +675,18 @@ public class SomClustComponent extends ModularizedListener {
                    int y=maxSideTreeImg.getYcor();
                     updateSideTreeSelection(y, x);
                 }
+                else{
+                     Selection selection = new Selection(Selection.TYPE.OF_ROWS, new int[]{});
+                    SomClustComponent.this.selectionManager.setSelectedRows(selection);
+                    
+                    }
 
             }
 
-        });        
+        };  
+      
+    
+      maxSideTree1Reg= maxSideTreeImg.addDomHandler(sideTreeClickHandler,ClickEvent.getType()); 
          somClusteringResults = null;
         clusteringPopup.setWidget(mainClusteringPopupBodyLayout);
         mainClusteringPopupBodyLayout.setStyleName("modalLayout");
@@ -648,7 +731,6 @@ public class SomClustComponent extends ModularizedListener {
     private final Label clustInfoLabel = new Label(),maxClustInfoLabel = new Label();
     
     private void initThumLayout(SomClusteringResult somClusteringResults) {
-        this.defaultSideTreeImgURL = somClusteringResults.getSideTreeImgUrl(); 
         if (clustColumn) {               
             upperTreeImg.setUrl(somClusteringResults.getUpperTreeImgUrl());
             defaultTopTreeImgURL = somClusteringResults.getUpperTreeImgUrl(); 
@@ -657,22 +739,20 @@ public class SomClustComponent extends ModularizedListener {
             spacer2.setVisible(clustColumn);
         }        
 
-//        sideTreeImg.setUrl(somClusteringResults.getSideTreeImgUrl());//"data:sideTreeImg/png;base64,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");
-//        heatMapImg .setUrl(somClusteringResults.getHeatMapImgUrl());
-        heatMapImg.updateTooltips(somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues());       
-//        interactiveColImage.setUrl(somClusteringResults.getInteractiveColumnImgUrl());
+//        sideTreeImg1.setUrl(somClusteringResults.getSideTreeImgUrl());//"data:sideTreeImg1/png;base64,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");
+//        heatMapImg .setUrl(somClusteringResults.getHeatMapImg());
+        heatMapImg.updateTooltips(somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues()); 
         interactiveColImage.updateTooltips(somClusteringResults.getRowNames());
-//         scaleImg.setUrl(somClusteringResults.getScaleImgUrl());
-    
-//        middleClusterLayout.setWidth("20%");
-//        interactiveColImage.setSize("20px", sideTreeImg.getHeight() + "px");
-        middleClusterLayout.setHeight(sideTreeImg.getHeight() + "px");
+        middleClusterLayout.setHeight(somClusteringResults.getSideTreeHeight() + "px");
         middleClusterLayout.add(sideTreeImg);
-        middleClusterLayout.setCellWidth(sideTreeImg, sideTreeImg.getWidth() + "px");
-        middleClusterLayout.add(heatMapImg);
-        middleClusterLayout.setCellWidth(heatMapImg, heatMapImg.getWidth() + "px");
+        middleClusterLayout.setCellWidth(sideTreeImg, somClusteringResults.getSideTreeWidth() + "px");
+        VerticalPanel heatmapLayout = new VerticalPanel();
+        heatmapLayout.add(heatMapImg);
+        middleClusterLayout.add(heatmapLayout);
+        middleClusterLayout.setCellWidth(heatmapLayout, somClusteringResults.getHeatmapWidth() + "px");
+      
         middleClusterLayout.add(interactiveColImage);
-        middleClusterLayout.setCellWidth(interactiveColImage, interactiveColImage.getWidth()+"px");
+        middleClusterLayout.setCellWidth(interactiveColImage, somClusteringResults.getInteractiveColumnWidth()+"px");
 
        clustInfoLabel.setText("Distance metrics: " + somClusteringResults.getDistanceMeasure() + " - " + "Linkage: " + somClusteringResults.getLinkage());
        
@@ -686,30 +766,41 @@ public class SomClustComponent extends ModularizedListener {
             maxSpacer2.setVisible(clustColumn);
         }
 
-        maxSideTreeImg.setUrl(somClusteringResults.getSideTreeImgUrl()); 
-        maxHeatMapImg.setUrl(somClusteringResults.getHeatMapImgUrl());
-        maxHeatMapImg.updateTooltips(somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues());
-        maxInteractiveColImage.setUrl(somClusteringResults.getInteractiveColumnImgUrl().getInteractiveColumn());
+        maxSideTreeImg.setUrl(somClusteringResults.getSideTreeImg().getImg1Url(),somClusteringResults.getSideTreeImg().getImg2Url()); 
+        maxHeatMapImg.updateTooltips(somClusteringResults.getRowNames(), somClusteringResults.getColNames(), somClusteringResults.getValues());       
+        
         maxInteractiveColImage.updateTooltips(somClusteringResults.getRowNames());
         maxScaleImg.setUrl(somClusteringResults.getScaleImgUrl());
 
 //        maxMiddleClusterLayout.setWidth("20%");
-//        maxInteractiveColImage.setSize("20px", sideTreeImg.getHeight() + "px");
-        maxMiddleClusterLayout.setHeight(maxSideTreeImg.getHeight() + "px");
+//        maxInteractiveColImage.setSize("20px", sideTreeImg1.getHeight() + "px");
+        maxMiddleClusterLayout.setHeight(somClusteringResults.getSideTreeHeight() + "px");
         maxMiddleClusterLayout.add(maxSideTreeImg);
-        maxMiddleClusterLayout.setCellWidth(maxSideTreeImg, maxSideTreeImg.getWidth() + "px");
-        maxMiddleClusterLayout.add(maxHeatMapImg);
-        maxMiddleClusterLayout.setCellWidth(maxHeatMapImg, maxHeatMapImg.getWidth() + "px");
+        maxMiddleClusterLayout.setCellWidth(maxSideTreeImg, somClusteringResults.getSideTreeWidth() + "px");
+        VerticalPanel maxHeatmapLayout = new VerticalPanel();
+        
+        maxHeatmapLayout.add(maxHeatMapImg);
+        maxMiddleClusterLayout.add(maxHeatmapLayout);
+        maxMiddleClusterLayout.setCellWidth(maxHeatmapLayout,somClusteringResults.getHeatmapWidth() + "px");
+       
+        
         maxMiddleClusterLayout.add(maxInteractiveColImage);
-        maxMiddleClusterLayout.setCellWidth(maxInteractiveColImage, maxInteractiveColImage.getWidth()+"px");
+        maxMiddleClusterLayout.setCellWidth(maxInteractiveColImage, somClusteringResults.getInteractiveColumnWidth()+"px");
         
         
         
         
-        
+       rootX= somClusteringResults.getRowNode().getX();
+       rootY= somClusteringResults.getRowNode().getY();
 
         maxClustInfoLabel.setText("Distance metrics: " + somClusteringResults.getDistanceMeasure() + " - " + "Linkage: " + somClusteringResults.getLinkage());
 
+    }
+    private int rootX;
+    private int rootY;
+    public void selectRootNode(){
+        updateSideTreeSelection(rootX,rootY);
+    
     }
 
 
@@ -749,7 +840,7 @@ public class SomClustComponent extends ModularizedListener {
     
     private void updateInteractiveColumnImg(int[] selection){
 //         selectionManager.Busy_Task(true, true);
-        DivaClientService.updateSomClustInteractiveColumn(selection,
+        GWTClientService.updateSomClustInteractiveColumn(selection,
                 new AsyncCallback<InteractiveColumnsResults>() {
                     @Override
                     public void onFailure(Throwable caught) {
@@ -760,8 +851,9 @@ public class SomClustComponent extends ModularizedListener {
 
                     @Override
                     public void onSuccess(InteractiveColumnsResults result) {
-                        interactiveColImage.setUrl(result.getInteractiveColumn());
-                        maxInteractiveColImage.setUrl(result.getInteractiveColumn());
+                        interactiveColImage.setUrl(result.getInteractiveColumn().getImg1Url(),result.getInteractiveColumn().getImg2Url());
+                        maxInteractiveColImage.setUrl(result.getInteractiveColumn().getImg1Url(),result.getInteractiveColumn().getImg2Url());
+                       
                         nvigatorSlider.setBackgroundImage(result.getNavgUrl());
                         SelectionManager.Busy_Task(false, true);
                     }
@@ -781,7 +873,7 @@ public class SomClustComponent extends ModularizedListener {
      */
     private void runSomClustering(int linkage, int distanceMeasure, final boolean clusterColumns) {
         SelectionManager.Busy_Task(true, true);
-        DivaClientService.computeSomClustering(linkage, distanceMeasure, clusterColumns,
+        GWTClientService.computeSomClustering(linkage, distanceMeasure, clusterColumns,
                 new AsyncCallback<SomClusteringResult>() {
                     @Override
                     public void onFailure(Throwable caught) {
@@ -802,8 +894,8 @@ public class SomClustComponent extends ModularizedListener {
     
 
     public void clearRowSelection() {
-        sideTreeImg.setUrl(defaultSideTreeImgURL);
-        maxSideTreeImg.setUrl(defaultSideTreeImgURL);
+        sideTreeImg.clearSelection();
+        maxSideTreeImg.clearSelection();
         
        
 
@@ -846,8 +938,8 @@ public class SomClustComponent extends ModularizedListener {
              if (maxUpperTreeReg != null) {
             maxUpperTreeReg.removeHandler();
         }
-               if (maxSideTreeReg != null) {
-            maxSideTreeReg.removeHandler();
+               if (maxSideTree1Reg != null) {
+            maxSideTree1Reg.removeHandler();
         }
         selectionManager.removeSelectionChangeListener(this);
         selectionManager = null;
@@ -855,7 +947,7 @@ public class SomClustComponent extends ModularizedListener {
 
     private void updateSideTreeSelection(int x, int y) {
         SelectionManager.Busy_Task(true, false);
-        DivaClientService.updateSideTree(x, y, 350, (350 - 25.0), new AsyncCallback<SomClustTreeSelectionUpdate>() {
+        GWTClientService.updateSideTree(x, y, 350, (350 - 25.0), new AsyncCallback<SomClustTreeSelectionUpdate>() {
             @Override
             public void onFailure(Throwable caught) {
                  Window.alert("ERROR IN SERVER CONNECTION");
@@ -864,8 +956,8 @@ public class SomClustComponent extends ModularizedListener {
 
             @Override
             public void onSuccess(SomClustTreeSelectionUpdate result) {
-                sideTreeImg.setUrl(result.getTreeImgUrl());
-                maxSideTreeImg.setUrl(result.getTreeImgUrl());
+                sideTreeImg.setUrl(result.getTreeImg1Url(),result.getTreeImg2Url());
+                maxSideTreeImg.setUrl(result.getTreeImg1Url(),result.getTreeImg2Url());
                 if (result.getSelectedIndices() != null) {
                     update = false;
                     Selection selection = new Selection(Selection.TYPE.OF_ROWS, result.getSelectedIndices());
@@ -879,7 +971,7 @@ public class SomClustComponent extends ModularizedListener {
  private int top;
     private void updateUpperTreeSelection(int x, int y) {
         SelectionManager.Busy_Task(true, false);
-        DivaClientService.updateUpperTree(x, y, 70, (350 - 25.0), new AsyncCallback<SomClustTreeSelectionUpdate>() {
+        GWTClientService.updateUpperTree(x, y, 70, (350 - 25.0), new AsyncCallback<SomClustTreeSelectionUpdate>() {
             @Override
             public void onFailure(Throwable caught) {
                  Window.alert("ERROR IN SERVER CONNECTION");
@@ -888,8 +980,8 @@ public class SomClustComponent extends ModularizedListener {
 
             @Override
             public void onSuccess(SomClustTreeSelectionUpdate result) {
-                upperTreeImg.setUrl(result.getTreeImgUrl());// 
-                  maxUpperTreeImg.setUrl(result.getTreeImgUrl());//
+                upperTreeImg.setUrl(result.getTreeImg1Url());// 
+                  maxUpperTreeImg.setUrl(result.getTreeImg1Url());//
                 if (result.getSelectedIndices() != null) {
                     update = false;
                     Selection selection = new Selection(Selection.TYPE.OF_COLUMNS, result.getSelectedIndices());

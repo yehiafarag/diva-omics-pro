@@ -5,32 +5,37 @@
  */
 package web.diva.client.somclust.view;
 
-import com.google.gwt.user.client.ui.Image;
-
 import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseMoveHandler;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
 import web.diva.shared.beans.ClientClusterNode;
 
 /**
  *
  * @author Yehia Farag
  */
-public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler {
+public class MaxmizedTopTreeImg extends Image implements MouseMoveHandler, MouseOutHandler {
 
-    private final int squareL ;
+    private final  int squareL ;
     private ClientClusterNode mainNode;
     private final int type;
     private final HTML toolTip;
     private boolean selectedNode;
+    private double scale =1;
+    private int xcor;
+    private int ycor;
 
     @Override
     public final void onMouseMove(MouseMoveEvent event) {
         int y = (int) (event.getY());
         int x = ((int) (event.getX()));
         ClientClusterNode node = null;
+        y = (int)((double)y/scale);
+        x = this.getHeight()-((int)((double) x/scale));
+            
         switch (type) {
             case 1:
                 node = getTooltipAt(y, x, mainNode);
@@ -40,16 +45,20 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
                 break;
 
         }
+        toolTip.setVisible(true);
         if (node != null) {
+            xcor = x;
+            ycor = y;
             selectedNode = true;
+            this.setStyleName("clusterTreeOverNode");
             toolTip.setHTML("<textarea cols=\"50\" rows=\"1\">" + "Merged at " + node.getValue() + " - Nodes: " + node.getMembers() + "</textarea>");
             toolTip.setVisible(true);
-
-            this.setStyleName("clusterTreeOverNode");
         } else {
+            xcor = -1000;
+            ycor = -10000;
             selectedNode = false;
             toolTip.setVisible(false);
-                this.setStyleName("clusterTreeOver");
+            this.setStyleName("clusterTreeOver");
         }
     }
 
@@ -75,15 +84,18 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
         return ret;
     }
 
-    public TreeImg(String url, ClientClusterNode node, int type,HTML toolTip,int squareL) {
+    public MaxmizedTopTreeImg(String url, ClientClusterNode node, int type,HTML toolTip,int squareL) {
         super(url);
-        this.squareL = squareL;
+        this.squareL= squareL;
         this.toolTip = toolTip ;
         toolTip.setVisible(false);
-        this.addMouseMoveHandler(TreeImg.this);
-        this.addMouseOutHandler(TreeImg.this);
+        this.addMouseMoveHandler(MaxmizedTopTreeImg.this);
+        this.addMouseOutHandler(MaxmizedTopTreeImg.this);
         this.mainNode = node;
         this.type = type;
+         this.setStyleName("clusterTreeOver");
+      
+        
          
     }
     
@@ -93,6 +105,18 @@ public class TreeImg extends Image implements MouseMoveHandler, MouseOutHandler 
 
     public boolean isSelectedNode() {
         return selectedNode;
+    }
+    public void setScale(double scale){
+        this.scale = scale;
+//        squareL = (int)((double)squareL*scale);
+    }
+
+    public int getXcor() {
+        return xcor;
+    }
+
+    public int getYcor() {
+        return ycor;
     }
 
    

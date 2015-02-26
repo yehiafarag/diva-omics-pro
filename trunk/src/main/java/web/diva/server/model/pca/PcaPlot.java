@@ -18,10 +18,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Hashtable;
@@ -36,7 +32,7 @@ import no.uib.jexpress_modularized.core.dataset.Group;
 import no.uib.jexpress_modularized.core.visualization.BackgroundFactory;
 import no.uib.jexpress_modularized.core.visualization.JeToolTip;
 import no.uib.jexpress_modularized.core.visualization.LineStyles.LineMark;
-import no.uib.jexpress_modularized.core.visualization.Tools;
+import no.uib.jexpress_modularized.core.visualization.charts.Axis;
 import no.uib.jexpress_modularized.core.visualization.colors.colorcomponents.ColorFactory;
 import no.uib.jexpress_modularized.core.visualization.colors.colorcomponents.ControlPoint;
 
@@ -134,7 +130,7 @@ public class PcaPlot extends BasicChart{
         Layout.put("col4SV", new Color(255, 204, 51));
         Layout.put("minpSV", 30.0);
         Layout.put("showTrendSV", false);
-        Layout.put("axisbgSV", new Color(0, 51, 153));
+        Layout.put("axisbgSV",Color.GRAY);// new Color(0, 51, 153));
         Layout.put("weightSV", 0.3);
         Layout.put("yticsbothsidesSV", true);
         Layout.put("xmin", -3.86);
@@ -176,7 +172,7 @@ public class PcaPlot extends BasicChart{
         Layout.put("gradtypeSV", 0);
     }
     
-    private boolean paintOnlyIdentifiers = false;
+    private final boolean paintOnlyIdentifiers = false;
     private boolean[] inActiveGroup = null;
     private boolean hex = true;  //When drawing neurons..
     private int frameType = 0;
@@ -185,32 +181,28 @@ public class PcaPlot extends BasicChart{
 //    public JPanel VariancePanel;
     private boolean zoompca = true;
     private boolean paintNamesonClick = false;
-    private boolean repaintNeurons = false;
     private double[][] neurons;
-    private int neuronWidth = 0, neuronLength = 0;
     private Color SpotFrameColor = Color.black;
     private boolean[] invalidValues; //this controls valid values and is for instance true for log values of 0 and below..
     private boolean[] notShaded;
     //private ImageIcon scaleIcon = new ImageIcon();
     private String plotName = "Scatterplot"; //Defines the loadform name.
-    private boolean medianLine = false;
-    private double medianSkew = Double.NaN;  //If the data has been normalized with a skew..
-    private Vector medianSkews = null;
+    private final boolean medianLine = false;
+    private final double medianSkew = Double.NaN;  //If the data has been normalized with a skew..
+    private final Vector medianSkews = null;
     private BufferedImage plot;
-    private int mouseX,
-                   mouseY;
+    
     private boolean mouseDrag = false;
-    private Vector paths = new Vector();
+    private final Vector paths = new Vector();
     private int startx, starty, endx, endy;  //For mouse event framing
-    private Point sweepFrom, 
-                      sweepTo;
+    
     private boolean FullRepaint = true;
-    private boolean LockFullRepaint = false;
+    private final boolean LockFullRepaint = false;
     private Rectangle valueArea;
     private double[] zoom, 
                           zoomedArea; //The corners of the zoomed valueArea.
     private Point highLightNeuron;
-    private int unselectedTransparency = 23;
+    private final int unselectedTransparency = 23;
     private double[][] line;    //If the scatterplot should also contain a line, this is it (For example for lowess normalization)
     private Vector lines; //same as above, with multilines..
     private Vector lineColors;//If the lines should be colored..
@@ -222,7 +214,7 @@ public class PcaPlot extends BasicChart{
     private double[] TEXTY;
     public Font CF = null;//new Font("ARIAL",0,13);
     private int CAColor = 250;
-    private Font font = new Font("Times New Roman", 0, 12);
+    private final Font font = new Font("Times New Roman", 0, 12);
     //0 = none
     //1 = num points
     //2 = num x axis
@@ -235,10 +227,10 @@ public class PcaPlot extends BasicChart{
     private int trendminp = 30;
     private boolean[] trendSource;
     private String[][] SpotNames = null;
-    private Vector CAGroupMedians = null;
-    private LineMark[] CALineMarks = null;  
-    private boolean drawCAText = false;
-    private boolean drawCAMedians = true;
+    private final Vector CAGroupMedians = null;
+    private final LineMark[] CALineMarks = null;  
+    private final boolean drawCAText = false;
+    private final boolean drawCAMedians = true;
     private int CAPsize = 10;
     private ColorFactory factory;
     //private cluster cl;
@@ -462,7 +454,7 @@ public class PcaPlot extends BasicChart{
 
     }
 
-    public void setData(double[] Rxn, double[] Ryn) {
+    public final void setData(double[] Rxn, double[] Ryn) {
         //OBS
         invalidValues = null;
         if (Rxn != null) {
@@ -549,7 +541,7 @@ public class PcaPlot extends BasicChart{
                             && yaxis.getInteger(Ry[i]) < p.y + radius) {
 
 
-                        ret.add(new Integer(i));
+                        ret.add(i);
 
                         d1 = xaxis.getInteger(Rx[i]) - p.x;
                         d1 = d1 * d1;
@@ -559,7 +551,7 @@ public class PcaPlot extends BasicChart{
 
                         d = Math.sqrt(d1 + d2);
                         //System.out.print("\n"+d1);
-                        dst.add(new Double(d));
+                        dst.add(d);
                     }
                 }
             }
@@ -572,7 +564,7 @@ public class PcaPlot extends BasicChart{
         Vector sret = new Vector();
         double[] dist = new double[dst.size()];
         for (int i = 0; i < dist.length; i++) {
-            dist[i] = ((Double) dst.elementAt(i)).doubleValue();
+            dist[i] = ((Double) dst.elementAt(i));
         }
         int[] srt = JDoubleSorter.quickSort(dist);
 
@@ -588,128 +580,12 @@ public class PcaPlot extends BasicChart{
         repaint();
     }
 
-    // @TODO: reimplement me!
-//    public void saveImage() {
-//        Component owner = DensScatterPlot.this.getRootPane().getTopLevelAncestor();
-//        LockFullRepaint = true;
-//        ExportDialog export = new ExportDialog();
-//        export.showExportDialog(owner, "Export view as ...", this, "export");
-//        LockFullRepaint = false;
-//    }
-    //@TODO: reimplement me 
-//    public void copyImage() {
-//
-//        JComponent c = new JComponent() {
-//
-//            public void paint(Graphics g) {
-//                LockFullRepaint = true;
-//                DensScatterPlot.this.print(g);//.paintComponent(g);
-//                LockFullRepaint = false;
-//            }
-//        };
-//
-//        c.setPreferredSize(new Dimension(Width(), Height()));
-//        JFrame f = new JFrame();
-//        f.getContentPane().add(c);
-//        f.pack();
-//
-//        //LockFullRepaint=true;
-////        org.freehep.util.export.ExportDialog export = new org.freehep.util.export.ExportDialog();
-////        org.freehep.util.export.VectorGraphicsTransferable vt = new org.freehep.util.export.VectorGraphicsTransferable(c);
-////        java.awt.datatransfer.Clipboard clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
-////        clipboard.setContents(vt, vt);
-////        //LockFullRepaint=false;
-////        c=null;
-//
-//        org.freehep.util.export.ExportDialog export = new org.freehep.util.export.ExportDialog();
-//        export.addAllExportFileTypes();
-//
-//        SystemFlavorMap map = (SystemFlavorMap) SystemFlavorMap.getDefaultFlavorMap();
-//        map.addUnencodedNativeForFlavor(new DataFlavor("image/emf", "Enhanced Meta File"), "ENHMETAFILE");
-//
-//
-//        VectorGraphicsTransferable t = new VectorGraphicsTransferable(c);
-//        java.awt.datatransfer.Clipboard clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
-//
-//        try {
-//            File tmp = File.createTempFile("EMFTemp", "tmp");
-//            EMFGraphics2D graphics = new EMFGraphics2D(tmp, new Dimension(100, 100));
-//            graphics.setDeviceIndependent(true);
-////graphics.setProperties(p);
-//            graphics.setCreator("Freehep Vectorgraphics");
-//            graphics.startExport();
-////printable.print(graphics);
-//            c.paint(graphics);
-//            graphics.endExport();
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//
-//
-//
-//        clipboard.setContents(t, t);
-//
-//        f.dispose();
-//
-//        //ExportDialog export = new ExportDialog();
-//        //export.showExportDialog( owner, "Export view as ...", this, "export" );
-//
-//    }
-    //@TODO: reimplement me 
-//    public void printImage() {
-//        Component owner = DensScatterPlot.this.getRootPane().getTopLevelAncestor();
-//        LockFullRepaint = true;
-//        this.forceFullRepaint();
-//
-//
-//        Canvas c = new Canvas() {
-//
-//            public void paint(Graphics g) {
-//                LockFullRepaint = true;
-//                DensScatterPlot.this.paintComponent(g);
-//                LockFullRepaint = false;
-//            }
-//        };
-//
-//        c.setSize(Width(), Height());
-//
-//        LockFullRepaint = true;
-//        expresscomponents.Print.PrintPreview2 pw = new expresscomponents.Print.PrintPreview2((Frame) owner, true);
-//        pw.setComponent(c);
-//        pw.show();
-//        LockFullRepaint = false;
-//
-//        c = null;
-//
-//    }
-    
-    //@TODO: reimplement me ?
-//    public void createCAFont() {
-//        CF = new Font("ARIAL", 0, 12);
-//        if (props.containsKey("CAFONT")) {
-//
-//            String f = (String) props.get("CAFONT");
-//            int Style = new Integer((String) props.get("CAStyle")).intValue();
-//            int Size = new Integer((String) props.get("CASize")).intValue();
-//            int Color = ((Integer) props.get("CAColor")).intValue();
-//
-//            try {
-//                CF = new Font(f, Style, Size);
-//                CAColor = Color;
-//            } catch (Exception e) {
-//                System.out.println("createCAFont: Exception skjer"); 
-//            }
-//        }
-//    }
 
-    public void getNewFont() {
-    }
 
     @Override
     public int Height() {
         return getSize().height;
-    }//size.height;}
+    }
 
     @Override
     public int Width() {
@@ -717,39 +593,19 @@ public class PcaPlot extends BasicChart{
     }//return size.width;}
 
     @Override
+    public void paintAll(Graphics gr){
+        paintComponent(gr);    
+    }
+    @Override
+      @SuppressWarnings("null")
     public void paintComponent(Graphics gr) {
         
         if (Layout == null) {
             return;
         }
-
-        //@TODO: reimplement me ? (commented out because props is null right now/not used)
-        //The attempt to read the file "jexpress.cfg" will fail anyway since the file is not there (in fact it's not in 
-        //the appropriate JExpress folder, either)
-//        if (props == null) {
-//
-//            if (LockFullRepaint) {
-//                FullRepaint = true;
-//            }
-//
-//            try {
-//                java.io.FileInputStream istream = new java.io.FileInputStream("jexpress.cfg");
-//                ObjectInputStream p = new ObjectInputStream(istream);
-//                props = (java.util.Hashtable) p.readObject();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
-
-
-        //if(sp==null || props==null) return;
+        
         readForm();
-        //setForeground(sp.axisbgSV.getColor());
-        setForeground((Color) Layout.get("axisbgSV"));//sp.axisbgSV.getColor());
-
-
-
+        setForeground((Color) Layout.get("axisbgSV"));
         if (yaxis.getTitleText().startsWith("Log")) {
             if (yaxis.getTitleText().charAt(3) == '2') {
             } else if (yaxis.getTitleText().charAt(3) == '1') {
@@ -786,18 +642,7 @@ public class PcaPlot extends BasicChart{
 
         if (FullRepaint || LockFullRepaint) {
 
-
-//            if (VariancePanel != null) {
-//                VariancePanel.setBackground(this.getBackground());
-//                for (int i = 0; i < VariancePanel.getComponentCount(); i++) {
-//                    if (VariancePanel.getComponent(i) instanceof javax.swing.JLabel) {
-//                        ((JLabel) VariancePanel.getComponent(i)).setForeground(getForeground());
-//                    }
-//                }
-//            }
-
             Graphics g = null;
-
             if (!LockFullRepaint) {
                 plot = new BufferedImage(Width(), Height(), BufferedImage.TYPE_INT_ARGB);
                 g = plot.getGraphics();
@@ -815,10 +660,6 @@ public class PcaPlot extends BasicChart{
                 return;
             }
 
-            //      System.out.print("\nAWIDTH:"+yaxis.getAWidth());
-            //      yaxis.getAxisWidth(g);
-            //      System.out.print("\nAWIDTH:"+yaxis.getAWidth());
-           
             g.setColor(getBackground());
             if (this.isOpaque()) {
                 g.fillRect(0, 0, Width(), Height());
@@ -846,45 +687,22 @@ public class PcaPlot extends BasicChart{
 
             valueArea = new Rectangle(left, top + TitleHeight, Width() - right - left, Height() - bottom - top - TitleHeight);
 
-            //if(xaxis!=null) xaxis.drawAxis(g);
-            //if(yaxis!=null) yaxis.drawAxis(g);
-
             Nx = getXValues();
             Ny = getYValues();
 
-            Rectangle ori = new Rectangle(0, 0, valueArea.width, valueArea.height);
-
-            //bgf.setDensColors(sp.col1SV.getColor(),sp.col2SV.getColor(),sp.col3SV.getColor(),sp.col4SV.getColor(),sp.col5SV.getColor());
-            //bgf.setDensColors((Color)Layout.get("col1SV"),(Color)Layout.get("col2SV"),(Color)Layout.get("col3SV"),(Color)Layout.get("col4SV"),(Color)Layout.get("col5SV"));
             bgf.setDensCords(Nx, Ny);
 
             bgf.setColorFactory(factory);
             bgf.externalImage = (String) Layout.get("pathSV");//sp.pathSV.getText();
-            bgf.tileImages = ((Boolean) Layout.get("tileSV")).booleanValue();//sp.tileSV.isSelected();
+            bgf.tileImages = ((Boolean) Layout.get("tileSV"));//sp.tileSV.isSelected();
 
-            bgf.paintBackground(g, valueArea, ((Integer) Layout.get("SbgSV")).intValue()); //sp.SbgSV.getSelectedIndex());
-
-
-//            repaintScale();
+            bgf.paintBackground(g, valueArea, ((Integer) Layout.get("SbgSV"))); //sp.SbgSV.getSelectedIndex());
 
 
-
-
-//            if (((Integer) Layout.get("SbgSV")).intValue() != 0 && scaleLabel != null) {
-//                scaleLabel.setIcon(null);
-//            }
-
-
-
-
-
-            //g.setColor(Color.black);
             xaxis.axiscolor = getForeground();
             yaxis.axiscolor = getForeground();
 
             Graphics2D g2d = (Graphics2D) g;
-
-            //      if(Nx!=null && Ny!=null){
 
             if (!FormUpdated) {
                 updateForm();
@@ -905,26 +723,15 @@ public class PcaPlot extends BasicChart{
                 return;
             }
             int pointSize = dotsize;
-            boolean circ = ((Boolean) Layout.get("circSV")).booleanValue();//sp.circSV.isSelected();
-            boolean frame = ((Boolean) Layout.get("frameSV")).booleanValue();//sp.frameSV.isSelected();
+            boolean circ = ((Boolean) Layout.get("circSV"));//sp.circSV.isSelected();
+            boolean frame = ((Boolean) Layout.get("frameSV"));//sp.frameSV.isSelected();
 
-            //if(visible!=null && Nx!=null && visible.length!=Nx.length){
-            //            System.out.print("-");
-            //        }
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             if (data != null) {
-
-                //boolean[] painted = new boolean[Nx.length];
-
                 List<Group> groups = data.getRowGroups();
                 Group group = null;
                 Color gcol = null;
-                //OLD
-//                boolean[] usedInfos = data.getusedInfos();
-                //NEW
-                boolean[] usedInfos =data.getusedInfos();
-
                 for (int grp = groups.size() - 1; grp > -1; grp--) {
 
                     group = (Group) groups.get(grp);
@@ -933,14 +740,7 @@ public class PcaPlot extends BasicChart{
                     }
                     gcol = group.getColor();
                     g2d.setColor(gcol);
-                    //System.out.print("\n"+group.getName());
-
-                    //NOTE: uses groups.hasMember() instead of creating an array of boolean
-                    //OLD
-//                    boolean mem = group.getMembers();
-
                     Color dot = Color.BLACK;
-
                     for (int i = 0; i < Nx.length; i++) {
                         if (!group.hasMember(i)) {
                             continue;
@@ -954,9 +754,6 @@ public class PcaPlot extends BasicChart{
                         if (tolerated != null && !tolerated[i]) {
                             continue;
                         }
-                        //if(painted[i]) continue;
-
-                        // painted[i] = true;
                         if (((notShaded != null && !notShaded[i]) || allTransparent)) {
                             dot = new Color(gcol.getRed(), gcol.getGreen(), gcol.getBlue(), unselectedTransparency);
                             if (frame) {
@@ -967,7 +764,7 @@ public class PcaPlot extends BasicChart{
                         }
 
                         if (SpotNames != null && SpotNames[i] != null && SpotNames[i].length > 0 && SpotNames[i][0] != null) {
-                            StringBuffer sb = new StringBuffer();
+                            StringBuilder sb = new StringBuilder();
                             if (forcedStringSize == -1) {
                                 g2d.setFont(new Font("Arial", 0, dotsize + 4));
                             } else {
@@ -975,9 +772,8 @@ public class PcaPlot extends BasicChart{
                             }
 
                             for (int h = 0; h < SpotNames[i].length; h++) {
-                                //   if(!usedInfos[h]) continue;
                                 if (h < SpotNames[i].length - 1) {
-                                    sb.append(SpotNames[i][h] + " : ");
+                                    sb.append(SpotNames[i][h]).append(" : ");
                                 } else {
                                     sb.append(SpotNames[i][h]);
                                 }
@@ -995,8 +791,6 @@ public class PcaPlot extends BasicChart{
                         }
                         if ((!paintOnlyIdentifiers) || (SpotNames == null || SpotNames[i] == null || SpotNames[i][0] == null)) {
                             if (circ) {
-                                //bjarte
-                                //g.setColor(new Color(gcol.getRed(),gcol.getGreen(),gcol.getBlue(),unselectedTransparency));
                                 g.setColor(dot);
                                 g.fillOval(Nx[i] - halfSize, Ny[i] - halfSize, pointSize, pointSize);
                                 g.setColor(SpotFrameColor);
@@ -1050,7 +844,7 @@ public class PcaPlot extends BasicChart{
                                     g.setColor(dotColors[i]);
                                 }
                                 if (SpotNames != null && SpotNames[i] != null && SpotNames[i][0] != null) {
-                                    StringBuffer sb = new StringBuffer();
+                                    StringBuilder sb = new StringBuilder();
                                     if (forcedStringSize == -1) {
                                         g2d.setFont(new Font("Arial", 0, dotsize + 4));
                                     } else {
@@ -1059,7 +853,7 @@ public class PcaPlot extends BasicChart{
 
                                     for (int h = 0; h < SpotNames[i].length; h++) {
                                         if (h < SpotNames[i].length - 1) {
-                                            sb.append(SpotNames[i][h] + " : ");
+                                            sb.append(SpotNames[i][h]).append(" : ");
                                         } else {
                                             sb.append(SpotNames[i][h]);
                                         }
@@ -1093,6 +887,7 @@ public class PcaPlot extends BasicChart{
                                         }
                                     }
                                 }
+                            } else {
                             }
                         }
                     }
@@ -1153,33 +948,11 @@ public class PcaPlot extends BasicChart{
 
             g2d.setStroke(tmps);
 
-
-            int invalidSpots = getInvalidValues();
-
-//            if(invalidSpots>0){
-//                String st = "Warning,"+invalidSpots+" "+"invalid values not plotted";
-//                g.setFont(new Font("ARIAL",0,10));
-//                g.setColor(new Color(250,60,60,120));
-//                int X = (valueArea.x+valueArea.width) - (g.getFontMetrics().stringWidth(st)+5);
-//                int Y = (valueArea.y+valueArea.height) - (g.getFontMetrics().getHeight());
-//                
-//                g.drawString(st,X,Y);
-//                
-//            }
-
-
             if (trendline == 1) {
                 paintTrend2(valueArea, g, Nx, Ny);
             } else if (trendline == 2) {
                 paintTrend(valueArea, g, Nx, Ny);
             }
-
-
-
-
-
-
-
             if (lines != null) {
 
 
@@ -1202,13 +975,7 @@ public class PcaPlot extends BasicChart{
 
 
                         }
-
-
-                        //  double scale  = (double)(yaxis.amax.y - yaxis.amin.y)/(yaxis.maximum - yaxis.minimum);
-                        //   double res = yaxis.amin.y + (int)( (yaxis.maximum- 4538.229169045257 )*scale );
                         g2d.setStroke(new BasicStroke(1f));
-
-                        //if( visibleLines==null || (visibleLines.length==lines.size() && visibleLines[m]) ){
                         if (lineColors != null) {
                             g.setColor((Color) lineColors.elementAt(m));
                         } else {
@@ -1239,63 +1006,16 @@ public class PcaPlot extends BasicChart{
             }
 
 
-            Layout.put("ymin", new Double(yaxis.minimum));
-            Layout.put("ymax", new Double(yaxis.maximum));
-            Layout.put("xmin", new Double(xaxis.minimum));
-            Layout.put("xmax", new Double(xaxis.maximum));
-            //sp.ymin.setValue(yaxis.minimum);
-            //sp.ymax.setValue(yaxis.maximum);
-            //sp.xmin.setValue(xaxis.minimum);
-            //sp.xmax.setValue(xaxis.maximum);
+            Layout.put("ymin", yaxis.minimum);
+            Layout.put("ymax", yaxis.maximum);
+            Layout.put("xmin", xaxis.minimum);
+            Layout.put("xmax", xaxis.maximum);
 
             g.setColor(getForeground());
             g.drawLine(left + 1, top + TitleHeight, Width() - right - LegendWidth, top + TitleHeight);
             g.drawLine(Width() - right - LegendWidth, top + TitleHeight, Width() - right - LegendWidth, Height() - bottom);
 
-
-
-            //if(medianLine){
-
             g.setColor(new Color(100, 100, 250));
-
-            //int xend =   xaxis.getInteger( Math.min(xaxis.maximum,yaxis.maximum));
-            //int yend =   yaxis.getInteger( Math.min(xaxis.maximum,yaxis.maximum));
-
-
-
-            /*
-             * if(getDeltaLines()>0){
-             *
-             * double xmin = xaxis.minimum; double xmax = xaxis.maximum;
-             *
-             * double ymin = yaxis.minimum; double ymax = yaxis.maximum;
-             *
-             * int lx1 = xaxis.getInteger(xmin); int ly1 = Math.max(0,
-             * yaxis.getInteger(ymin+deltaLines));
-             *
-             * System.out.print("\nmin: "+ymin); System.out.print("\nlyl:
-             * "+(ymin+deltaLines));
-             *
-             *
-             *
-             * int rx1 = xaxis.getInteger(xmax-deltaLines); int ry1 =
-             * yaxis.getInteger(ymax);
-             *
-             *
-             * int lx2 = xaxis.getInteger(xmin+deltaLines); int ly2 =
-             * yaxis.getInteger(ymin);
-             *
-             * int rx2 = xaxis.getInteger(xmax); int ry2 =
-             * yaxis.getInteger(ymax-deltaLines);
-             *
-             *
-             *
-             * g.setColor(Color.LIGHT_GRAY); g.drawLine(lx1,ly1,rx1,ry1);
-             * g.drawLine(lx2,ly2,rx2,ry2);
-             *
-             * }
-             */
-
             if (medianLine) {
                 g.drawLine(left + 1, Height() - bottom, Width() - right - LegendWidth, top + TitleHeight);
             }
@@ -1311,7 +1031,7 @@ public class PcaPlot extends BasicChart{
                 double tp = yaxis.getDouble(top + TitleHeight);
                 double tp2 = yaxis.getDouble(Height() - bottom);
 
-                if (yaxis.transform == yaxis.Log_Transform) {
+                if (yaxis.transform == Axis.Log_Transform) {
 
                     double val = Math.pow(10, tp);
                     double val2 = Math.pow(10, tp2);
@@ -1353,8 +1073,8 @@ public class PcaPlot extends BasicChart{
                 for (int i = 0; i < medianSkews.size(); i++) {
 
                     if (visibleLines == null || (visibleLines.length == medianSkews.size() && visibleLines[i])) {
-                        double medianSkew = ((Double) medianSkews.elementAt(i)).doubleValue();
-                        if (medianSkew != Double.NaN && medianSkew > 0) {
+                        double tempMedianSkew = ((Double) medianSkews.elementAt(i));
+                        if (tempMedianSkew != Double.NaN && tempMedianSkew > 0) {
 
                             if (lineColors != null) {
                                 g.setColor((Color) lineColors.elementAt(i));
@@ -1365,14 +1085,14 @@ public class PcaPlot extends BasicChart{
                             double tp = yaxis.getDouble(top + TitleHeight);
                             double tp2 = yaxis.getDouble(Height() - bottom);
 
-                            if (yaxis.transform == yaxis.Log_Transform) {
+                            if (yaxis.transform == Axis.Log_Transform) {
 
                                 double val = Math.pow(10, tp);
                                 double val2 = Math.pow(10, tp2);
                                 if (plottype != MA) {
 
-                                    val = val * (1.0 / medianSkew);
-                                    val2 = val2 * (1.0 / medianSkew);
+                                    val = val * (1.0 / tempMedianSkew);
+                                    val2 = val2 * (1.0 / tempMedianSkew);
                                     if (medianLine && val != 0 && val2 != 0) {
                                         g.drawLine(left + 1, yaxis.getInteger(val2), Width() - right - LegendWidth, yaxis.getInteger(val));
                                     }
@@ -1380,7 +1100,7 @@ public class PcaPlot extends BasicChart{
 
                                     val = 1.0;
                                     val2 = 1.0;
-                                    val2 = val2 * medianSkew;
+                                    val2 = val2 * tempMedianSkew;
                                     //g.drawLine(left+1, yaxis.getInteger(val2) , Width()-right-LegendWidth , yaxis.getInteger(val));
                                     if (val != 0 && val2 != 0) {
                                         g.drawLine(left + 1, yaxis.getInteger(val2), Width() - right - LegendWidth, yaxis.getInteger(val2));
@@ -1389,8 +1109,8 @@ public class PcaPlot extends BasicChart{
                             } else {
                                 double val = tp;
                                 double val2 = tp2;
-                                val = val * (1.0 / medianSkew);
-                                val2 = val2 * (1.0 / medianSkew);
+                                val = val * (1.0 / tempMedianSkew);
+                                val2 = val2 * (1.0 / tempMedianSkew);
                                 //if(medianLine) g.drawLine(xaxis.nullI, yaxis.nullI , Width()-right-LegendWidth , yaxis.getInteger(tp));
                                 if (medianLine) {
                                     g.drawLine(left + 1, yaxis.getInteger(val2), Width() - right - LegendWidth, yaxis.getInteger(val));
@@ -1406,24 +1126,11 @@ public class PcaPlot extends BasicChart{
             g.setClip(valueArea);
 
 
-            double xmin = xaxis.minimum;
-            double xmax = xaxis.maximum;
-
-            double ymin = yaxis.minimum;
-            double ymax = yaxis.maximum;
-
             if (deltalines != null) {
 
                 for (int i = 0; i < deltalines.length / 2; i++) {
 
-                    /*
-                     * double x1 = Math.max(deltalines[i*2].getX(),xmin); double
-                     * y1 = Math.max(deltalines[i*2].getY(),ymin);
-                     *
-                     * double x2 = Math.min(deltalines[(i*2)+1].getX(),xmax);
-                     * double y2 = Math.min(deltalines[(i*2)+1].getY(),ymax);
-                     */
-
+                
 
                     double x1 = deltalines[i * 2].getX();
                     double y1 = deltalines[i * 2].getY();
@@ -1438,7 +1145,6 @@ public class PcaPlot extends BasicChart{
                     int ly2 = yaxis.getInteger(y2);
 
 
-                    //System.out.print("\n"+x1+","+y1+":"+x2+","+y2);
 
                     g.drawLine(lx1, ly1, lx2, ly2);
 
@@ -1463,19 +1169,13 @@ public class PcaPlot extends BasicChart{
 
                 for (int i = 1; i < line[0].length; i++) {
 
-                    //  if(Double.isNaN(Iline[0][i-1]) || Double.isNaN(Iline[1][i-1]) || Double.isNaN(Iline[0][i]) || Double.isNaN(Iline[1][i])) g.setColor(new Color(250,210,220,110));
-                    //  else if(Iline[0][i-1]==Iline[1][i-1] || Iline[0][i]==Iline[1][i]) g.setColor(new Color(100,220,220,150));
-                    //else
                     g.setColor(new Color(100, 220, 220));
 
                     g.drawLine(Iline[0][i - 1], Iline[1][i - 1], Iline[0][i], Iline[1][i]);
-                    //Iline[0][i]
-                    //Iline[1][i]
 
                 }
 
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ali);
-                //g.drawPolyline(Iline[0],Iline[1],Iline[0].length);
             }
             g.setClip(null);
             //}
@@ -1496,7 +1196,7 @@ public class PcaPlot extends BasicChart{
             int CX = 0;
             int CY = 0;
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             boolean[] us = null;
             if (data != null) {
@@ -1521,7 +1221,7 @@ public class PcaPlot extends BasicChart{
 
                 if (props.containsKey("CAFONT")) {
 
-                    CAColor = ((Integer) props.get("CAColor")).intValue();
+                    CAColor = ((Integer) props.get("CAColor"));
                 }
 
                 if (props.containsKey("CAPSize")) {
@@ -1603,7 +1303,7 @@ public class PcaPlot extends BasicChart{
                             } else {
                                 for (int k = 0; k < TEXT[i].length; k++) {
                                     if (us[k]) {
-                                        sb.append(TEXT[i][k] + "  ");
+                                        sb.append(TEXT[i][k]).append("  ");
                                     }
                                 }
                             }
@@ -1636,12 +1336,12 @@ public class PcaPlot extends BasicChart{
             tg = gr;
         }
 
-        if (repaintNeurons) {
-            if (!LockFullRepaint) {
-                tg.setClip(valueArea);
-            }
-            drawNeurons(tg);
-        }
+//        if (false) {
+//            if (!LockFullRepaint) {
+//                tg.setClip(valueArea);
+//            }
+//            drawNeurons(tg);
+//        }
 
         Graphics2D g2d = (Graphics2D) tg;
 
@@ -1708,7 +1408,7 @@ public class PcaPlot extends BasicChart{
         int lasty = 0;
 
         double maxw = 0.0;
-        boolean start = true;
+        boolean tStart = true;
 
         Graphics2D g2d = (Graphics2D) g;
 
@@ -1724,10 +1424,10 @@ public class PcaPlot extends BasicChart{
             if (Double.isNaN(x) || (trendSource != null && !trendSource[i])) {
                 continue;
             }
-            if (Math.abs(lastx - x) < steps && !start) {
+            if (Math.abs(lastx - x) < steps && !tStart) {
                 continue;
             }
-            start = false;
+            tStart = false;
             used = 0;
             mean = 0;
 
@@ -1814,7 +1514,7 @@ public class PcaPlot extends BasicChart{
         int lasty = 0;
 
         double maxw = 0.0;
-        boolean start = true;
+        boolean tStart = true;
 
         Graphics2D g2d = (Graphics2D) g;
 
@@ -1830,10 +1530,10 @@ public class PcaPlot extends BasicChart{
             if (Double.isNaN(x) || (trendSource != null && !trendSource[sr[i]])) {
                 continue;
             }
-            if (Math.abs(lastx - x) < steps && !start) {
+            if (Math.abs(lastx - x) < steps && !tStart) {
                 continue;
             }
-            start = false;
+            tStart = false;
             used = 0;
             mean = 0;
 
@@ -1961,8 +1661,8 @@ public class PcaPlot extends BasicChart{
             Ineurons[1][i] = yaxis.getInteger(neurons[1][i]);
         }
 
-        int n = this.neuronWidth;
-        int m = this.neuronLength;
+        int n = 0;
+        int m = 0;
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -2115,9 +1815,9 @@ public class PcaPlot extends BasicChart{
     }
 
     public void updateForm() {
-        Layout.put("mixticsSV", new Integer(xaxis.minor_tic_count));
-        Layout.put("miyticsSV", new Integer(yaxis.minor_tic_count));
-        Layout.put("paintGridSV", new Boolean(xaxis.paintGrid & yaxis.paintGrid));
+        Layout.put("mixticsSV", xaxis.minor_tic_count);
+        Layout.put("miyticsSV", yaxis.minor_tic_count);
+        Layout.put("paintGridSV", (xaxis.paintGrid & yaxis.paintGrid));
         Layout.put("gridColorSV", yaxis.gridcolor);
 
 
@@ -2150,6 +1850,7 @@ public class PcaPlot extends BasicChart{
 
     }
 
+      @SuppressWarnings("UnnecessaryUnboxing")
     public void readForm() {
         topText.setText((String) Layout.get("topText"));//setText(sp.Header.getText());
 
@@ -2157,11 +1858,11 @@ public class PcaPlot extends BasicChart{
         yaxis.correctForCloseValues = true;
         xaxis.correctForCloseValues = true;
 
-        xaxis.minor_tic_count = ((Integer) Layout.get("mixticsSV")).intValue();//sp.mixticsSV.getValue();
-        yaxis.minor_tic_count = ((Integer) Layout.get("miyticsSV")).intValue();//sp.miyticsSV.getValue();
+        xaxis.minor_tic_count = ((Integer) Layout.get("mixticsSV"));//sp.mixticsSV.getValue();
+        yaxis.minor_tic_count = ((Integer) Layout.get("miyticsSV"));//sp.miyticsSV.getValue();
 
-        xaxis.paintGrid = ((Boolean) Layout.get("paintGridSV")).booleanValue();//yaxis.paintGrid=sp.paintGridSV.isSelected();
-        yaxis.paintGrid = ((Boolean) Layout.get("paintGridSV")).booleanValue();//yaxis.paintGrid=sp.paintGridSV.isSelected();
+        xaxis.paintGrid = ((Boolean) Layout.get("paintGridSV"));//yaxis.paintGrid=sp.paintGridSV.isSelected();
+        yaxis.paintGrid = ((Boolean) Layout.get("paintGridSV"));//yaxis.paintGrid=sp.paintGridSV.isSelected();
         xaxis.gridcolor = (Color) Layout.get("gridColorSV");//sp.gridColor.getColor();
         yaxis.gridcolor = (Color) Layout.get("gridColorSV");//sp.gridColor.getColor();
 
@@ -2173,11 +1874,11 @@ public class PcaPlot extends BasicChart{
         //if(sp.Yaxis.getText().length()>0)
         yaxis.setTitleText((String) Layout.get("yaxisTitle"));//sp.Yaxis.getText());
 
-        xaxis.TICS_IN_BOTH_ENDS = ((Boolean) Layout.get("xticsbothsidesSV")).booleanValue();//sp.xticsbothsidesSV.isSelected();
-        yaxis.TICS_IN_BOTH_ENDS = ((Boolean) Layout.get("yticsbothsidesSV")).booleanValue();//sp.yticsbothsidesSV.isSelected();
+        xaxis.TICS_IN_BOTH_ENDS = ((Boolean) Layout.get("xticsbothsidesSV"));//sp.xticsbothsidesSV.isSelected();
+        yaxis.TICS_IN_BOTH_ENDS = ((Boolean) Layout.get("yticsbothsidesSV"));//sp.yticsbothsidesSV.isSelected();
 
-        xaxis.transparency = ((Integer) Layout.get("transparencySV")).intValue();//sp.transparencySV.getValue();
-        yaxis.transparency = ((Integer) Layout.get("transparencySV")).intValue();//sp.transparencySV.getValue();
+        xaxis.transparency = ((Integer) Layout.get("transparencySV"));//sp.transparencySV.getValue();
+        yaxis.transparency = ((Integer) Layout.get("transparencySV"));//sp.transparencySV.getValue();
 
         //bgf.setDensColors(sp.col1SV.getColor(),sp.col2SV.getColor(),sp.col3SV.getColor(),sp.col4SV.getColor(),sp.col5SV.getColor());
 
@@ -2186,28 +1887,28 @@ public class PcaPlot extends BasicChart{
         //sp.interpolator.setColors(sp.col1SV.getColor(),sp.col2SV.getColor(),sp.col3SV.getColor(),sp.col4SV.getColor(),sp.col5SV.getColor());
 
 
-        bgf.setDensArea(((Integer) Layout.get("densareaSV")).intValue());//sp.densareaSV.getValue());
-        bgf.setDensTolerance(((Integer) Layout.get("tresholdSV")).intValue());//sp.tresholdSV.getValue());
-        bgf.setNumColors(((Integer) Layout.get("colorsSV")).intValue());//sp.colorsSV.getValue());
+        bgf.setDensArea(((Integer) Layout.get("densareaSV")));//sp.densareaSV.getValue());
+        bgf.setDensTolerance(((Integer) Layout.get("tresholdSV")));//sp.tresholdSV.getValue());
+        bgf.setNumColors(((Integer) Layout.get("colorsSV")));//sp.colorsSV.getValue());
 
-        bgf.GradientType = ((Integer) Layout.get("gradtypeSV")).intValue();//sp.gradtypeSV.getSelectedIndex();
+        bgf.GradientType = ((Integer) Layout.get("gradtypeSV"));//sp.gradtypeSV.getSelectedIndex();
         bgf.Single = (Color) Layout.get("singlebgSV");// sp.singlebgSV.getColor();
         bgf.gradient1 = (Color) Layout.get("grad1SV");//sp.grad1SV.getColor();
         bgf.gradient2 = (Color) Layout.get("grad2SV");//sp.grad2SV.getColor();
 
         //dotColor = sp.dotcolorSV.getColor();
 
-        dotsize = ((Integer) Layout.get("dotsizeSV")).intValue();//sp.dotsizeSV.getValue();
+        dotsize = ((Integer) Layout.get("dotsizeSV"));//sp.dotsizeSV.getValue();
         setBackground((Color) Layout.get("chartbgSV"));//sp.chartbgSV.getColor());
 
 
         boolean resetxAxis = false;
         boolean resetyAxis = false;
 
-        double xmin = ((Double) Layout.get("xmin")).doubleValue();//sp.xmin.getValue();
-        double xmax = ((Double) Layout.get("xmax")).doubleValue();//sp.xmax.getValue();
-        double ymin = ((Double) Layout.get("ymin")).doubleValue();//sp.ymin.getValue();
-        double ymax = ((Double) Layout.get("ymax")).doubleValue();//sp.ymax.getValue();
+        double xmin = ((Double) Layout.get("xmin"));//sp.xmin.getValue();
+        double xmax = ((Double) Layout.get("xmax"));//sp.xmax.getValue();
+        double ymin = ((Double) Layout.get("ymin"));//sp.ymin.getValue();
+        double ymax = ((Double) Layout.get("ymax"));//sp.ymax.getValue();
 
         if (!this.equalScales) {
             if (ymin != ymax && xmin != xmax) {
@@ -2226,12 +1927,12 @@ public class PcaPlot extends BasicChart{
                 }
 
                 if (resetxAxis) {
-                    xaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV")).booleanValue();//sp.endlabelsSV.isSelected();
+                    xaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV"));//sp.endlabelsSV.isSelected();
                     xaxis.minimum = xmin;
                     xaxis.maximum = xmax;
                 }
                 if (resetyAxis) {
-                    yaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV")).booleanValue();//sp.endlabelsSV.isSelected();
+                    yaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV"));//sp.endlabelsSV.isSelected();
                     yaxis.minimum = ymin;
                     yaxis.maximum = ymax;
                 }
@@ -2243,12 +1944,12 @@ public class PcaPlot extends BasicChart{
         boolean nump = false;
 
         if (Layout.containsKey("showTrendSV")) {
-            showtrend = ((Boolean) Layout.get("showTrendSV")).booleanValue();
+            showtrend = ((Boolean) Layout.get("showTrendSV"));
         }
 
         if (showtrend) {
             if (Layout.containsKey("numpSV")) {
-                nump = ((Boolean) Layout.get("numpSV")).booleanValue();
+                nump = ((Boolean) Layout.get("numpSV"));
             }
             if (nump) {
                 trendline = 1;
@@ -2259,16 +1960,16 @@ public class PcaPlot extends BasicChart{
 
 
         if (Layout.containsKey("pointsSV")) {
-            trendpoints = ((Double) Layout.get("pointsSV")).doubleValue();
+            trendpoints = ((Double) Layout.get("pointsSV"));
         }
 
         if (Layout.containsKey("weightSV")) {
-            trendweight = ((Double) Layout.get("weightSV")).doubleValue();
+            trendweight = ((Double) Layout.get("weightSV"));
         }
 
 
         if (Layout.containsKey("trendtransSV")) {
-            trendtrans = ((Integer) Layout.get("trendtransSV")).intValue();
+            trendtrans = ((Integer) Layout.get("trendtransSV"));
         }
 
         if (Layout.containsKey("widthSV")) {
@@ -2294,10 +1995,10 @@ public class PcaPlot extends BasicChart{
             return;
         }
 //        System.out.println("ymin "+ new Double(yaxis.minimum)+"   ymax  "+ new Double(yaxis.maximum)+" xmin "+ new Double(xaxis.minimum)+" xmax "+ new Double(xaxis.maximum));
-        Layout.put("ymin", new Double(yaxis.minimum));
-        Layout.put("ymax", new Double(yaxis.maximum));
-        Layout.put("xmin", new Double(xaxis.minimum));
-        Layout.put("xmax", new Double(xaxis.maximum));
+        Layout.put("ymin", yaxis.minimum);
+        Layout.put("ymax", yaxis.maximum);
+        Layout.put("xmin", xaxis.minimum);
+        Layout.put("xmax", xaxis.maximum);
         
 
         //sp.ymin.setValue(yaxis.minimum);
@@ -2307,7 +2008,6 @@ public class PcaPlot extends BasicChart{
     }
 
     public void writeValues() {
-        Tools to = new Tools();
         //System.out.print("\nWriting chart as "+plotName);
         if (props == null) {
             System.out.print("\nWARNING, No properties read for plot");
@@ -2332,7 +2032,7 @@ public class PcaPlot extends BasicChart{
         //if(props!=null)to.writedialogStatus(sp,plotName,props);
     }
 
-    public void readValues() {
+    public final void readValues() {
         //props.remove(plotName);
         //tools.writeProperties(props);
 
@@ -2460,7 +2160,11 @@ public class PcaPlot extends BasicChart{
         return (new JeToolTip(this));
     }
 
+    /**
+     *
+     */
     @Override
+      @SuppressWarnings({"FinalizeDeclaration", "CallToPrintStackTrace"})
     public void finalize() {
         //This is just used for garbage collecting monitoring
         //System.out.print("Collected Scatterplot..");
@@ -2475,12 +2179,12 @@ public class PcaPlot extends BasicChart{
   
     
     public void setDotSize(int dotSize) {
-        Layout.put("dotsizeSV", new Integer(dotSize));
+        Layout.put("dotsizeSV", dotSize);
         this.dotsize = dotSize;
     }
 
     public void setFrameDots(boolean frame) {
-        Layout.put("frameSV", new Boolean(frame));
+        Layout.put("frameSV", frame);
     }
 
     public void zoom(double[] frame) {
@@ -2493,10 +2197,10 @@ public class PcaPlot extends BasicChart{
 
 
 
-        Layout.put("xmin", new Double(frame[0]));
-        Layout.put("xmax", new Double(frame[1]));
-        Layout.put("ymin", new Double(frame[2]));
-        Layout.put("ymax", new Double(frame[3]));
+        Layout.put("xmin", frame[0]);
+        Layout.put("xmax", frame[1]);
+        Layout.put("ymin", frame[2]);
+        Layout.put("ymax", frame[3]);
 
         //sp.xmin.setValue(frame[0]);
         //sp.xmax.setValue(frame[1]);
@@ -2504,10 +2208,10 @@ public class PcaPlot extends BasicChart{
         //sp.ymax.setValue(frame[3]);
 
         //   yaxis.setManualRange(true);
-        yaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV")).booleanValue();//sp.endlabelsSV.isSelected();
+        yaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV"));//sp.endlabelsSV.isSelected();
 
         //   xaxis.setManualRange(true);
-        xaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV")).booleanValue();//sp.endlabelsSV.isSelected();
+        xaxis.force_end_labels = ((Boolean) Layout.get("endlabelsSV"));//sp.endlabelsSV.isSelected();
 
         FullRepaint = true;
         paths.clear();
@@ -2528,14 +2232,14 @@ public class PcaPlot extends BasicChart{
     /**
      * Set the lower right corner of the sweep frame
      *
-     * @param me
+     * @return 
      */
     public String getFrameDescription() {
 
         final java.text.NumberFormat form = java.text.NumberFormat.getNumberInstance();
         form.setMinimumFractionDigits(3);
 
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         Rectangle tmp = null;
         for (int j = 0; j < paths.size(); j++) {
 
@@ -2566,14 +2270,14 @@ public class PcaPlot extends BasicChart{
 
         boolean[] tolerated = bgf.getTolerated();
 
-        if (frameType == 0) {
-            int sqxstart = Math.min(startx, endx);
-            int sqystart = Math.min(starty, endy);
-            int sqxend = (Math.max(startx, endx) - Math.min(startx, endx));
-            int sqyend = (Math.max(starty, endy) - Math.min(starty, endy));
-            sweepFrom = new Point(sqxstart, sqystart);
-            sweepTo = new Point(sqxend, sqyend);
-        }
+//        if (frameType == 0) {
+//            int sqxstart = Math.min(startx, endx);
+//            int sqystart = Math.min(starty, endy);
+//            int sqxend = (Math.max(startx, endx) - Math.min(startx, endx));
+//            int sqyend = (Math.max(starty, endy) - Math.min(starty, endy));
+////            sweepFrom = new Point(sqxstart, sqystart);
+////            sweepTo = new Point(sqxend, sqyend);
+//        }
         for (int i = 0; i < ret.length; i++) {
 
             //System.out.print("\n*");
@@ -2908,6 +2612,7 @@ public class PcaPlot extends BasicChart{
         return ret;
     }
 
+      @SuppressWarnings("null")
     public boolean[] addInvalidValues(boolean[] x, boolean[] y) {
         if (x == null && y != null) {
             return y;

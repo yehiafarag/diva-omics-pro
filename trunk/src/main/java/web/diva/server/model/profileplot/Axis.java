@@ -125,13 +125,13 @@ public class Axis  extends Object implements Serializable{
      * Color of the grid
      *
      */
-    public Color gridcolor = null;
+    public Color gridcolor ;
     /**
      *
      * Color of the line at the Zero label
      *
      */
-    public Color zerocolor = Color.blue;
+    public Color zerocolor ;
     /**
      *
      * Default value <i>true</i>. Normally never changed. If set <i>false</I>
