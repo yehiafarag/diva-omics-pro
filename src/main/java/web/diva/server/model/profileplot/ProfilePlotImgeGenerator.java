@@ -75,10 +75,11 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
                 over = str.length();
             }
         }
-        getXaxis().minimumSize = 900;
+        getXaxis().minimumSize = 900 - (over*4);
 
         width = getXaxis().predictLength() + getYaxis().predictWidth() + getXaxis().endLength() + (over * 4);
-        height = 700;
+        height = 900;
+        System.out.println("width is "+width);
         super.setDsize(new Dimension(width, height));
         setSize(new Dimension(getDsize().width, getDsize().height));
         setDraw(getDataSelection(new int[]{}));
@@ -106,41 +107,38 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
     private final ImageEncoder in = ImageEncoderFactory.newInstance(ImageFormat.PNG, new Float(0.084666f));
 
     public String toImage() {
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(900, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
-        graphics.setPaint(Color.WHITE);     
-        super.forceFullRepaint();
-        super.paint(graphics);
-        byte[] imageData = null;
+        graphics.setPaint(Color.WHITE);
+        super.forceFullRepaint(graphics);
+//        super.paint(graphics);
+        byte[] imageData = null;     
+
         try {
-            
+
             imageData = in.encode(image);
         } catch (Exception e) {
             System.out.println(e.getLocalizedMessage());
         }
+
         String base64 = Base64.encodeBytes(imageData);
         base64 = "data:image/png;base64," + base64;
         return base64;
 
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public String toPdfFile(File userFolder, String url) {
         try {
             BufferedImage pdfImage = image;
 
-//            DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
               DOMImplementation domImpl = new SVGDOMImplementation();
             String svgNS = "http://www.w3.org/2000/svg";
             SVGDocument svgDocument = (SVGDocument) domImpl.createDocument(svgNS, "svg", null);
-            // Create an instance of the SVG Generator
             SVGGraphics2D svgGenerator = new SVGGraphics2D(svgDocument);
             svgGenerator.setSVGCanvasSize(new Dimension(pdfImage.getWidth(), pdfImage.getHeight()));
             svgGenerator.setPaint(Color.WHITE);
             svgGenerator.drawImage(pdfImage,0,0,null);
-            
-//            super.forceFullRepaint();
-//            super.paint(svgGenerator);
-            System.out.println("paint new image size is done ");
             File pdfFile = new File(userFolder,dataset.getName()+ "_Profile_Plot" + ".pdf");
             if (!pdfFile.exists()) {
                 pdfFile.createNewFile();
@@ -158,7 +156,6 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
             outputStream.flush();
             outputStream.close();
             bos.close();
-            System.out.println("temp file is done ");
             System.gc();
             String svgURI = svgFile.toURI().toString();
             TranscoderInput svgInputFile = new TranscoderInput(svgURI);
@@ -166,7 +163,6 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
             OutputStream outstream = new FileOutputStream(pdfFile);
             bos = new BufferedOutputStream(outstream);
             TranscoderOutput output = new TranscoderOutput(bos);
-//             write as pdf
             Transcoder pdfTranscoder = new PDFTranscoder();
             pdfTranscoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 0.084666f);
             pdfTranscoder.transcode(svgInputFile, output);
@@ -205,9 +201,6 @@ public class ProfilePlotImgeGenerator extends ProfilePlot {
     }
 
     public int[] getProfilePlotSelection(int x, int y) {
-//    Point p = getProfilerPointAt(x, y);
-//    if(p!=null)
-//        System.out.println("p.x "+p.x+"  p.y "+p.y);
     return new int[]{1,3,5};
     }
 

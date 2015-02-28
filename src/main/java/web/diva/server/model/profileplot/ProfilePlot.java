@@ -62,7 +62,7 @@ public class ProfilePlot extends JComponent implements Serializable {
     private final int minVisible = 1000;
     private boolean useSpeeding = true;
     private final boolean enableSpeeding = true;
-    private Dimension dsize = new Dimension(700, 700);
+    private Dimension dsize = new Dimension(900, 700);
     private boolean HorizontalLinesOnly = true;
     private final boolean shadow = true;
     //TODO: document this field (draw)
@@ -223,71 +223,20 @@ public class ProfilePlot extends JComponent implements Serializable {
         for (boolean b : tolerated) {
             System.out.println(index++ + "    tolerated selecteon : " + b);
         }
-//        for (int i = 0; i < Rx.length; i++) {
-//
-//            if ((dotColors == null || dotColors[i] != null) && (tolerated == null || tolerated[i])) {
-//                //if( (dotColors==null || dotColors[i]!=null) && (tolerated==null || tolerated[i])){
-//
-//                if (visible == null || visible[i]) {
-//                    if (xaxis.getInteger(Rx[i]) > p.x - radius
-//                            && xaxis.getInteger(Rx[i]) < p.x + radius
-//                            && yaxis.getInteger(Ry[i]) > p.y - radius
-//                            && yaxis.getInteger(Ry[i]) < p.y + radius) {
-//
-//
-//                        ret.add(new Integer(i));
-//
-//                        d1 = xaxis.getInteger(Rx[i]) - p.x;
-//                        d1 = d1 * d1;
-//
-//                        d2 = yaxis.getInteger(Ry[i]) - p.y;
-//                        d2 = d2 * d2;
-//
-//                        d = Math.sqrt(d1 + d2);
-//                        //System.out.print("\n"+d1);
-//                        dst.add(new Double(d));
-//                    }
-//                }
-//            }
-//            if (Thread.interrupted()) {
-//                return null;
-//            }
-//        }
-
 
         Vector sret = new Vector();
-//        double[] dist = new double[dst.size()];
-//        for (int i = 0; i < dist.length; i++) {
-//            dist[i] = ((Double) dst.elementAt(i)).doubleValue();
-//        }
-//        int[] srt = JDoubleSorter.quickSort(dist);
-//
-//        for (int i = 0; i < srt.length; i++) {
-//            sret.addElement(ret.elementAt(srt[i]));
-//        }
-
         return sret;
     }
 
 
     public void setData(Dataset data) {
 
-        //@TODO: reimplement me 
-//        if (data != null && data.structures != null && data.structures.containsKey("gaps")) {
-//            int[] gaps = (int[]) data.structures.get("gaps");
-//            createBGaps(gaps);
-//        }
-//
         this.data = data;
         yaxis.setValueRange(data.getMinMeasurement(), data.getMaxMeasurement());
 
         boolean[] visibleRows = data.getusedColInfos();//createVisibleRowIndexes();
         xaxis.setLabels(data.getColInfos(), visibleRows);
 
-        //size=new Dimension(xaxis.predictLength()+xaxis.endLength()+yaxis.predictWidth(),LineChart.this.scrollPane.getViewport().getSize().height);
-        //System.out.print("\nwidth: "+dsize.calcWidth+ ", height: "+dsize.height);
-        //setPreferredSize(dsize);
-        //setSize(new Dimension(xaxis.predictLength()+yaxis.predictWidth(),Height()));
         readForm();
         updateForm();
         forceFullRepaint();
@@ -305,20 +254,14 @@ public class ProfilePlot extends JComponent implements Serializable {
     public void setXaxisLabels() {
 
         boolean[] visibleRows = null;
-
         String[][] labels = new String[endlabel - startlabel][data.getColInfos()[0].length];
-
         for (int i = 0; i < labels.length; i++) {
             System.arraycopy(data.getColInfos()[i + startlabel], 0, labels[i], 0, labels[0].length);
         }
 
         //NOTE: fix
         visibleRows = data.getusedColInfos();//createVisibleRowIndexes();
-
         xaxis.setLabels(labels, visibleRows);
-
-        //size=new Dimension(xaxis.predictLength()+xaxis.endLength()+yaxis.predictWidth(),LineChart.this.scrollPane.getViewport().getSize().height);
-        //setPreferredSize(new Dimension(dsize.calcWidth,dsize.height));
     }
 
     public void setMembers(boolean[] members) {
@@ -334,12 +277,6 @@ public class ProfilePlot extends JComponent implements Serializable {
 
     public void setData(Dataset data, int startlabel, int endlabel, double max, double min, boolean[] members) {
         this.data = data;
-
-        //@TODO: reimplement me 
-//        if (data != null && data.structures != null && data.structures.containsKey("gaps")) {
-//            int[] gaps = (int[]) data.structures.get("gaps");
-//            createBGaps(gaps);
-//        }
         this.startlabel = startlabel;
         this.endlabel = endlabel;
         this.members = members;
@@ -502,6 +439,10 @@ public class ProfilePlot extends JComponent implements Serializable {
     public void forceFullRepaint() {
         FullRepaint = true;
         repaint();
+    }
+    public void forceFullRepaint(Graphics2D gr) {
+        FullRepaint = true;
+        paint(gr);
     }
 
     @Override
@@ -1097,7 +1038,7 @@ public class ProfilePlot extends JComponent implements Serializable {
             scrollPane.getViewport().setBackground(Color.WHITE);//sp.chartbgSV.getColor());
         }
 
-        int calcWidth = 900;// Math.max(xaxis.predictLength() + yaxis.predictWidth() + xaxis.endLength(), sp.mixsizeSV.getValue() + xaxis.endLength());
+//        int calcWidth =  Math.max(xaxis.predictLength() + yaxis.predictWidth() + xaxis.endLength(), sp.mixsizeSV.getValue() + xaxis.endLength());
         Dimension dim = new Dimension(900,700);//calcWidth, sp.minHeightSV.getValue());
 
         setMinimumSize(dim);

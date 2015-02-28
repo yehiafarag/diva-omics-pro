@@ -85,7 +85,7 @@ public class SomClustComponent extends ModularizedListener {
     private  HandlerRegistration uperTreeReg,maxUpperTreeReg;
     private final HandlerRegistration sideTreeReg,maxSideTree1Reg,minSettingBtnReg,clusteringProcessBtnReg,maxmizeBtnReg,settingBtnReg,saveBtnReg,minmizeBtnReg;
     private final VLayout mainClusteringPopupBodyLayout ;
-    public SomClustComponent(SomClusteringResult somClusteringResults, SelectionManager selectionManager, DivaServiceAsync DivaClientService,boolean clusterColumn) {
+    public SomClustComponent(SomClusteringResult somClusteringResults, SelectionManager selectionManager, DivaServiceAsync DivaClientService,boolean clusterColumn,int width,int height) {
         this.clustColumn = clusterColumn;
         this.GWTClientService = DivaClientService;
         
@@ -93,8 +93,8 @@ public class SomClustComponent extends ModularizedListener {
         mainThumbClusteringLayout = new VLayout();
         mainThumbClusteringLayout.setStyleName("somclustering");
         mainThumbClusteringLayout.setOverflow(Overflow.HIDDEN);
-        mainThumbClusteringLayout.setHeight("89%");
-        mainThumbClusteringLayout.setWidth("29%");
+        mainThumbClusteringLayout.setHeight(height+"px");
+        mainThumbClusteringLayout.setWidth(width +"px");
         mainThumbClusteringLayout.setMargin(0);
         mainThumbClusteringLayout.setMembersMargin(0);
         
