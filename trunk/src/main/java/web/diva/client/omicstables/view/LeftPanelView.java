@@ -68,7 +68,7 @@ public class LeftPanelView extends SectionStack {
     private final HandlerRegistration controlItemChangeHandlerReg, itemClickHandlerReg, colGroupBtnReg;
     private HandlerRegistration createRowGroupHandlerReg, colGroupHandlerReg, selectColsReg, exportPanelReg, activeGroupPanelReg, subDsPanelReg, saveDsPanelReg;
 
-    public LeftPanelView(SelectionManager selectionManagers, DivaServiceAsync GWTClientService, DatasetInformation datasetInfos) {
+    public LeftPanelView(SelectionManager selectionManagers, DivaServiceAsync GWTClientService, DatasetInformation datasetInfos,int width,int height) {
 
         this.setVisibilityMode(VisibilityMode.MULTIPLE);
         this.selectionManager = selectionManagers;
@@ -76,8 +76,8 @@ public class LeftPanelView extends SectionStack {
         this.datasetInfo = datasetInfos;
 
         this.setBorder("1px solid #F6F5F5");
-        this.setWidth("20%");
-        this.setHeight("89%");
+        this.setWidth(width+"px");
+        this.setHeight(height+"px");
         this.setMargin(2);
         this.setScrollSectionIntoView(false);
         rowSelectionSection = new SectionStackSection("&nbsp;Selection (" +  0+ "/" + datasetInfo.getRowsNumb() + ")");     
@@ -725,6 +725,12 @@ public class LeftPanelView extends SectionStack {
         omicsTable = null;
         rowGroupTable = null;
 
+    }
+    
+    public void resize(int width,int height){
+     this.setWidth(width+"px");
+        this.setHeight(height+"px");
+        this.redraw();
     }
 
 }

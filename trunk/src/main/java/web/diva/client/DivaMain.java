@@ -17,13 +17,11 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.Page;
 import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import java.util.TreeMap;
-import net.sourceforge.htmlunit.corejs.javascript.ScriptableObject;
 import web.diva.client.selectionmanager.SelectionManager;
 import web.diva.client.omicstables.view.LeftPanelView;
 import web.diva.client.profileplot.view.ProfilePlotComponent;
@@ -77,7 +75,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
             oldIE= true;
         masterWidth= Page.getScreenWidth();
         masterHeight=Page.getScreenHeight();
-        
+        calcAllDim();
         selectionManager = new SelectionManager();
         SelectionManager.Busy_Task(true, true);
         selectionManager.setMainAppController(this);
@@ -85,6 +83,37 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
         RootPanel.get("dataset_main_title").add(datasetTitle);
         this.initApplication();
+    }
+    private int leftPanelWidth,leftPanelHeight,medPanelWidth,rightPanelWidth;
+    private void calcAllDim(){
+        
+   leftPanelWidth = Window.getClientWidth()*20/100;
+   leftPanelHeight = Window.getClientHeight()-100;
+   
+   medPanelWidth = Window.getClientWidth()/2;   
+   if(Double.valueOf(medPanelWidth)%2.0 >0.0)
+       medPanelWidth = medPanelWidth-1;
+   rightPanelWidth = Window.getClientWidth()-(10+leftPanelWidth+2+medPanelWidth+2+10);
+   
+   
+    
+    }
+//    private final ImageScaler scaler = new ImageScaler();
+    private void resizeApp(){
+    calcAllDim();
+    leftPanelView.resize(leftPanelWidth, leftPanelHeight);
+    midPanelLayoutCanv.setWidth(medPanelWidth+"px");
+    midPanelLayoutCanv.setHeight((leftPanelHeight-2)+"px");   
+    profilePlotComponent.resize(medPanelWidth);
+    
+        int newWidth = (medPanelWidth / 2) ;
+        int newHeight = newWidth + 22;
+        topMidLayout.setHeight(newHeight + "px");
+        topMidLayout.setWidth(medPanelWidth + "px");
+        rankLayoutCanv.setHeight((leftPanelHeight - newHeight - 4) + "px");
+        rankLayoutCanv.setWidth(medPanelWidth + "px");
+        
+
     }
 
    
@@ -122,9 +151,36 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         selectDatasetList.addChangeHandler(this);
         selectSubDatasetList.addChangeHandler(this);
         
-          tempSelectDatasetList.addChangeHandler(this);
         tempSelectDatasetList.addChangeHandler(this);
-        
+        tempSelectDatasetList.addChangeHandler(this);
+        Window.addResizeHandler(new ResizeHandler() {
+
+            @Override
+            public void onResize(ResizeEvent event) {
+                if (masterWidth != Page.getScreenWidth() || masterHeight != Page.getScreenHeight()) {
+                    BooleanCallback ok = new BooleanCallback() {
+
+                        @Override
+                        public void execute(Boolean value) {
+                            Window.Location.reload();
+                        }
+                    };
+                    SC.warn("You have changed the Screen size the application need. To reload the page press OK  or press cancel and back to the old screen", ok);
+
+                }
+
+                redrawTimer.schedule(500);
+
+            }
+        });
+        redrawTimer = new Timer() {
+
+            @Override
+            public void run() {
+//                resizeApp();
+////             
+            }
+        };
         initHomePage();
         welcomePage.setStyleName("welcomepagelayout");
         RootPanel.get("welcomediva").add(welcomePage);
@@ -160,7 +216,6 @@ public class DivaMain implements EntryPoint, ChangeHandler {
             }
         } else if (selectDatasetList.getSelectedIndex() > 0) {
             try {
-
                 selectSubDatasetList.clear();
                 selectSubDatasetList.addItem("Select Sub-Dataset");
                 selectSubDatasetList.setVisible(false);
@@ -206,7 +261,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         DivaClientService.getAvailableDatasets(userTabId, new AsyncCallback<TreeMap<Integer, String>>() {
             @Override
             public void onFailure(Throwable caught) {
-                Window.alert(SERVER_ERROR);
+                Window.alert("DiVAFiles folder is not available please contact the system administrator");
                 SelectionManager.Busy_Task(false, true);
             }
 
@@ -324,110 +379,40 @@ public class DivaMain implements EntryPoint, ChangeHandler {
         if (leftPanelView != null) {
             leftPanelView.deparent();
         }
-        leftPanelView = new LeftPanelView(selectionManager, DivaClientService, datasetInfos);
+        leftPanelView = new LeftPanelView(selectionManager, DivaClientService, datasetInfos,leftPanelWidth,leftPanelHeight);
         leftPanelView.setStyleName("whitelayout");
         RootPanel.get("leftpanel").clear(true);
         RootPanel.get("leftpanel").add(leftPanelView);
 
         
-        midPanelLayoutCanv.setBorder("1px solid #F6F5F5");
-//        midPanelLayoutCanv.setStyleName("diva_mid_panel_border");
+//        midPanelLayoutCanv.setBorder("1px solid #F6F5F5");
+        midPanelLayoutCanv.setStyleName("diva_mid_panel_border");
     }
 
     private VLayout rankLayoutCanv;
-    private VLayout midPanelLayoutCanv;
-    private VLayout topMidLayoutCanv;
+    private VerticalPanel midPanelLayoutCanv;
     private HorizontalPanel topMidLayout;
-    private int initRankWidth;
 
     private void initMiddleBodyLayout() {
-        midPanelLayoutCanv = new VLayout();
-        midPanelLayoutCanv.setMargin(2);
-        midPanelLayoutCanv.setWidth("50%");
-        midPanelLayoutCanv.setHeight("89%");
+        midPanelLayoutCanv = new VerticalPanel();
+        midPanelLayoutCanv.setWidth(medPanelWidth+"px");
+        midPanelLayoutCanv.setHeight((leftPanelHeight-2)+"px");
         RootPanel.get("diva_mid_panel").clear();
         RootPanel.get("diva_mid_panel").add(midPanelLayoutCanv);
-        midPanelLayoutCanv.setMatchElement(true);        
-        midPanelLayoutCanv.setMembersMargin(2);
-
         //pca and profile plot layout
         topMidLayout = new HorizontalPanel();
-        final ImageScaler scaler = new ImageScaler();
-        int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 10;
-        int newHeight = scaler.reScale(newWidth, 700, 900) + 50;
-        topMidLayout.setHeight(newHeight + "px");     
-        topMidLayout.setWidth("100%");
+        int newWidth = (medPanelWidth / 2);
+        int newHeight = newWidth+ 22;
+        topMidLayout.setHeight(newHeight + "px");
+        topMidLayout.setWidth(medPanelWidth + "px");
         topMidLayout.setStyleName("whitelayout");
-        
-        
-//        topMidLayoutCanv=new VLayout();
-      
-        
-//        topMidLayout.setHeight("50%");
-        rankLayoutCanv = new VLayout();        
-        midPanelLayoutCanv.addMember(topMidLayout);
-        midPanelLayoutCanv.setMinMemberSize(newHeight);
-        midPanelLayoutCanv.addMember(rankLayoutCanv);
-        rankLayoutCanv.setWidth("100%");
 
-        rankLayoutCanv.setManagePercentBreadth(true);
-//        rankLayoutCanv.setStyleName("whitelayout");
-
-//        rankLayoutCanv.setRedrawOnResize(true);
-//        profilePlotLayout = new VLayout();
-//        PCAPlotLayout = new VLayout();
-//        
-//         
-//        topMidLayout.addMember(profilePlotLayout);
-//        profilePlotLayout.setAutoWidth();
-////        profilePlotLayout.setRedrawOnResize(true);
-//        
-//        topMidLayout.addMember(PCAPlotLayout);
-//         PCAPlotLayout.setAutoWidth();
-//         PCAPlotLayout.setRedrawOnResize(true);
-//        PCAPlotLayout.setWidth("100%");
-//        rankLayoutCanv.setRedrawOnResize(true);
-//        if (redrawTimer == null) {
-//            redrawTimer = new Timer() {
-//
-//                @Override
-//                public void run() {
-////                    double scale = Double.valueOf(initRankWidth)/Double.valueOf(RootPanel.get("diva_mid_panel").getOffsetWidth());
-////                    SC.say("scale is "+scale+"   "+initRankWidth+"  "+RootPanel.get("diva_mid_panel").getOffsetWidth());
-////                    
-////                   topMidLayout.getElement().setAttribute("style", "transform:sacle("+scale+")");
-////                    int width = (RootPanel.get("diva_mid_panel").getOffsetWidth() - 6);
-////                    topMidLayout.setWidth(width + "px");
-////                    int newWidth = (width / 2);
-////                    int newHeight = scaler.reScale(newWidth, 700, 900) + 22;
-////                    if (profilePlotComponent != null) {
-////                        profilePlotComponent.resize(newWidth, newHeight);
-////                    }
-////                    if (pcaPlotComponent != null) {
-////                        pcaPlotComponent.resize(newWidth, newHeight);
-////                        topMidLayout.setCellHorizontalAlignment(pcaPlotComponent.getPCAComponent(), HorizontalPanel.ALIGN_RIGHT);
-////                    }
-////
-////                    topMidLayout.setHeight(newHeight + "px");
-////                    topMidLayout.setWidth(width + "px");
-//////                   
-////                    midPanelLayoutCanv.resizeTo(RootPanel.get("diva_mid_panel").getOffsetWidth(), RootPanel.get("diva_mid_panel").getOffsetHeight());
-////                    rankLayoutCanv.resizeTo(RootPanel.get("diva_mid_panel").getOffsetWidth(), RootPanel.get("diva_mid_panel").getOffsetHeight() - newHeight + 5);
-////                    rankLayoutCanv.setTop(newHeight + 10);
-//                }
-//            };
-//
-//        }
-//        Window.addResizeHandler(new ResizeHandler() {
-//
-//            @Override
-//            public void onResize(ResizeEvent event) {
-//                initRankWidth = RootPanel.get("diva_mid_panel").getOffsetWidth();
-//                redrawTimer.schedule(500);
-//
-//            }
-//        });
-
+        //rank table layout
+        rankLayoutCanv = new VLayout();
+        rankLayoutCanv.setHeight((leftPanelHeight - (newHeight + 2)) + "px");
+        rankLayoutCanv.setWidth(medPanelWidth + "px");        
+        midPanelLayoutCanv.add(topMidLayout);
+        midPanelLayoutCanv.add(rankLayoutCanv);
     }
     private Timer redrawTimer;
 
@@ -454,7 +439,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
                     @Override
                     public void onSuccess(SomClusteringResult result) {
-                        final SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService, true);
+                        final SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService, true,rightPanelWidth,leftPanelHeight-2);
                         RootPanel.get("SomClusteringResults").clear();
                         RootPanel.get("SomClusteringResults").add(hierarchicalClustering.getSomclusteringLayout());
                         Timer t = new Timer() {
@@ -478,7 +463,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 
     public void updateClusteringPanel(SomClusteringResult result,boolean clusterColumn) {
         SelectionManager.Busy_Task(true, true);
-        SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService, clusterColumn);
+        SomClustComponent hierarchicalClustering = new SomClustComponent(result, selectionManager, DivaClientService, clusterColumn,rightPanelWidth,leftPanelHeight-2);
 
         RootPanel.get("SomClusteringResults").clear();
 
@@ -496,12 +481,11 @@ public class DivaMain implements EntryPoint, ChangeHandler {
      *
      */
     private void processProfilePlot() {
-        DivaClientService.computeProfilePlot(212, 250,
+        DivaClientService.computeProfilePlot(900,900,
                 new AsyncCallback<LineChartResults>() {
                     @Override
                     public void onFailure(Throwable caught) {
                         Window.alert(SERVER_ERROR);
-//                        init=false;
                         SelectionManager.Busy_Task(false, true);
                     }
 
@@ -518,12 +502,8 @@ public class DivaMain implements EntryPoint, ChangeHandler {
                             pcaPlotComponent.remove();
                         }
 
-                        profilePlotComponent = new ProfilePlotComponent(result.getUrl(), selectionManager, DivaClientService,result.getImgHeight(),result.getImgWidth());
-//                        profilePlotLayout.clear();          
-                        topMidLayout.setHeight(profilePlotComponent.getProfilePlotPanelHeight()+"px");
-                       
+                        profilePlotComponent = new ProfilePlotComponent(result.getUrl(), selectionManager, DivaClientService,result.getImgHeight(),result.getImgWidth(),medPanelWidth);                       
                         topMidLayout.add(profilePlotComponent.getLayout());
-//                        profilePlotComponent.getLayout().setMargin(0);
                         if (!init) {
                             SelectionManager.Busy_Task(false, true);
                         }
@@ -559,7 +539,7 @@ public class DivaMain implements EntryPoint, ChangeHandler {
 //                             PCAPlotLayout.removeMember(pcaPlotComponent.getPCAComponent());
 //                            pcaPlotComponent.remove();
 //                        }
-                        pcaPlotComponent = new PCAPlotComponent(result, selectionManager, DivaClientService, datasetInfo.getColNumb(), datasetInfo.getDatasetInfo());
+                        pcaPlotComponent = new PCAPlotComponent(result, selectionManager, DivaClientService, datasetInfo.getColNumb(), datasetInfo.getDatasetInfo(),medPanelWidth);
                         topMidLayout.add(pcaPlotComponent.getPCAComponent());
                         topMidLayout.setCellHorizontalAlignment(pcaPlotComponent.getPCAComponent(),HorizontalPanel.ALIGN_RIGHT);
 //                        pcaPlotComponent.getPCAComponent().setMargin(0);

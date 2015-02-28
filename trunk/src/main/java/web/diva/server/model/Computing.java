@@ -47,7 +47,6 @@ import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.RankResult;
 import web.diva.shared.beans.SomClustTreeSelectionUpdate;
 import web.diva.shared.beans.SomClusteringResult;
-import web.diva.shared.beans.SplitedImg;
 import web.diva.shared.model.core.model.dataset.DatasetInformation;
 
 /**
@@ -403,7 +402,7 @@ public class Computing implements Serializable, IsSerializable{
 
         LineChartResults results = new LineChartResults();
         results.setUrl(profilePlotImageGenerator.toImage());
-        results.setImgHeight(700);
+        results.setImgHeight(900);
         results.setImgWidth(900);
         return results;
     }
@@ -437,10 +436,12 @@ public class Computing implements Serializable, IsSerializable{
 //        PcaCompute pcacompute = new PcaCompute(divaDataset);
         PCAImageGenerator = new PCAImageGenerator(PCAResult, divaDataset, comI, comII);
         //to image
-        pcaImgResults.setTooltipInformatinData(PCAImageGenerator.getTooltipsInformationData());
+       pcaImgResults.setImgString(PCAImageGenerator.toImage());
+        PCAImageGenerator.getPCASelection(50, 50, 70,70);
         PCAImageGenerator.selectionChanged(new int[]{});
-        
         pcaImgResults.setImgString(PCAImageGenerator.toImage());
+        
+         pcaImgResults.setTooltipInformatinData(PCAImageGenerator.getTooltipsInformationData());
         pcaImgResults.setImgHeight(PCAImageGenerator.getImageHeight());
         pcaImgResults.setPcaLabelData(PCAImageGenerator.getPcaLabelData());
         pcaImgResults.setTotalVarianc(PCAImageGenerator.getTotalvarStr());
@@ -1016,8 +1017,6 @@ public class Computing implements Serializable, IsSerializable{
      *@return RankResult
      */
     public RankResult getDefaultRank() {
-
-        System.out.println("(divaDataset.getDefaultRankingName() "+divaDataset.getDefaultRankingName());
         String rankKey = "";
         for (String key : computingDataList) {
             if (key.contains(divaDataset.getName())) {
@@ -1030,19 +1029,16 @@ public class Computing implements Serializable, IsSerializable{
 
         
         if (rankKey.equalsIgnoreCase("") || !computingDataList.contains(rankKey)) {
-            System.out.println("no default rank result stored");
-            
+            System.out.println("no default rank result stored");            
             String type = "OneClass";
             String perm = ""+400;
             String seed = ""+288848379;
-            String col1 = "";
-            
+            String col1 = "";            
             for (no.uib.jexpress_modularized.core.dataset.Group g : divaDataset.getColumnGroups()) {
                 if (g.getName().equalsIgnoreCase("All")) {
                     col1 = g.getName();
                 }
-            }
-            
+            }            
             col1.toCharArray();
              rankResults = getRankProductResults( perm,  seed, Arrays.asList(new String[]{col1}), "Log 2",true);
 //            if(computingDataList.contains(key))

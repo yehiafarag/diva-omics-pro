@@ -13,15 +13,12 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.smartgwt.client.types.Cursor;
 import com.smartgwt.client.types.KnobType;
 import com.smartgwt.client.widgets.IconButton;
-import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.drawing.DrawImage;
 import com.smartgwt.client.widgets.drawing.DrawPane;
 import com.smartgwt.client.widgets.events.DrawEvent;
@@ -31,7 +28,6 @@ import web.diva.client.DivaServiceAsync;
 import web.diva.client.selectionmanager.ModularizedListener;
 import web.diva.client.selectionmanager.Selection;
 import web.diva.client.selectionmanager.SelectionManager;
-import web.diva.client.view.core.ImageScaler;
 import web.diva.client.view.core.SaveAsPanel;
 import web.diva.shared.beans.PCAImageResult;
 import web.diva.shared.beans.UpdatedTooltip;
@@ -53,9 +49,10 @@ public class PCAPlotComponent extends ModularizedListener {
     private VLayout mainThumbPCALayout;
     private final HTML tooltipLabel = new HTML();
     private HorizontalPanel tooltipViewPortLayout;
-    private final Img thumbChartImg; //maxmizePlotImage,
+    private final DrawImage thumbChartImg = new DrawImage();
     private final PopupPanel pcaPopup;
     private final DrawImage mainPCAImage = new DrawImage();
+    private final int newWidth;
 
     @Override
     public String toString() {
@@ -75,13 +72,15 @@ public class PCAPlotComponent extends ModularizedListener {
         }
     }
     private final String datasetInfo;
-    private DrawPane pcaImageDrawPan = null;
-    private final HandlerRegistration minLabelReg, imagereg, showAllReg, zoomInReg, zoomoutReg, settingBtnReg, saveBtnReg, maxmizeBtnReg;
-    private int pcaPlotPanelWidth;
-    private int pcaPlotPanelHeight;
+    private DrawPane pcaMaxImageDrawPan = null,pcaThumbImgDrawPan= null;
+    private final HandlerRegistration minLabelReg,  showAllReg, zoomInReg, zoomoutReg, settingBtnReg, saveBtnReg, maxmizeBtnReg;
+    
+    private HandlerRegistration imagereg;
+    private final int pcaPlotPanelWidth;
+    private final int pcaPlotPanelHeight;
     private final PCAImageResult results;
 
-    public PCAPlotComponent(final PCAImageResult results, SelectionManager selectionManager, DivaServiceAsync greetingService, final int colNumber, String datasetInfo) {
+    public PCAPlotComponent(final PCAImageResult results, SelectionManager selectionManager, DivaServiceAsync greetingService, final int colNumber, String datasetInfo,int medPanelWidth) {
 
         this.GWTClientService = greetingService;
         this.classtype = 2;
@@ -92,17 +91,15 @@ public class PCAPlotComponent extends ModularizedListener {
         this.datasetInfo = datasetInfo;
         this.results=results;
         
-        scaler = new ImageScaler();
-        int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
-        int newHeight = scaler.reScale(newWidth, results.getImgHeight(),results.getImgWidth());
-        pcaPlotPanelWidth = newWidth+10;
-        pcaPlotPanelHeight= newHeight+20;
+        newWidth = (medPanelWidth / 2);
+        pcaPlotPanelWidth = newWidth;
+        pcaPlotPanelHeight = newWidth+22;
 
         mainThumbPCALayout = new VLayout();
         mainThumbPCALayout.setStyleName("pca");
-         mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
-        mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px");
-        
+        mainThumbPCALayout.setHeight(pcaPlotPanelHeight + "px");
+        mainThumbPCALayout.setWidth(pcaPlotPanelWidth + "px");
+
         
         topLayout = new HorizontalPanel();
         mainThumbPCALayout.addMember(topLayout);
@@ -112,55 +109,49 @@ public class PCAPlotComponent extends ModularizedListener {
         Label title = new Label("PCA Plot");
         title.setStyleName("labelheader");
         topLayout.add(title);
-        title.setWidth("90%");
+        title.setWidth("50%");
         topLayout.setCellHorizontalAlignment(title, HorizontalPanel.ALIGN_LEFT);
         Label maxmizeBtn = new Label();
         maxmizeBtn.addStyleName("maxmize");
         maxmizeBtn.setHeight("16px");
         maxmizeBtn.setWidth("16px");
         topLayout.add(maxmizeBtn);
-        thumbChartImg = new Img(results.getImgString());
-        thumbChartImg.setMaxHeight(700);
-        thumbChartImg.setMaxWidth(900);
-        thumbChartImg.setTitle("To Activate the PCA Selection Use Maximized Mode");
-        thumbChartImg.ensureDebugId("cwBasicPopup-thumb");
-        thumbChartImg.addStyleName("clickableImg");
-        thumbImageLayout = new VLayout();
+        calcMinImgResize();
+        thumbChartImg.setSrc(results.getImgString());
+        if (pcaThumbImgDrawPan == null) {
+            pcaThumbImgDrawPan = createThumbImgDrawPane();
+        }
+//                    updatedMmaxmizePlotImgLayout.addMember(pcaMaxImageDrawPan);
 
-//        thumbImageLayout.setStyleName("imagesborder");
-        int width = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
-
-        mainThumbPCALayout.addMember(thumbImageLayout);
-        thumbImageLayout.setHeight(newHeight + "px");
-        thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
-        thumbImageLayout.addMember(thumbChartImg);
+//        thumbChartImg.setHeight((newWidth-2)+"px");
+//        thumbChartImg.setWidth((newWidth-2)+"px");
+//        thumbChartImg.setTitle("To Activate the PCA Selection Use Maximized Mode");
+//        thumbChartImg.ensureDebugId("cwBasicPopup-thumb");
+//        thumbChartImg.addStyleName("clickableImg");
+//        thumbImageLayout = new VLayout();
 
 
-        thumbChartImg.setWidth(width + "px");
-        thumbChartImg.setHeight(newHeight + "px");
-//        thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
-//        thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
+        mainThumbPCALayout.addMember(pcaThumbImgDrawPan);
+//        thumbImageLayout.setHeight(pcaPlotPanelWidth + "px");
+//        thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
+//        thumbImageLayout.addMember(thumbChartImg);
 
-
-        
-//        mainThumbPCALayout.addMember(thumbChartImg);
-        
-        
-//        thumbChartImg.setHeight("100%");
-//        thumbChartImg.setWidth("100%");
 
         /* the end of thumb layout*/
         pcaPopup = new PopupPanel(false, true);
         pcaPopup.setAnimationEnabled(true);
         pcaPopup.ensureDebugId("cwBasicPopup-imagePopup");
 
+        
+        calcMaxImgResize();
+        
         final VLayout mainPcaPopupBodyLayout = new VLayout();
-        mainPcaPopupBodyLayout.setWidth(900 + "px");
-        mainPcaPopupBodyLayout.setHeight(770 + "px");
+        mainPcaPopupBodyLayout.setWidth((calMaxImgWidth+2) + "px");
+        mainPcaPopupBodyLayout.setHeight((calMaxImgWidth+30+80) + "px");
 
         HorizontalPanel maxTopLayout = new HorizontalPanel();
         mainPcaPopupBodyLayout.addMember(maxTopLayout);
-        maxTopLayout.setWidth(900 + "px");
+        maxTopLayout.setWidth((calMaxImgWidth+2) + "px");
         maxTopLayout.setHeight("18px");
         maxTopLayout.setStyleName("whiteLayout");
         maxTopLayout.setSpacing(3);
@@ -169,7 +160,7 @@ public class PCAPlotComponent extends ModularizedListener {
         maxTitle.setStyleName("labelheader");
         maxTopLayout.add(maxTitle);
 
-        maxTitle.setWidth((900 - 300) + "px");
+        maxTitle.setWidth(((calMaxImgWidth+2) - 300) + "px");
         maxTopLayout.setCellHorizontalAlignment(maxTitle, HorizontalPanel.ALIGN_LEFT);
 
         CheckBox showallBtn = new CheckBox("Show All");
@@ -254,9 +245,7 @@ public class PCAPlotComponent extends ModularizedListener {
 
             @Override
             public void onClick(ClickEvent event) {
-//                Window.open(thumbChartImg.getUrl(), "Download Image", "menubar=yes,location=yes,resizable=yes,scrollbars=yes,status=yes,toolbar=true, width=" + Window.getClientWidth() + ",height=" + Window.getClientHeight());
-                SelectionManager.Busy_Task(true, false);
-//                Window.open(profilePlotMaxImage.getUrl(), "downlodwindow", "status=0,toolbar=0,menubar=0,location=0");
+               SelectionManager.Busy_Task(true, false);
                 GWTClientService.exportImgAsPdf("PCA_Plot","high", new AsyncCallback<String>() {
                     @Override
                     public void onFailure(Throwable caught) {
@@ -288,29 +277,29 @@ public class PCAPlotComponent extends ModularizedListener {
         minLabelReg = minmizeBtn.addClickHandler(minmizeClickHandler);
 
         final VLayout updatedMmaxmizePlotImgLayout = new VLayout();
-        updatedMmaxmizePlotImgLayout.setHeight(710);
-        updatedMmaxmizePlotImgLayout.setWidth(900);
+        updatedMmaxmizePlotImgLayout.setHeight((calMaxImgWidth+2));
+        updatedMmaxmizePlotImgLayout.setWidth((calMaxImgWidth+2));
 
         mainPcaPopupBodyLayout.addMember(updatedMmaxmizePlotImgLayout);
 
         tooltipViewPortLayout = new HorizontalPanel();
-        tooltipViewPortLayout.setWidth(900 + "px");
+        tooltipViewPortLayout.setWidth((calMaxImgWidth+2) + "px");
         tooltipViewPortLayout.setHeight("80px");
         mainPcaPopupBodyLayout.addMember(tooltipViewPortLayout);
         tooltipViewPortLayout.add(tooltipLabel);
         tooltipLabel.setStyleName("tooltip");
-        com.smartgwt.client.widgets.events.ClickHandler maxmizeClickHandler = new com.smartgwt.client.widgets.events.ClickHandler() {
-            @Override
-            public void onClick(com.smartgwt.client.widgets.events.ClickEvent event) {
-                pcaPopup.center();
-                pcaPopup.show();
-                if (pcaImageDrawPan == null) {
-                    pcaImageDrawPan = createDrawPane();
-                    updatedMmaxmizePlotImgLayout.addMember(pcaImageDrawPan);
-                }
-            }
-        };
-        
+        tooltipLabel.setWidth((calMaxImgWidth-44-300)+"px");
+//        ClickHandler maxmizeClickHandler = new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                pcaPopup.center();
+//                pcaPopup.show();
+//                if (pcaMaxImageDrawPan == null) {
+//                    pcaMaxImageDrawPan = createMaxImgDrawPane();
+//                    updatedMmaxmizePlotImgLayout.addMember(pcaMaxImageDrawPan);
+//                }
+//            }
+//        };
         VerticalPanel variationPanel = new VerticalPanel();
         variationPanel.setWidth("300px");
         variationPanel.setHeight("70px");
@@ -318,16 +307,15 @@ public class PCAPlotComponent extends ModularizedListener {
         tooltipViewPortLayout.add(variationPanel);
         tooltipViewPortLayout.setCellVerticalAlignment(variationPanel, HorizontalPanel.ALIGN_TOP);
         tooltipViewPortLayout.setCellHorizontalAlignment(variationPanel, HorizontalPanel.ALIGN_RIGHT);
-        
-        Label l1= new Label(results.getPcax());
-         Label l2= new Label(results.getPcay());
-          Label l3= new Label(results.getTotalVarianc());
-          variationPanel.add(l1);
-          variationPanel.add(l2);
-          variationPanel.add(l3);
-        
 
-        imagereg = thumbChartImg.addClickHandler(maxmizeClickHandler);
+        Label l1 = new Label(results.getPcax());
+        Label l2 = new Label(results.getPcay());
+        Label l3 = new Label(results.getTotalVarianc());
+        variationPanel.add(l1);
+        variationPanel.add(l2);
+        variationPanel.add(l3);
+
+//        imagereg = thumbChartImg.addClickHandler(maxmizeClickHandler);
 
         maxmizeBtnReg = maxmizeBtn.addClickHandler(new ClickHandler() {
 
@@ -335,9 +323,9 @@ public class PCAPlotComponent extends ModularizedListener {
             public void onClick(ClickEvent event) {
                   pcaPopup.center();
                 pcaPopup.show();
-                if (pcaImageDrawPan == null) {
-                    pcaImageDrawPan = createDrawPane();
-                    updatedMmaxmizePlotImgLayout.addMember(pcaImageDrawPan);
+                if (pcaMaxImageDrawPan == null) {
+                    pcaMaxImageDrawPan = createMaxImgDrawPane();
+                    updatedMmaxmizePlotImgLayout.addMember(pcaMaxImageDrawPan);
                 }
             }
         });
@@ -346,61 +334,11 @@ public class PCAPlotComponent extends ModularizedListener {
         updateWithSelection();
         
         
-         
-          
-//         Window.addResizeHandler(new ResizeHandler() {
-//
-//            @Override
-//            public void onResize(ResizeEvent event) {
-//               
-//                if (redrawTimer == null) {
-//                    redrawTimer = new Timer() {
-//
-//                        @Override
-//                        public void run() {
-//                            int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
-//                            int newHeight = scaler.reScale(newWidth, results.getImgHeight(),results.getImgWidth());
-//                            pcaPlotPanelWidth = newWidth + 10;
-//                            pcaPlotPanelHeight = newHeight + 20;
-//                            mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px" );
-//                            mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
-//                             topLayout.setWidth(pcaPlotPanelWidth+"px");
-//                            thumbImageLayout.setHeight(newHeight + "px");
-//                            thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
-//                            thumbChartImg.setHeight(newHeight + "px");
-//                            thumbChartImg.setWidth(newWidth + "px");
-//                            thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
-//                            thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
-////                            mainThumbPCALayout.redraw();
-//                        }
-//                    };
-//                    
-//                }
-//                redrawTimer.schedule(200);
-//
-//            }
-//        });
-
     }
     
-     private   final VLayout thumbImageLayout;
+//     private   final VLayout thumbImageLayout;
    private    final HorizontalPanel topLayout;
-   private final ImageScaler scaler;
-    public void resize(int newWidth,int newHeight){
-                            pcaPlotPanelWidth = newWidth;
-                            pcaPlotPanelHeight = newHeight;
-                            mainThumbPCALayout.setWidth(pcaPlotPanelWidth+"px" );
-                            mainThumbPCALayout.setHeight(pcaPlotPanelHeight+"px");
-                             topLayout.setWidth(pcaPlotPanelWidth+"px");
-                            thumbImageLayout.setHeight(newHeight + "px");
-                            thumbImageLayout.setWidth(pcaPlotPanelWidth + "px");
-                            thumbChartImg.setHeight((newHeight-20) + "px");
-                            thumbChartImg.setWidth(newWidth + "px");
-//                            thumbImageLayout.setCellHorizontalAlignment(thumbChartImg, VerticalPanel.ALIGN_CENTER);
-//                            thumbImageLayout.setCellVerticalAlignment(thumbChartImg, VerticalPanel.ALIGN_MIDDLE);
-    
-    }
-//    private Timer redrawTimer ; 
+
     private void updateWithSelection() {
         Selection sel = selectionManager.getSelectedRows();
         if (sel != null) {
@@ -517,7 +455,7 @@ public class PCAPlotComponent extends ModularizedListener {
                 @Override
                 public void onSuccess(String result) {
                     mainPCAImage.setSrc(result);
-                    thumbChartImg.setSrc(result);
+//                    thumbChartImg.setSrc(result);
 
                     if (zoom) {
                         zoomoutBtn.enable();
@@ -601,13 +539,119 @@ public class PCAPlotComponent extends ModularizedListener {
                 });
     }
 
-    private int startUX, startUY, endUX, endUY;
+    private int maxStartUX, maxStartUY, maxEndUX, maxEndUY;
+       private int minStartUX, minStartUY, minEndUX, minEndUY;
 
-    private DrawPane createDrawPane() {
+   
+    private DrawPane createThumbImgDrawPane() {
         final DrawPane drawPane = new DrawPane();
         drawPane.setCursor(Cursor.ARROW);
-        drawPane.setWidth(900);
-        drawPane.setHeight(700);
+        drawPane.setWidth((newWidth-2));
+        drawPane.setHeight((newWidth-2));
+        drawPane.setAutoDraw(false);
+
+        imagereg = drawPane.addDrawHandler(new DrawHandler() {
+            @Override
+            public void onDraw(DrawEvent event) {
+
+                thumbChartImg.setLineWidth(1);
+                thumbChartImg.setTop(0);
+                thumbChartImg.setLeft(0);
+                thumbChartImg.setWidth(newWidth-2);
+                thumbChartImg.setHeight(newWidth-2);
+                thumbChartImg.setKeepInParentRect(true);
+                thumbChartImg.setDrawPane(drawPane);
+                
+                thumbChartImg.draw();
+
+                final DrawImage selectionRectangel = new DrawImage();
+                selectionRectangel.setLineWidth(1);
+                selectionRectangel.setWidth(0);
+                selectionRectangel.setHeight(0);
+                selectionRectangel.setKeepInParentRect(true);
+                selectionRectangel.setKnobs(KnobType.RESIZE);
+                selectionRectangel.setUseMatrixFilter(true);
+                selectionRectangel.showKnobs(KnobType.RESIZE);
+                selectionRectangel.setDrawPane(drawPane);
+
+              
+                drawPane.draw();
+
+                drawPane.addMouseMoveHandler(new com.smartgwt.client.widgets.events.MouseMoveHandler() {
+
+                    @Override
+                    public void onMouseMove(com.smartgwt.client.widgets.events.MouseMoveEvent event) {
+                        if (event.isLeftButtonDown()) {
+                            selectionRectangel.setRect(minStartUX, minStartUY, (event.getX() - drawPane.getAbsoluteLeft() - minStartUX), (event.getY() - drawPane.getAbsoluteTop() - minStartUY));
+                            selectionRectangel.showKnobs(KnobType.RESIZE);
+                        }
+                    }
+
+                });
+
+                drawPane.addMouseDownHandler(new com.smartgwt.client.widgets.events.MouseDownHandler() {
+
+                    @Override
+                    public void onMouseDown(com.smartgwt.client.widgets.events.MouseDownEvent event) {
+                        minStartUX = event.getX() - drawPane.getAbsoluteLeft();
+                        minStartUY = event.getY() - drawPane.getAbsoluteTop();
+                        
+                        drawPane.setCursor(Cursor.CROSSHAIR);
+
+                    }
+                });
+                drawPane.addMouseUpHandler(new com.smartgwt.client.widgets.events.MouseUpHandler() {
+
+                    @Override
+                    @SuppressWarnings("UnnecessaryBoxing")
+                    public void onMouseUp(com.smartgwt.client.widgets.events.MouseUpEvent event) {
+
+                        minEndUX = event.getX() - drawPane.getAbsoluteLeft();
+                        minEndUY = event.getY() - drawPane.getAbsoluteTop();
+                        selectionRectangel.hideKnobs(KnobType.RESIZE);
+                        drawPane.setCursor(Cursor.ARROW);
+                        minStartUX = Math.round(Float.valueOf(minStartUX) * minScaler);
+                        minStartUY = Math.round(Float.valueOf(minStartUY) * minScaler);
+                        minEndUX = Math.round(Float.valueOf(minEndUX) * minScaler);
+                        minEndUY = Math.round(Float.valueOf(minEndUY) * minScaler);
+
+                        getSelection(minStartUX, minStartUY, minEndUX, minEndUY);
+
+                    }
+                });
+
+            }
+        });
+
+        return drawPane;
+    }
+
+    private int calMaxImgWidth;
+    private float minScaler;
+    private float maxScaler;
+
+    @SuppressWarnings("UnnecessaryBoxing")
+    private void calcMaxImgResize() {
+        calMaxImgWidth=Window.getClientHeight()-(150);
+        maxScaler = Float.valueOf(results.getImgWidth())/Float.valueOf(calMaxImgWidth);
+
+
+    }
+    @SuppressWarnings("UnnecessaryBoxing")
+    private void calcMinImgResize() {
+        minScaler = Float.valueOf(results.getImgWidth())/Float.valueOf(newWidth-2.0f);
+
+
+    }
+    
+    
+    
+    
+      private DrawPane createMaxImgDrawPane() {
+        final DrawPane drawPane = new DrawPane();
+        drawPane.setCursor(Cursor.ARROW);
+        drawPane.setWidth((calMaxImgWidth));
+        drawPane.setHeight((calMaxImgWidth));
         drawPane.setAutoDraw(false);
 
         drawPane.addDrawHandler(new DrawHandler() {
@@ -617,8 +661,8 @@ public class PCAPlotComponent extends ModularizedListener {
                 mainPCAImage.setLineWidth(1);
                 mainPCAImage.setTop(0);
                 mainPCAImage.setLeft(0);
-                mainPCAImage.setWidth(900);
-                mainPCAImage.setHeight(700);
+                mainPCAImage.setWidth(calMaxImgWidth);
+                mainPCAImage.setHeight(calMaxImgWidth);
                 mainPCAImage.setKeepInParentRect(true);
                 mainPCAImage.setDrawPane(drawPane);
                 mainPCAImage.draw();
@@ -633,22 +677,27 @@ public class PCAPlotComponent extends ModularizedListener {
                 selectionRectangel.showKnobs(KnobType.RESIZE);
                 selectionRectangel.setDrawPane(drawPane);
 
+              
                 drawPane.draw();
 
                 drawPane.addMouseMoveHandler(new com.smartgwt.client.widgets.events.MouseMoveHandler() {
 
                     @Override
+                    @SuppressWarnings("UnnecessaryBoxing")
                     public void onMouseMove(com.smartgwt.client.widgets.events.MouseMoveEvent event) {
                         if (event.isLeftButtonDown()) {
-                            selectionRectangel.setRect(startUX, startUY, (event.getX() - drawPane.getAbsoluteLeft() - startUX), (event.getY() - drawPane.getAbsoluteTop() - startUY));
+                            selectionRectangel.setRect(maxStartUX, maxStartUY, (event.getX() - drawPane.getAbsoluteLeft() - maxStartUX), (event.getY() - drawPane.getAbsoluteTop() - maxStartUY));
                             selectionRectangel.showKnobs(KnobType.RESIZE);
 
                         } else {
                             selectionRectangel.hideKnobs(KnobType.RESIZE);
                             try {
 
-                                int pointY = event.getY() - drawPane.getAbsoluteTop();
+                               int pointY = event.getY() - drawPane.getAbsoluteTop();
                                 int pointX = event.getX() - drawPane.getAbsoluteLeft();
+                                pointY = Math.round(Float.valueOf(pointY)*maxScaler);
+                                pointX = Math.round(Float.valueOf(pointX)*maxScaler);
+//                                updateToolTip("x "+pointX+"   y "+pointY);
                                 pointX = pointX - 1 - tooltipInformationData.getPlotLeft() + tooltipInformationData.getyAxisFactor();
                                 pointY -= tooltipInformationData.getPlotTop() - 1;
                                 String tooltipStr = "";
@@ -683,8 +732,9 @@ public class PCAPlotComponent extends ModularizedListener {
 
                     @Override
                     public void onMouseDown(com.smartgwt.client.widgets.events.MouseDownEvent event) {
-                        startUX = event.getX() - drawPane.getAbsoluteLeft();
-                        startUY = event.getY() - drawPane.getAbsoluteTop();
+                        maxStartUX = event.getX() - drawPane.getAbsoluteLeft();
+                        maxStartUY = event.getY() - drawPane.getAbsoluteTop();
+                        
                         drawPane.setCursor(Cursor.CROSSHAIR);
 
                     }
@@ -692,18 +742,22 @@ public class PCAPlotComponent extends ModularizedListener {
                 drawPane.addMouseUpHandler(new com.smartgwt.client.widgets.events.MouseUpHandler() {
 
                     @Override
+                    @SuppressWarnings("UnnecessaryBoxing")
                     public void onMouseUp(com.smartgwt.client.widgets.events.MouseUpEvent event) {
 
-                        endUX = event.getX() - drawPane.getAbsoluteLeft();
-                        endUY = event.getY() - drawPane.getAbsoluteTop();
+                        maxEndUX = event.getX() - drawPane.getAbsoluteLeft();
+                        maxEndUY = event.getY() - drawPane.getAbsoluteTop();
                         selectionRectangel.hideKnobs(KnobType.RESIZE);
-
                         drawPane.setCursor(Cursor.ARROW);
+                        maxStartUX = Math.round(Float.valueOf(maxStartUX) * maxScaler);
+                        maxStartUY = Math.round(Float.valueOf(maxStartUY) * maxScaler);
+                        maxEndUX = Math.round(Float.valueOf(maxEndUX) * maxScaler);
+                        maxEndUY = Math.round(Float.valueOf(maxEndUY) * maxScaler);
 
                         if (zoom) {
-                            zoomIn(startUX, startUY, endUX, endUY);
+                            zoomIn(maxStartUX, maxStartUY, maxEndUX, maxEndUY);
                         } else {
-                            getSelection(startUX, startUY, endUX, endUY);
+                            getSelection(maxStartUX, maxStartUY, maxEndUX, maxEndUY);
                         }
                     }
                 });
@@ -713,5 +767,6 @@ public class PCAPlotComponent extends ModularizedListener {
 
         return drawPane;
     }
+
 
 }

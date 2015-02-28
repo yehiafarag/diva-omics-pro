@@ -68,7 +68,7 @@ public class ProfilePlotComponent extends ModularizedListener {
     private int profilePlotPanelWidth;
     private int profilePlotPanelHeight;
     private  final int imgHeight, imgWidth;
-    public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingServices, final int imgHeight, final int imgWidth) {
+    public ProfilePlotComponent(String results, SelectionManager selectionManager, DivaServiceAsync greetingServices, final int imgHeight, final int imgWidth, int medPanelWidth) {
         this.GWTClientService = greetingServices;
         this.classtype = 1;
         this.components.add(ProfilePlotComponent.this);
@@ -77,15 +77,12 @@ public class ProfilePlotComponent extends ModularizedListener {
         this.imgHeight=imgHeight;
         this.imgWidth=imgWidth;
 
-       scaler = new ImageScaler();
-        int newWidth = (RootPanel.get("diva_mid_panel").getOffsetWidth() / 2) - 20;
-        int newHeight = scaler.reScale(newWidth, imgHeight,imgWidth);
-        profilePlotPanelWidth = newWidth+10;
-        profilePlotPanelHeight= newHeight+20;
+        int newWidth = (medPanelWidth / 2);
+        profilePlotPanelWidth = newWidth;
+        profilePlotPanelHeight= newWidth+22;
         mainBodyLayout = new VerticalPanel();
         mainBodyLayout.setHeight(profilePlotPanelHeight+"px");
         mainBodyLayout.setWidth(profilePlotPanelWidth+"px");
-//        mainBodyLayout.setMargin(0);
         mainBodyLayout.setStyleName("profileplot");
 
         topLayout = new HorizontalPanel();
@@ -124,10 +121,13 @@ public class ProfilePlotComponent extends ModularizedListener {
         lablePopupClickHandlerReg = maxmizeBtn.addClickHandler(popupClickHandler);
 
         profilePlotMaxImage = new Image(results);
-        int maxHeight =  imgHeight+ 50;
-        int maxWidth = imgWidth + 2;
-        profilePlotMaxImage.setWidth(imgWidth+"px");
-        profilePlotMaxImage.setHeight(imgHeight+"px");
+        
+        
+        int updatedImgWidth = resizeMaxImgWidth();
+        int maxHeight =  updatedImgWidth+ 50;
+        int maxWidth = updatedImgWidth + 2;
+        profilePlotMaxImage.setWidth(updatedImgWidth+"px");
+        profilePlotMaxImage.setHeight(updatedImgWidth+"px");
 
         
         VerticalPanel popupLayout = new VerticalPanel();
@@ -210,11 +210,11 @@ public class ProfilePlotComponent extends ModularizedListener {
 //        thumbImageLayout.setStyleName("imagesborder");
        
        
-        thumbImageLayout.setHeight(newHeight + "px");
-        thumbImageLayout.setWidth(profilePlotPanelWidth + "px");
+        thumbImageLayout.setHeight((newWidth) + "px");
+        thumbImageLayout.setWidth((profilePlotPanelWidth) + "px");
 
-        thumbImage.setWidth(newWidth +"px");
-        thumbImage.setHeight(newHeight+"px");
+        thumbImage.setWidth((newWidth-2) +"px");
+        thumbImage.setHeight((newWidth-2)+"px");
         thumbImageLayout.add(thumbImage);
         thumbImageLayout.setCellHorizontalAlignment(thumbImage, VerticalPanel.ALIGN_CENTER);
         thumbImageLayout.setCellVerticalAlignment(thumbImage, VerticalPanel.ALIGN_MIDDLE);
@@ -235,55 +235,17 @@ public class ProfilePlotComponent extends ModularizedListener {
 
         }
 
-//        profilePlotMaxImage.addClickHandler(new ClickHandler() {
-//
-//            @Override
-//            public void onClick(ClickEvent event) {
-////                getSelection(event.getX(), event.getY());
-//////               
-//            }
-//        });
 
-//        Window.addResizeHandler(new ResizeHandler() {
-//
-//            @Override
-//            public void onResize(ResizeEvent event) {
-//                if (redrawTimer == null) {
-//                    redrawTimer = new Timer() {
-//
-//                        @Override
-//                        public void run() {
-//                          
-////                            mainBodyLayout.redraw();
-//                        }
-//                    };
-//                    
-//                }
-//                redrawTimer.schedule(200);
-//
-//            }
-//        });
-
+    }
+    
+    private int resizeMaxImgWidth(){
+    int width = Window.getClientHeight()-150;
+    return width;
+    
+    
     }
    private   final VerticalPanel thumbImageLayout;
    private    final HorizontalPanel topLayout;
-   private final ImageScaler scaler;
-    public void resize(int newWidth,int newHeight){
-//                            int newHeight = scaler.reScale(newWidth, imgHeight, imgWidth);
-                            profilePlotPanelWidth = newWidth;
-                            profilePlotPanelHeight = newHeight ;
-                            mainBodyLayout.setWidth(profilePlotPanelWidth+"px");
-                            mainBodyLayout.setHeight(profilePlotPanelHeight+"px");
-                            topLayout.setWidth(profilePlotPanelWidth+"px");
-                            thumbImageLayout.setHeight(newHeight + "px");
-                            thumbImageLayout.setWidth(profilePlotPanelWidth + "px");
-                            thumbImage.setHeight(newHeight-20 + "px");
-                            thumbImage.setWidth(newWidth + "px");                             
-                            thumbImageLayout.setCellHorizontalAlignment(thumbImage, VerticalPanel.ALIGN_CENTER);
-                            thumbImageLayout.setCellVerticalAlignment(thumbImage, VerticalPanel.ALIGN_MIDDLE);
-    
-    }
-    
     
         private void getSelection(int startX, int startY) {
         SelectionManager.Busy_Task(true, false);
@@ -309,15 +271,12 @@ public class ProfilePlotComponent extends ModularizedListener {
                 @Override
                 public void onFailure(Throwable caught) {
                     Window.alert("ERROR IN SERVER CONNECTION");
-//                        selectionManager.Busy_Task(false,false);
                 }
 
                 @Override
                 public void onSuccess(String result) {
                     profilePlotMaxImage.setUrl(result);
                     thumbImage.setUrl(result);
-
-//                    SelectionManager.Busy_Task(false,false);
                 }
             });
         }
@@ -338,5 +297,21 @@ public class ProfilePlotComponent extends ModularizedListener {
         mainBodyLayout = null;
 
     }
+    
+    public void resize(int medPanelWidth){
+//        int newWidth = (medPanelWidth / 2) - 20;
+////        int newHeight = scaler.reScale(newWidth, imgHeight,imgWidth);
+//        profilePlotPanelWidth = newWidth+10;
+//        profilePlotPanelHeight= newHeight+20;
+//        mainBodyLayout.setHeight(profilePlotPanelHeight+"px");
+//        mainBodyLayout.setWidth(profilePlotPanelWidth+"px");
+//        topLayout.setWidth(profilePlotPanelWidth+"px");
+//         thumbImageLayout.setHeight(newHeight + "px");
+//        thumbImageLayout.setWidth(profilePlotPanelWidth + "px");
+//        thumbImage.setWidth(newWidth +"px");
+//        thumbImage.setHeight(newHeight+"px");
+       
 
+        
+    }
 }
