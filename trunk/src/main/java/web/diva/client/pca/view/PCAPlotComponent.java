@@ -117,7 +117,7 @@ public class PCAPlotComponent extends ModularizedListener {
         maxmizeBtn.setWidth("16px");
         topLayout.add(maxmizeBtn);
         calcMinImgResize();
-        thumbChartImg.setSrc(results.getImgString());
+//        thumbChartImg.setSrc(results.getImgString());
         if (pcaThumbImgDrawPan == null) {
             pcaThumbImgDrawPan = createThumbImgDrawPane();
         }
@@ -455,8 +455,7 @@ public class PCAPlotComponent extends ModularizedListener {
                 @Override
                 public void onSuccess(String result) {
                     mainPCAImage.setSrc(result);
-//                    thumbChartImg.setSrc(result);
-
+                    thumbChartImg.setSrc(result);
                     if (zoom) {
                         zoomoutBtn.enable();
                     }
@@ -557,8 +556,8 @@ public class PCAPlotComponent extends ModularizedListener {
                 thumbChartImg.setLineWidth(1);
                 thumbChartImg.setTop(0);
                 thumbChartImg.setLeft(0);
-                thumbChartImg.setWidth(newWidth-2);
-                thumbChartImg.setHeight(newWidth-2);
+                thumbChartImg.setWidth(newWidth-3);
+                thumbChartImg.setHeight(newWidth-3);
                 thumbChartImg.setKeepInParentRect(true);
                 thumbChartImg.setDrawPane(drawPane);
                 
