@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='diva'>
+    <!-- Inherit the core Web Toolkit stuff.                        -->
+    <inherits name='com.google.gwt.user.User'/>
+    <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+    <!-- Other module inherits                                      --> 
+
+<inherits name="com.smartgwt.SmartGwt"/>
+
+    <inherits name="com.smartgwt.SmartGwtNoScript"/>
+    <inherits name="com.smartgwt.Drawing"/>
+<inherits name="com.smartclient.theme.enterprise.Enterprise"/>
+
+    <!-- Specify the app entry point class.                         -->
+    
+    <entry-point class='web.diva.client.DivaMain'/>
+    <!-- Specify the paths for translatable code                    -->
+    <source path='client'/>
+    <source path='shared'/>
+
+</module>
